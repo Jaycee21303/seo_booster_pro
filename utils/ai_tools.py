@@ -18,13 +18,13 @@ def get_api_key(user_id):
 
 
 # -----------------------------------
-# CALL OPENAI CHAT COMPLETIONS
+# OPENAI CALL WRAPPER
 # -----------------------------------
 def call_ai(prompt, user_id):
     api_key = get_api_key(user_id)
 
     if not api_key:
-        return "⚠️ No API key found. Please add your API key in Settings."
+        return "⚠️ No API key found. Please add your OpenAI API key in Settings."
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -34,64 +34,91 @@ def call_ai(prompt, user_id):
     data = {
         "model": "gpt-4o-mini",
         "messages": [
+            {"role": "system", "content": "You are an expert SEO assistant."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7
     }
 
     try:
-        r = requests.post(OPENAI_API_URL, headers=headers, json=data)
-        r_json = r.json()
-        return r_json["choices"][0]["message"]["content"]
+        response = requests.post(OPENAI_API_URL, json=data, headers=headers)
+        result = response.json()
+
+        return result["choices"][0]["message"]["content"]
+
     except Exception as e:
-        return f"AI Error: {str(e)}"
+        return f"❌ AI Error: {str(e)}"
 
 
 # -----------------------------------
-# AI TOOLS IMPLEMENTATION
+# AI TOOL FUNCTIONS
 # -----------------------------------
 
 def generate_title(url, user_id):
     prompt = f"""
-    You are an expert SEO consultant.
-    Generate 5 powerful, high-CTR, SEO-optimized page titles for the website:
+    Generate 5 powerful, high-CTR SEO page titles for the website:
 
     {url}
 
-    Return only the titles, no explanation.
+    Make them:
+    - Click-worthy
+    - Under 60 characters
+    - Professional
+    - Conversion-focused
+
+    Return only the list of titles.
     """
     return call_ai(prompt, user_id)
 
 
 def generate_meta(url, user_id):
     prompt = f"""
-    Write 3 strong SEO meta descriptions for:
+    Create 3 SEO-optimized meta descriptions for:
 
     {url}
 
-    Each one should be 150–160 characters max and optimized for click-through.
+    Requirements:
+    - 150–160 characters
+    - High click-through rate
+    - Clear and professional
+    - Include strong keywords
+
+    Return only the meta descriptions.
     """
     return call_ai(prompt, user_id)
 
 
 def rewrite_homepage(url, user_id):
     prompt = f"""
-    Rewrite the homepage content of {url} to be clean, professional, 
-    keyword-rich, and optimized for SEO.
-    Make the tone clear, concise, and conversion-focused.
+    Rewrite the homepage content for:
+
+    {url}
+
+    Make it:
+    - Clear and professional
+    - Search-optimized
+    - Readable and engaging
+    - Keyword-rich
+    - Persuasive
 
     Return only the improved homepage content.
     """
     return call_ai(prompt, user_id)
 
 
-def keyword_list(url, country, user_id):
+def keyword_list(url, user_id):
     prompt = f"""
-    Generate a list of 15 SEO keywords for {url} targeted for users in {country}.
+    Generate a list of 15 strong SEO keywords for the website:
+
+    {url}
 
     Include:
     - High-intent keywords
-    - Localized keywords
     - Long-tail keywords
+    - Commercial keywords
+    - No country names
+    - No locations
+
+    Return only the keyword list.
     """
     return call_ai(prompt, user_id)
