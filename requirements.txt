@@ -1,2 +1,10 @@
 flask
+gunicorn
+werkzeug
+jinja2
+requests
+beautifulsoup4
+lxml
 psycopg2-binary
+reportlab
+python-dotenv
