@@ -1,6 +1,2 @@
-Flask
-requests
-beautifulsoup4
-reportlab
-Werkzeug
-gunicorn
+flask
+psycopg2-binary
