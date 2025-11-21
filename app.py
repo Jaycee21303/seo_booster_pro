@@ -51,13 +51,16 @@ def login_required(route_function):
 
 
 # -----------------------------
-# AUTH ROUTES
+# HOME ROUTE → REDIRECT TO LOGIN
 # -----------------------------
 @app.route("/")
 def home():
     return redirect("/login")
 
 
+# -----------------------------
+# SIGNUP — NOW AUTO-LOGINS USER
+# -----------------------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -68,19 +71,33 @@ def signup():
         c = conn.cursor()
 
         try:
-            hashed = generate_password_hash(password)
-            c.execute("INSERT INTO users (email, password, date_created) VALUES (?, ?, ?)",
-                      (email, hashed, str(datetime.datetime.now())))
+            hashed_pw = generate_password_hash(password)
+            c.execute(
+                "INSERT INTO users (email, password, date_created) VALUES (?, ?, ?)",
+                (email, hashed_pw, str(datetime.datetime.now()))
+            )
             conn.commit()
-        except:
-            return render_template("signup.html", error="Email already exists")
-        conn.close()
 
-        return redirect("/login")
+            # AUTO-LOGIN IMMEDIATELY
+            c.execute("SELECT id FROM users WHERE email=?", (email,))
+            new_user = c.fetchone()
+            conn.close()
+
+            session["user_id"] = new_user["id"]
+            session["email"] = email
+
+            return redirect("/dashboard")
+
+        except Exception:
+            conn.close()
+            return render_template("signup.html", error="Email already exists.")
 
     return render_template("signup.html")
 
 
+# -----------------------------
+# LOGIN
+# -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -89,6 +106,7 @@ def login():
 
         conn = get_db()
         c = conn.cursor()
+
         c.execute("SELECT * FROM users WHERE email=?", (email,))
         user = c.fetchone()
         conn.close()
@@ -103,6 +121,9 @@ def login():
     return render_template("login.html")
 
 
+# -----------------------------
+# LOGOUT
+# -----------------------------
 @app.route("/logout")
 def logout():
     session.clear()
@@ -126,7 +147,7 @@ def dashboard():
 
 
 # -----------------------------
-# SETTINGS PAGE
+# SETTINGS — FIXED VERSION
 # -----------------------------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
@@ -139,8 +160,10 @@ def settings():
         c.execute("UPDATE users SET api_key=? WHERE id=?", (api_key, session["user_id"]))
         conn.commit()
 
+    # SAFE ONE-TIME FETCH
     c.execute("SELECT api_key FROM users WHERE id=?", (session["user_id"],))
-    api_key = c.fetchone()["api_key"] if c.fetchone() else ""
+    row = c.fetchone()
+    api_key = row["api_key"] if row else ""
 
     conn.close()
 
@@ -153,34 +176,29 @@ def settings():
 @app.route("/ai/title", methods=["POST"])
 @login_required
 def ai_title():
-    url = request.form["analyze_url"]
-    return generate_title(url, session["user_id"])
+    return generate_title(request.form["analyze_url"], session["user_id"])
 
 
 @app.route("/ai/meta", methods=["POST"])
 @login_required
 def ai_meta():
-    url = request.form["analyze_url"]
-    return generate_meta(url, session["user_id"])
+    return generate_meta(request.form["analyze_url"], session["user_id"])
 
 
 @app.route("/ai/rewrite", methods=["POST"])
 @login_required
 def ai_rewrite():
-    url = request.form["analyze_url"]
-    return rewrite_homepage(url, session["user_id"])
+    return rewrite_homepage(request.form["analyze_url"], session["user_id"])
 
 
 @app.route("/ai/keywords", methods=["POST"])
 @login_required
 def ai_keywords():
-    country = request.form["country"]
-    url = request.form["analyze_url"]
-    return keyword_list(url, country, session["user_id"])
+    return keyword_list(request.form["analyze_url"], request.form["country"], session["user_id"])
 
 
 # -----------------------------
-# PDF GENERATOR
+# DOWNLOAD PDF REPORT
 # -----------------------------
 @app.route("/download_report", methods=["POST"])
 @login_required
@@ -191,7 +209,7 @@ def download_report():
 
 
 # -----------------------------
-# RUN APP
+# RUN THE APP
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
