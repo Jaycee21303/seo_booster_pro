@@ -1,83 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="fw-bold mb-4">Website Dashboard</h2>
+<h2 class="fw-bold mb-3">Website Dashboard</h2>
 
-<form method="POST" class="mb-4">
-    <div class="input-group input-group-lg">
-        <input type="text" name="url" class="form-control" placeholder="Enter website URL (https://example.com)" required>
-        <button class="btn btn-primary">Analyze</button>
-    </div>
+<form method="POST">
+    <input type="text" name="url" class="form-control mb-3"
+           placeholder="Enter website URL (https://example.com)" required>
+    <button class="btn btn-primary mb-4">Analyze</button>
 </form>
 
+<h4 class="fw-bold">AI Tools</h4>
+
+<div class="d-grid gap-2 mb-4">
+    <button class="btn btn-outline-primary" onclick="runAITool('title')">Generate SEO Titles</button>
+    <button class="btn btn-outline-primary" onclick="runAITool('meta')">Generate Meta Descriptions</button>
+    <button class="btn btn-outline-primary" onclick="runAITool('rewrite')">Rewrite Homepage</button>
+    <button class="btn btn-outline-primary" onclick="runAITool('keywords')">Generate Keywords</button>
+</div>
+
+<!-- AI OUTPUT -->
+<div id="ai-output" class="card p-3 shadow-sm" style="display:none; opacity:0; transition:opacity 0.4s;">
+    <h5 class="fw-bold">AI Results</h5>
+    <pre id="ai-text" style="white-space:pre-wrap;"></pre>
+</div>
+
+<script>
+function runAITool(tool) {
+    const url = document.querySelector("input[name='url']").value;
+    if (!url) {
+        alert("Please enter a website URL first.");
+        return;
+    }
+
+    let endpoint = `/ai/${tool}`;
+
+    fetch(endpoint, {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: `analyze_url=${encodeURIComponent(url)}`
+    })
+    .then(res => res.text())
+    .then(data => {
+        const box = document.getElementById("ai-output");
+        document.getElementById("ai-text").textContent = data;
+
+        box.style.display = "block";
+        setTimeout(() => box.style.opacity = 1, 50);
+    });
+}
+</script>
+
 {% if results %}
-<div class="row">
+<div class="card p-4 shadow-sm mt-4">
+    <h4 class="fw-bold mb-3">SEO Score</h4>
 
-    <!-- LEFT COLUMN: AI Tools -->
-    <div class="col-lg-3 mb-4">
-        <div class="card shadow-sm p-3">
-            <h5 class="fw-bold mb-3">AI Tools</h5>
-
-            <form method="POST" action="/ai/title">
-                <input type="hidden" name="analyze_url" value="{{ url }}">
-                <button class="btn btn-outline-primary w-100 mb-2">Generate SEO Titles</button>
-            </form>
-
-            <form method="POST" action="/ai/meta">
-                <input type="hidden" name="analyze_url" value="{{ url }}">
-                <button class="btn btn-outline-primary w-100 mb-2">Generate Meta Descriptions</button>
-            </form>
-
-            <form method="POST" action="/ai/rewrite">
-                <input type="hidden" name="analyze_url" value="{{ url }}">
-                <button class="btn btn-outline-primary w-100 mb-2">Rewrite Homepage</button>
-            </form>
-
-            <form method="POST" action="/ai/keywords">
-                <input type="hidden" name="country" value="Nigeria">
-                <input type="hidden" name="analyze_url" value="{{ url }}">
-                <button class="btn btn-outline-primary w-100 mb-2">Keywords (Nigeria)</button>
-            </form>
-
-            <form method="POST" action="/ai/keywords">
-                <input type="hidden" name="country" value="Vietnam">
-                <input type="hidden" name="analyze_url" value="{{ url }}">
-                <button class="btn btn-outline-primary w-100 mb-2">Keywords (Vietnam)</button>
-            </form>
-
-            <form method="POST" action="/download_report">
-                <input type="hidden" name="report_data" value="{{ results }}">
-                <button class="btn btn-success w-100 mt-3">Download PDF Report</button>
-            </form>
-        </div>
+    <div class="score-circle mx-auto mb-3">
+        <span>{{ results.score }}</span>
     </div>
 
-    <!-- MIDDLE COLUMN: SEO SCORE -->
-    <div class="col-lg-5 mb-4">
-        <div class="card shadow-sm p-4 text-center">
-            <h4 class="fw-bold mb-3">SEO Score</h4>
+    <h5 class="fw-bold mt-4">Issues Found</h5>
+    <ul>
+        {% for issue in results.issues %}
+            <li>{{ issue }}</li>
+        {% endfor %}
+    </ul>
 
-            <div class="score-circle">
-                <span>{{ results.score }}</span>
-            </div>
-
-            <p class="text-muted mt-3">Higher score = better optimization</p>
-        </div>
-    </div>
-
-    <!-- RIGHT COLUMN: ISSUES -->
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow-sm p-3">
-            <h5 class="fw-bold mb-3">Detected Issues</h5>
-
-            <ul class="list-group">
-                {% for issue in results.issues %}
-                <li class="list-group-item">{{ issue }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
+    <form method="POST" action="/download_report">
+        <input type="hidden" name="report_data"
+               value="SEO Score: {{ results.score }} | Issues: {{ results.issues }}">
+        <button class="btn btn-success w-100 mt-3">Download PDF Report</button>
+    </form>
 </div>
 {% endif %}
 
