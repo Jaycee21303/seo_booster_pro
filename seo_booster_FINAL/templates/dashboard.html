@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="fw-bold mb-4">Website Dashboard</h2>
+
+<form method="POST" class="mb-4">
+    <div class="input-group input-group-lg">
+        <input type="text" name="url" class="form-control" placeholder="Enter website URL (https://example.com)" required>
+        <button class="btn btn-primary">Analyze</button>
+    </div>
+</form>
+
+{% if results %}
+<div class="row">
+
+    <!-- LEFT COLUMN: AI Tools -->
+    <div class="col-lg-3 mb-4">
+        <div class="card shadow-sm p-3">
+            <h5 class="fw-bold mb-3">AI Tools</h5>
+
+            <form method="POST" action="/ai/title">
+                <input type="hidden" name="analyze_url" value="{{ url }}">
+                <button class="btn btn-outline-primary w-100 mb-2">Generate SEO Titles</button>
+            </form>
+
+            <form method="POST" action="/ai/meta">
+                <input type="hidden" name="analyze_url" value="{{ url }}">
+                <button class="btn btn-outline-primary w-100 mb-2">Generate Meta Descriptions</button>
+            </form>
+
+            <form method="POST" action="/ai/rewrite">
+                <input type="hidden" name="analyze_url" value="{{ url }}">
+                <button class="btn btn-outline-primary w-100 mb-2">Rewrite Homepage</button>
+            </form>
+
+            <form method="POST" action="/ai/keywords">
+                <input type="hidden" name="country" value="Nigeria">
+                <input type="hidden" name="analyze_url" value="{{ url }}">
+                <button class="btn btn-outline-primary w-100 mb-2">Keywords (Nigeria)</button>
+            </form>
+
+            <form method="POST" action="/ai/keywords">
+                <input type="hidden" name="country" value="Vietnam">
+                <input type="hidden" name="analyze_url" value="{{ url }}">
+                <button class="btn btn-outline-primary w-100 mb-2">Keywords (Vietnam)</button>
+            </form>
+
+            <form method="POST" action="/download_report">
+                <input type="hidden" name="report_data" value="{{ results }}">
+                <button class="btn btn-success w-100 mt-3">Download PDF Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MIDDLE COLUMN: SEO SCORE -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm p-4 text-center">
+            <h4 class="fw-bold mb-3">SEO Score</h4>
+
+            <div class="score-circle">
+                <span>{{ results.score }}</span>
+            </div>
+
+            <p class="text-muted mt-3">Higher score = better optimization</p>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: ISSUES -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm p-3">
+            <h5 class="fw-bold mb-3">Detected Issues</h5>
+
+            <ul class="list-group">
+                {% for issue in results.issues %}
+                <li class="list-group-item">{{ issue }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

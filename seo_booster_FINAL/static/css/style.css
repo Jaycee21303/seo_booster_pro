@@ -1,0 +1,126 @@
+/* ===========================
+   GLOBAL THEME
+=========================== */
+
+body {
+    background: #F5F7FA;
+    font-family: 'Inter', sans-serif;
+}
+
+/* NAVBAR */
+.bg-navy {
+    background-color: #1A2B4C !important;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+/* AUTH CARDS (Login / Signup) */
+.auth-card {
+    width: 380px;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+/* STANDARD CARD */
+.card {
+    border-radius: 12px !important;
+    border: none !important;
+}
+
+/* BUTTONS */
+.btn-primary {
+    background-color: #2A73FF !important;
+    border: none !important;
+}
+
+.btn-outline-primary {
+    border-color: #2A73FF !important;
+    color: #2A73FF !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #2A73FF !important;
+    color: white !important;
+}
+
+/* SUCCESS BUTTON */
+.btn-success {
+    background-color: #19C37D !important;
+    border: none !important;
+}
+
+/* SHADOW */
+.shadow-sm {
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.10) !important;
+}
+
+/* FORMS */
+.form-control {
+    border-radius: 8px !important;
+}
+
+/* ===========================
+   SEO SCORE CIRCLE
+=========================== */
+
+.score-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 10px solid #19C37D;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.score-circle span {
+    font-size: 60px;
+    font-weight: 700;
+    color: #19C37D;
+}
+
+/* ===========================
+   LIST GROUP (ISSUES)
+=========================== */
+
+.list-group-item {
+    border: none !important;
+    background: #ffffff !important;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #ECECEC !important;
+}
+
+/* ===========================
+   DASHBOARD GRID
+=========================== */
+
+@media (min-width: 992px) {
+    .col-lg-3, .col-lg-5, .col-lg-4 {
+        min-height: 400px;
+    }
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 768px) {
+    .score-circle {
+        width: 140px;
+        height: 140px;
+        border-width: 8px;
+    }
+
+    .score-circle span {
+        font-size: 42px;
+    }
+
+    .auth-card {
+        width: 100%;
+        margin: 0 20px;
+    }
+}
