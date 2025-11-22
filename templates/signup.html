@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Booster Pro – Sign Up</title>
-
+    <title>Create Account – SEO Booster Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+
+<body style="background:#f5f5f7;">
 
 <div class="auth-container">
-    <h2 class="auth-title">Sign Up</h2>
+    <h2 class="auth-title">Create Your Account</h2>
 
     {% if error %}
         <div class="auth-error">{{ error }}</div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" action="">
         <input type="email" name="email" class="auth-input" placeholder="Email" required>
         <input type="password" name="password" class="auth-input" placeholder="Password" required>
+
         <button class="auth-btn" type="submit">Create Account</button>
     </form>
 
     <div class="auth-switch">
-        <a href="/login">Already have an account?</a>
+        Already have an account? <a href="/login">Login</a>
     </div>
 </div>
 
