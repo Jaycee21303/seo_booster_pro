@@ -1,28 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="navbar">
+    <div class="nav-logo">SEO Booster Pro</div>
+    <div class="nav-right">
+        <a class="nav-link" href="/settings">Settings</a>
+        <a class="nav-link logout" href="/logout">Logout</a>
+    </div>
+</div>
+
 <div class="main-container">
-    <div class="page-title">SEO Dashboard</div>
+    <h1 class="page-title">Dashboard</h1>
 
     <div class="dashboard-container">
 
-        <!-- Left Panel -->
+        <!-- LEFT PANEL -->
         <div class="left-panel">
+
             <label class="label">Website URL</label>
-            <input type="text" id="site_url" class="input-field" placeholder="https://yourwebsite.com">
+            <input class="input-field" type="text" id="site_url" placeholder="https://example.com">
 
-            <button class="btn btn-analyze" onclick="analyzeSEO()">Analyze Website</button>
+            <label class="label">Target Keyword</label>
+            <input class="input-field" type="text" id="keyword" placeholder="pizza delivery los angeles">
+
+            <button class="btn btn-analyze" onclick="analyzeSEO()">Analyze SEO</button>
         </div>
 
-        <!-- Right Panel -->
+        <!-- RIGHT PANEL -->
         <div class="right-panel">
-            <div class="result-card">
-                <h3>SEO Report</h3>
-                <div id="seo_results" class="result-box">Run an analysis to see results here.</div>
-            </div>
-        </div>
 
+            <div class="result-card">
+                <h3>Keyword Score</h3>
+                <div id="keyword_score" class="result-box">Enter a keyword to begin.</div>
+            </div>
+
+            <div class="result-card">
+                <h3>Site Audit</h3>
+                <div id="site_audit" class="result-box">Results will appear here…</div>
+            </div>
+
+            <div class="result-card">
+                <h3>Optimization Tips</h3>
+                <div id="tips" class="result-box">Results will appear here…</div>
+            </div>
+
+        </div>
     </div>
 </div>
+
+<script>
+function analyzeSEO() {
+    alert("AI SEO Analyzer coming soon!");
+}
+</script>
 
 {% endblock %}
