@@ -1,2 +1,15 @@
-flask
-psycopg2-binary
+Flask==3.0.2
+gunicorn==22.0.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# HTML parsing
+beautifulsoup4==4.12.3
+requests==2.31.0
+
+# OpenAI API
+openai==1.14.2
+
+# Security
+Werkzeug==3.0.1
