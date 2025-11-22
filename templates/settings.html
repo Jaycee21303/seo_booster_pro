@@ -1,1 +1,38 @@
-<!-- settings -->
+{% extends "base.html" %}
+{% block content %}
+
+<div id="messageBox" class="popup-message"></div>
+
+<div class="auth-container">
+    <h2 class="auth-title">Settings</h2>
+
+    <form method="POST">
+
+        <label>Your OpenAI API Key</label>
+        <input type="text" name="api_key" class="auth-input" 
+               placeholder="Enter your OpenAI API Key" 
+               value="{{ api_key or '' }}">
+
+        <button class="auth-btn">Save API Key</button>
+    </form>
+
+    <p class="auth-switch">
+        Need your API key?  
+        <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank">
+            Click here to get it.
+        </a>
+    </p>
+</div>
+
+<script>
+    // Popup after saving key
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("saved") === "1") {
+        let box = document.getElementById("messageBox");
+        box.innerText = "API Key Saved!";
+        box.style.display = "block";
+        setTimeout(() => box.style.display = "none", 2000);
+    }
+</script>
+
+{% endblock %}
