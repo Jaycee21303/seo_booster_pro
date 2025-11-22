@@ -5,27 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEO Booster Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f8fa;
+            color: #333;
+        }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #673ab7, #512da8);
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 18px;
+            opacity: 0.95;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .hero-buttons {
+            margin-top: 35px;
+        }
+
+        .hero-btn {
+            background: #ffeb3b;
+            padding: 14px 28px;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .hero-btn:hover {
+            background: #fdd835;
+        }
+
+        .secondary-btn {
+            background: transparent;
+            border: 2px solid white;
+            padding: 12px 22px;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-left: 12px;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* FEATURES */
+        .features-section {
+            padding: 70px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 30px;
+            margin-bottom: 40px;
+            font-weight: bold;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .feature-box h3 {
+            margin-top: 12px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .feature-box p {
+            font-size: 15px;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        /* PRICING */
+        .pricing-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            max-width: 450px;
+            margin: 60px auto;
+            text-align: center;
+        }
+
+        .price {
+            font-size: 42px;
+            color: #673ab7;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .pricing-btn {
+            margin-top: 25px;
+            background: #673ab7;
+            padding: 14px 26px;
+            color: white;
+            font-size: 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .pricing-btn:hover {
+            background: #5e35b1;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 25px;
+            background: #eee;
+            font-size: 14px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="landing-container">
+    <!-- HERO -->
+    <section class="hero">
+        <h1>AI SEO built for real businesses — rank higher, get found, and attract more customers.</h1>
 
-    <!-- HERO SECTION -->
-    <h1 class="hero-title">
-        AI SEO built for real businesses — rank higher, get found, and attract more customers.
-    </h1>
+        <p>
+            Perfect for local and small businesses: our AI shows you exactly how to improve rankings,
+            outrank competitors, and get more customers — with simple, easy-to-follow guidance. No SEO jargon.
+        </p>
 
-    <p class="hero-sub">
-        Perfect for local and small businesses: our AI shows you exactly how to improve your rankings,
-        outrank competitors, and get more customers — with simple, easy-to-follow guidance.
-        No confusing SEO jargon.
-    </p>
+        <div class="hero-buttons">
+            <a href="/signup" class="hero-btn">Start Free Trial</a>
+            <a href="/login" class="secondary-btn">Login</a>
+        </div>
+    </section>
 
-    <!-- ACTION BUTTONS -->
-    <div class="landing-btns">
-        <a href="/signup" class="primary-btn">Start Free Trial</a>
-        <a href="/login" class="secondary-btn">Login</a>
-    </div>
+
+    <!-- FEATURES -->
+    <section class="features-section">
+        <h2 class="features-title">Everything You Need to Grow Your Business Online</h2>
+
+        <div class="features-grid">
+            <div class="feature-box">
+                <h3>AI SEO Reports</h3>
+                <p>Instant audits with real, actionable steps to improve your rankings fast.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Keyword Power Scores</h3>
+                <p>Find the keywords your business should target for maximum growth.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Competitor Insights</h3>
+                <p>Understand what local competitors are doing and how to outrank them.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Simple Dashboard</h3>
+                <p>No complicated tools — everything is clean, fast, and easy to use.</p>
+            </div>
+        </div>
+    </section>
+
 
     <!-- PRICING -->
     <div class="pricing-box">
@@ -35,7 +207,9 @@
         <a href="/signup" class="pricing-btn">Start Free Trial</a>
     </div>
 
-</div>
+    <footer>
+        © 2025 SEO Booster Pro — All Rights Reserved.
+    </footer>
 
 </body>
 </html>
