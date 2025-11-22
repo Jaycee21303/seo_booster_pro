@@ -1,261 +1,32 @@
-/* --------------------------------------------------
-   GLOBAL PAGE STYLES
--------------------------------------------------- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Booster Pro – Login</title>
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 0;
-}
+    <!-- This is the FIX -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
 
-.page-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
+<div class="auth-container">
+    <h2 class="auth-title">Login</h2>
 
-/* --------------------------------------------------
-   NAVBAR
--------------------------------------------------- */
+    {% if error %}
+        <div class="auth-error">{{ error }}</div>
+    {% endif %}
 
-.navbar {
-    background: #673ab7;
-    padding: 15px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: white;
-}
+    <form method="POST">
+        <input type="email" name="email" class="auth-input" placeholder="Email" required>
+        <input type="password" name="password" class="auth-input" placeholder="Password" required>
+        <button class="auth-btn" type="submit">Login</button>
+    </form>
 
-.nav-logo {
-    font-size: 20px;
-    font-weight: bold;
-}
+    <div class="auth-switch">
+        <a href="/signup">Create an account</a>
+    </div>
+</div>
 
-.nav-right .nav-link {
-    color: white;
-    text-decoration: none;
-    margin-left: 18px;
-    font-size: 15px;
-}
-
-.nav-right .nav-link:hover {
-    text-decoration: underline;
-}
-
-.logout {
-    color: #ffeb3b;
-}
-
-/* --------------------------------------------------
-   PAGE CONTAINER
--------------------------------------------------- */
-
-.main-container {
-    padding: 25px;
-}
-
-/* --------------------------------------------------
-   DASHBOARD LAYOUT
--------------------------------------------------- */
-
-.dashboard-container {
-    display: flex;
-    gap: 25px;
-    margin-top: 20px;
-}
-
-/* LEFT PANEL (TOOLS) */
-.left-panel {
-    width: 30%;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-}
-
-/* RIGHT PANEL (RESULTS) */
-.right-panel {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* --------------------------------------------------
-   INPUTS & LABELS
--------------------------------------------------- */
-
-.label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 6px;
-}
-
-.input-field {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    font-size: 15px;
-}
-
-/* --------------------------------------------------
-   BUTTONS
--------------------------------------------------- */
-
-.btn {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    font-size: 15px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: none;
-    transition: 0.2s;
-}
-
-.btn-save {
-    background: #4caf50;
-    color: white;
-}
-
-.btn-save:hover {
-    background: #43a047;
-}
-
-.btn-analyze {
-    background: #1e88e5;
-    color: white;
-}
-
-.btn-analyze:hover {
-    background: #1565c0;
-}
-
-.btn-primary {
-    background: #673ab7;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5e35b1;
-}
-
-/* --------------------------------------------------
-   RESULT CARDS
--------------------------------------------------- */
-
-.result-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-}
-
-.result-card h3 {
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.result-box {
-    background: #f0f0f0;
-    padding: 12px;
-    border-radius: 6px;
-    min-height: 60px;
-    white-space: pre-wrap;
-}
-
-/* --------------------------------------------------
-   POPUP MESSAGE
--------------------------------------------------- */
-
-.popup-message {
-    display: none;
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #1e88e5;
-    color: white;
-    padding: 12px 18px;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    font-size: 15px;
-    z-index: 9999;
-}
-
-/* --------------------------------------------------
-   AUTH PAGES (Login/Signup)
--------------------------------------------------- */
-
-.auth-container {
-    width: 350px;
-    margin: 50px auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.auth-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.auth-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-    margin-bottom: 15px;
-}
-
-.auth-btn {
-    width: 100%;
-    padding: 10px;
-    background: #673ab7;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-}
-
-.auth-btn:hover {
-    background: #5e35b1;
-}
-
-.auth-error {
-    background: #ff5252;
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.auth-switch {
-    text-align: center;
-    margin-top: 10px;
-}
-
-/* --------------------------------------------------
-   RESPONSIVE DESIGN
--------------------------------------------------- */
-
-@media (max-width: 900px) {
-    .dashboard-container {
-        flex-direction: column;
-    }
-
-    .left-panel,
-    .right-panel {
-        width: 100%;
-    }
-}
+</body>
+</html>
