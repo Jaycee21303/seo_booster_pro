@@ -1,1 +1,77 @@
-<!-- dashboard -->
+{% extends "base.html" %}
+{% block content %}
+
+<div id="messageBox" class="popup-message"></div>
+
+<h2 class="page-title">SEO Booster Dashboard</h2>
+
+<div class="dashboard-container">
+
+    <!-- LEFT COLUMN: TOOLS -->
+    <div class="left-panel">
+
+        <!-- URL INPUT -->
+        <label class="label">Website URL</label>
+        <input type="text" id="urlInput" class="input-field" placeholder="https://example.com" value="{{ last_url }}">
+
+        <button class="btn btn-save" onclick="saveURL()">Save URL</button>
+        <button class="btn btn-analyze" onclick="analyzeURL()">Analyze Website</button>
+
+        <hr>
+
+        <!-- AI BUTTONS -->
+        <button class="btn btn-primary" onclick="runAI('title', 'titleResult')">
+            Generate SEO Title
+        </button>
+
+        <button class="btn btn-primary" onclick="runAI('meta', 'metaResult')">
+            Generate Meta Description
+        </button>
+
+        <button class="btn btn-primary" onclick="runAI('keywords', 'keywordResult')">
+            Generate Keywords
+        </button>
+
+        <button class="btn btn-primary" onclick="runAI('rewrite', 'rewriteResult')">
+            Rewrite Homepage Content
+        </button>
+
+    </div>
+
+    <!-- RIGHT COLUMN: RESULTS -->
+    <div class="right-panel">
+
+        <div class="result-card">
+            <h3>Website Title</h3>
+            <pre id="analysisTitle" class="result-box">Waiting...</pre>
+        </div>
+
+        <div class="result-card">
+            <h3>Meta Description</h3>
+            <pre id="analysisMeta" class="result-box">Waiting...</pre>
+        </div>
+
+        <div class="result-card">
+            <h3>AI Generated Title</h3>
+            <pre id="titleResult" class="result-box"></pre>
+        </div>
+
+        <div class="result-card">
+            <h3>AI Generated Meta Description</h3>
+            <pre id="metaResult" class="result-box"></pre>
+        </div>
+
+        <div class="result-card">
+            <h3>AI Keywords</h3>
+            <pre id="keywordResult" class="result-box"></pre>
+        </div>
+
+        <div class="result-card">
+            <h3>Homepage Rewrite</h3>
+            <pre id="rewriteResult" class="result-box"></pre>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
