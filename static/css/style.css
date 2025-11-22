@@ -1,18 +1,68 @@
 /* --------------------------------------------------
-   GLOBAL PAGE STYLES
+   GLOBAL THEME – Clean Modern SaaS (Purple)
 -------------------------------------------------- */
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
+    font-family: 'Inter', Arial, sans-serif;
+    background: #f6f7fb;
     margin: 0;
     padding: 0;
+    color: #1a1a1a;
 }
 
+/* Utility */
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* --------------------------------------------------
+   NAVBAR
+-------------------------------------------------- */
+
+.navbar {
+    background: #673ab7;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+}
+
+.nav-logo {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.nav-right a {
+    margin-left: 18px;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    opacity: 0.9;
+}
+
+.nav-right a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------
+   PAGE LAYOUT
+-------------------------------------------------- */
+
+.main {
+    padding: 40px 0;
+}
+
+/* Page Titles */
 .page-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #333;
 }
 
 /* --------------------------------------------------
@@ -25,40 +75,45 @@ body {
     margin-top: 20px;
 }
 
-/* LEFT PANEL (TOOLS) */
 .left-panel {
-    width: 30%;
+    width: 32%;
     background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
-/* RIGHT PANEL (RESULTS) */
 .right-panel {
-    width: 70%;
+    width: 68%;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 22px;
 }
 
 /* --------------------------------------------------
-   INPUTS & LABELS
+   INPUT FIELDS
 -------------------------------------------------- */
 
 .label {
-    font-weight: bold;
+    font-weight: 600;
+    margin-bottom: 5px;
     display: block;
-    margin-bottom: 6px;
 }
 
 .input-field {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    font-size: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 18px;
+    font-size: 16px;
+    background: #fafafa;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #673ab7;
+    background: white;
 }
 
 /* --------------------------------------------------
@@ -67,22 +122,22 @@ body {
 
 .btn {
     width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    font-size: 15px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 6px;
     border: none;
     transition: 0.2s;
 }
 
-.btn-save {
-    background: #4caf50;
+.btn-primary {
+    background: #673ab7;
     color: white;
 }
 
-.btn-save:hover {
-    background: #43a047;
+.btn-primary:hover {
+    background: #5b32a8;
 }
 
 .btn-analyze {
@@ -94,68 +149,100 @@ body {
     background: #1565c0;
 }
 
-.btn-primary {
-    background: #673ab7;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5e35b1;
-}
-
 /* --------------------------------------------------
    RESULT CARDS
 -------------------------------------------------- */
 
 .result-card {
     background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
 
 .result-card h3 {
     margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 18px;
-    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .result-box {
-    background: #f0f0f0;
-    padding: 12px;
-    border-radius: 6px;
-    min-height: 60px;
+    background: #f2f2f2;
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 70px;
     white-space: pre-wrap;
 }
 
 /* --------------------------------------------------
-   POPUP MESSAGE
+   AUTH PAGES
 -------------------------------------------------- */
 
-.popup-message {
-    display: none;
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #1e88e5;
+.auth-container {
+    width: 360px;
+    margin: 80px auto;
+    background: #fff;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+
+.auth-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #bbb;
+    margin-bottom: 18px;
+    font-size: 16px;
+    background: #fafafa;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #673ab7;
+    background: white;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    background: #673ab7;
     color: white;
-    padding: 12px 18px;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    font-size: 15px;
-    z-index: 9999;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.auth-btn:hover {
+    background: #5e35b1;
+}
+
+.auth-switch {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.auth-switch a {
+    color: #673ab7;
+    font-weight: 600;
 }
 
 /* --------------------------------------------------
-   RESPONSIVE DESIGN
+   RESPONSIVE
 -------------------------------------------------- */
 
 @media (max-width: 900px) {
     .dashboard-container {
         flex-direction: column;
     }
-
     .left-panel,
     .right-panel {
         width: 100%;
