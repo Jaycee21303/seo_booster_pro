@@ -1,1 +1,30 @@
-<!-- signup -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-container">
+    <h2 class="auth-title">Create Account</h2>
+
+    {% if error %}
+        <div class="auth-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" class="auth-form">
+
+        <label>Email</label>
+        <input type="email" name="email" required class="auth-input">
+
+        <label>Password</label>
+        <input type="password" name="password" required class="auth-input">
+
+        <label>Confirm Password</label>
+        <input type="password" name="confirm" required class="auth-input">
+
+        <button class="auth-btn">Sign Up</button>
+    </form>
+
+    <p class="auth-switch">
+        Already have an account? <a href="/login">Login</a>
+    </p>
+</div>
+
+{% endblock %}
