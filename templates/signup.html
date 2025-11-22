@@ -1,21 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="auth-container">
-    <h2 class="auth-title">Sign Up</h2>
+<div class="auth-container card">
+    <h2 class="auth-title">Create Your Account</h2>
+    <p class="auth-subtitle">Start your free 30-day trial — no credit card needed.</p>
 
     {% if error %}
         <div class="auth-error">{{ error }}</div>
     {% endif %}
 
-    <form method="POST">
-        <input type="email" name="email" class="auth-input" placeholder="Email" required>
-        <input type="password" name="password" class="auth-input" placeholder="Password" required>
+    <form method="POST" class="auth-form">
+
+        <label class="auth-label">Email</label>
+        <input type="email" name="email" class="auth-input" placeholder="you@example.com" required>
+
+        <label class="auth-label">Password</label>
+        <input type="password" name="password" class="auth-input" placeholder="Choose a secure password" required>
+
         <button class="auth-btn" type="submit">Create Account</button>
     </form>
 
     <div class="auth-switch">
-        <a href="/login">Already have an account?</a>
+        Already have an account?
+        <a href="/login">Log in</a>
     </div>
 </div>
 
