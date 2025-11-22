@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!-- NAVBAR -->
 <div class="navbar">
     <div class="nav-logo">SEO Booster Pro</div>
     <div class="nav-right">
@@ -9,42 +10,61 @@
     </div>
 </div>
 
+<!-- MAIN CONTENT -->
 <div class="main-container">
-    <h1 class="page-title">Dashboard</h1>
+
+    <h1 class="page-title">SEO Dashboard</h1>
+    <p style="color:#555; margin-top:-10px; margin-bottom:25px;">
+        Get instant AI-powered insights to improve your site's rankings, visibility, and customer reach.
+    </p>
 
     <div class="dashboard-container">
 
-        <!-- LEFT PANEL -->
-        <div class="left-panel">
+        <!-- LEFT SIDEBAR -->
+        <div class="left-panel" style="border-top:4px solid #673ab7;">
+            <h3 style="margin-top:0; color:#673ab7; font-size:20px;">🔍 SEO Analyzer</h3>
 
             <label class="label">Website URL</label>
             <input class="input-field" type="text" id="site_url" placeholder="https://example.com">
 
             <label class="label">Target Keyword</label>
-            <input class="input-field" type="text" id="keyword" placeholder="pizza delivery los angeles">
+            <input class="input-field" type="text" id="keyword" placeholder="e.g. pizza delivery los angeles">
 
-            <button class="btn btn-analyze" onclick="analyzeSEO()">Analyze SEO</button>
+            <button class="btn btn-analyze" onclick="analyzeSEO()" style="margin-top:10px;">
+                Run SEO Analysis
+            </button>
+
+            <p style="font-size:13px; color:#888; margin-top:15px;">
+                AI-powered analysis · Instant insights · Beginner-friendly
+            </p>
         </div>
 
-        <!-- RIGHT PANEL -->
+        <!-- RIGHT RESULTS -->
         <div class="right-panel">
 
             <div class="result-card">
-                <h3>Keyword Score</h3>
-                <div id="keyword_score" class="result-box">Enter a keyword to begin.</div>
+                <h3><span style="color:#673ab7;">📈</span> Keyword Score</h3>
+                <div id="keyword_score" class="result-box">
+                    Enter a keyword to begin.
+                </div>
             </div>
 
             <div class="result-card">
-                <h3>Site Audit</h3>
-                <div id="site_audit" class="result-box">Results will appear here…</div>
+                <h3><span style="color:#673ab7;">🧹</span> Site Audit</h3>
+                <div id="site_audit" class="result-box">
+                    Results will appear here…
+                </div>
             </div>
 
             <div class="result-card">
-                <h3>Optimization Tips</h3>
-                <div id="tips" class="result-box">Results will appear here…</div>
+                <h3><span style="color:#673ab7;">💡</span> Optimization Tips</h3>
+                <div id="tips" class="result-box">
+                    Results will appear here…
+                </div>
             </div>
 
         </div>
+
     </div>
 </div>
 
