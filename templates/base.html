@@ -8,9 +8,29 @@
     <!-- Correct CSS link -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
 
-    {% block content %}{% endblock %}
+    <div class="navbar">
+        <div class="nav-logo">SEO Booster Pro</div>
+
+        <div class="nav-right">
+            {% if session.get('user_id') %}
+                <a href="/dashboard">Dashboard</a>
+                <a href="/settings">Settings</a>
+                <a href="/logout">Logout</a>
+            {% else %}
+                <a href="/login">Login</a>
+                <a href="/signup">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
 
 </body>
 </html>
