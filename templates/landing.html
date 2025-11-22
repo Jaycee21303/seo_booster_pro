@@ -1,28 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="auth-container" style="max-width:800px; text-align:center;">
-    <h1 style="font-size:32px; font-weight:bold;">AI SEO built for real businesses</h1>
-    <p style="font-size:18px; margin-top:10px;">
-        Rank higher, get found, and attract more customers — powered by real AI insights created for local and small businesses.
+<div class="landing-hero">
+    <h1 class="hero-title">
+        AI SEO built for real businesses — rank higher, get found, and attract more customers.
+    </h1>
+
+    <p class="hero-sub">
+        Perfect for local + small businesses: our AI shows you exactly how to improve your rankings,
+        outrank competitors, and get more customers — with simple, step-by-step guidance.
+        No confusing SEO jargon.
     </p>
 
-    <p style="margin-top:20px;">
-        Perfect for busy business owners: our AI analyzes your site, scores your keywords, and gives you step-by-step actions to outrank competitors.  
-        <br>No jargon. No fluff. Just real, practical guidance.
-    </p>
+    <a href="/signup" class="cta-btn">Start Free Trial</a>
+    <a href="/login" class="cta-login">Login</a>
+</div>
 
-    <a href="/signup" class="btn-primary" style="margin-top:25px; display:inline-block; padding:15px 25px;">
-        Start Free Trial
-    </a>
-
-    <p style="margin-top:25px; font-size:16px;">
-        <strong>$4.99 / month</strong> · 30-day free trial · No credit card required · Cancel anytime
-    </p>
-
-    <p style="margin-top:15px;">
-        <a href="/login">Login</a>
-    </p>
+<div class="pricing-box">
+    <h2>Start Free</h2>
+    <p class="price">$4.99 / month</p>
+    <p>30-day free trial · No credit card required · Cancel anytime</p>
+    <a href="/signup" class="cta-btn">Start Free Trial</a>
 </div>
 
 {% endblock %}
