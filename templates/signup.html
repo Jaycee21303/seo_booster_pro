@@ -1,30 +1,31 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Booster Pro – Sign Up</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
 
 <div class="auth-container">
-    <h2 class="auth-title">Create Account</h2>
+    <h2 class="auth-title">Sign Up</h2>
 
     {% if error %}
         <div class="auth-error">{{ error }}</div>
     {% endif %}
 
-    <form method="POST" class="auth-form">
-
-        <label>Email</label>
-        <input type="email" name="email" required class="auth-input">
-
-        <label>Password</label>
-        <input type="password" name="password" required class="auth-input">
-
-        <label>Confirm Password</label>
-        <input type="password" name="confirm" required class="auth-input">
-
-        <button class="auth-btn">Sign Up</button>
+    <form method="POST">
+        <input type="email" name="email" class="auth-input" placeholder="Email" required>
+        <input type="password" name="password" class="auth-input" placeholder="Password" required>
+        <button class="auth-btn" type="submit">Create Account</button>
     </form>
 
-    <p class="auth-switch">
-        Already have an account? <a href="/login">Login</a>
-    </p>
+    <div class="auth-switch">
+        <a href="/login">Already have an account?</a>
+    </div>
 </div>
 
-{% endblock %}
+</body>
+</html>
