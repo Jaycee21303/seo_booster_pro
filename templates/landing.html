@@ -3,168 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Booster Pro – AI SEO Optimization</title>
+    <title>SEO Booster Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #333;
-        }
-
-        /* HERO */
-        .hero {
-            text-align: center;
-            padding: 80px 20px;
-            background: linear-gradient(135deg, #673ab7, #512da8);
-            color: white;
-        }
-        .hero h1 {
-            font-size: 42px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .hero p {
-            font-size: 18px;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: auto;
-        }
-        .hero-btn {
-            margin-top: 30px;
-            background: #ffeb3b;
-            padding: 14px 28px;
-            color: #333;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .hero-btn:hover {
-            background: #fdd835;
-        }
-
-        /* FEATURE GRID */
-        .section {
-            padding: 60px 20px;
-            max-width: 1100px;
-            margin: auto;
-        }
-        .section-title {
-            font-size: 28px;
-            text-align: center;
-            margin-bottom: 40px;
-            font-weight: bold;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 25px;
-        }
-        .feature-box {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .feature-box img {
-            width: 50px;
-            margin-bottom: 15px;
-        }
-        .feature-box h3 {
-            margin: 10px 0;
-            font-size: 20px;
-        }
-
-        /* PRICING */
-        .pricing-box {
-            background: white;
-            padding: 35px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-            text-align: center;
-            max-width: 450px;
-            margin: 50px auto;
-        }
-        .price {
-            font-size: 38px;
-            font-weight: bold;
-            color: #673ab7;
-        }
-        .pricing-btn {
-            margin-top: 25px;
-            background: #673ab7;
-            padding: 14px 26px;
-            color: white;
-            font-size: 18px;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .pricing-btn:hover {
-            background: #5e35b1;
-        }
-
-        /* FOOTER */
-        footer {
-            text-align: center;
-            padding: 35px;
-            font-size: 14px;
-            background: #eee;
-            margin-top: 40px;
-        }
-    </style>
 </head>
 <body>
 
-    <!-- HERO -->
-    <div class="hero">
-        <h1>SEO Booster Pro</h1>
-        <p>AI-powered SEO analysis, keyword scoring, site audits, and optimization tips — all in one simple dashboard.</p>
-        <a href="/signup" class="hero-btn">Get Started Free</a>
-    </div>
+<div class="landing-container">
 
-    <!-- FEATURES -->
-    <div class="section">
-        <h2 class="section-title">Everything You Need to Rank Higher</h2>
-        <div class="features">
-            <div class="feature-box">
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/artificial-intelligence.png"/>
-                <h3>AI-Powered Analysis</h3>
-                <p>Automatically identify SEO issues and improvements instantly.</p>
-            </div>
-            <div class="feature-box">
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/combo-chart.png"/>
-                <h3>Keyword Scoring</h3>
-                <p>Find your strongest keywords and discover new ranking opportunities.</p>
-            </div>
-            <div class="feature-box">
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/optimization.png"/>
-                <h3>Site Optimization Tips</h3>
-                <p>Get real suggestions to improve your website’s visibility.</p>
-            </div>
-            <div class="feature-box">
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/speed.png"/>
-                <h3>Lightning Fast</h3>
-                <p>Boost SEO performance in seconds with instant, accurate reports.</p>
-            </div>
-        </div>
+    <!-- HERO SECTION -->
+    <h1 class="hero-title">
+        AI SEO built for real businesses — rank higher, get found, and attract more customers.
+    </h1>
+
+    <p class="hero-sub">
+        Perfect for local and small businesses: our AI shows you exactly how to improve your rankings,
+        outrank competitors, and get more customers — with simple, easy-to-follow guidance.
+        No confusing SEO jargon.
+    </p>
+
+    <!-- ACTION BUTTONS -->
+    <div class="landing-btns">
+        <a href="/signup" class="primary-btn">Start Free Trial</a>
+        <a href="/login" class="secondary-btn">Login</a>
     </div>
 
     <!-- PRICING -->
     <div class="pricing-box">
-        <h2>Simple Pricing</h2>
-        <p class="price">$9.99 / month</p>
-        <p>Unlimited scans · Full feature access · Cancel anytime</p>
-        <a href="/signup" class="pricing-btn">Start Now</a>
+        <h2>Start Free</h2>
+        <p class="price">$4.99 / month</p>
+        <p>30-day free trial · No credit card required · Cancel anytime</p>
+        <a href="/signup" class="pricing-btn">Start Free Trial</a>
     </div>
 
-    <footer>
-        © 2025 SEO Booster Pro — All rights reserved.
-    </footer>
+</div>
 
 </body>
 </html>
