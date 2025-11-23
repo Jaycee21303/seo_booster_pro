@@ -95,6 +95,10 @@ def dashboard():
         optimization_tips=optimization_tips,
         suggested_keywords=suggested_keywords
     )
+from seo_booster_pro.utils.analyzer import (
+    detect_keywords_from_page,
+    generate_keyword_suggestions
+)
 
 
 # -----------------------------
