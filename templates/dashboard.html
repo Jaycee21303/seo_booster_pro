@@ -39,7 +39,7 @@
         color: #6A4CFF;
     }
 
-    /* Header */
+    /* Header Banner */
     .header-banner {
         width: 100%;
         padding: 45px 0;
@@ -47,7 +47,6 @@
         background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
         color: white;
         margin-bottom: 35px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
 
     .header-banner h1 {
@@ -86,7 +85,6 @@
         gap: 8px;
     }
 
-    /* Input Row */
     .input-row {
         display: flex;
         gap: 10px;
@@ -116,16 +114,10 @@
     .run-btn:hover {
         background: #573ae6;
     }
-
-    .divider {
-        height: 2px;
-        background: #eee;
-        margin: 20px 0;
-    }
 </style>
 
 
-<!-- Top Navigation -->
+<!-- NAVIGATION -->
 <div class="navbar">
     <div class="nav-left">SEO Booster Pro</div>
     <div class="nav-links">
@@ -135,57 +127,76 @@
     </div>
 </div>
 
-
-<!-- Header Banner -->
+<!-- HEADER -->
 <div class="header-banner">
     <h1>SEO Dashboard</h1>
     <p>Instant AI-powered insights to improve your rankings & visibility</p>
 </div>
 
-
-<!-- Main Content -->
+<!-- MAIN -->
 <div class="dashboard-container">
 
-    <!-- Analyzer Tool -->
     <div class="card">
         <div class="section-title">🔍 SEO Analyzer</div>
 
         <form method="POST">
             <div class="input-row">
-                <input type="url" name="website_url" placeholder="Website URL" required>
-                <input type="text" name="keyword" placeholder="Target Keyword" required>
+
+                <input type="url" name="website_url"
+                       placeholder="Website URL (required)" required>
+
+                <!-- Hidden manual keyword field -->
+                <input type="text" id="manual-keyword" name="keyword"
+                       placeholder="Keyword (optional)" style="display:none;">
+
                 <button class="run-btn" type="submit">Run SEO Analysis</button>
             </div>
+
+            <small style="color:#6A4CFF; cursor:pointer;"
+                onclick="
+                    document.getElementById('manual-keyword').style.display='block';
+                    this.style.display='none';
+                ">
+                + Add keyword manually (optional)
+            </small>
         </form>
 
-        <small style="color:#666;">AI-powered analysis • Fast insights • Beginner-friendly</small>
-    </div>
+        <!-- Suggested Keywords -->
+        <div id="suggested_keywords" style="margin-top:15px; color:#444;">
+            {% if suggested_keywords %}
+                <div style="margin-top:10px;">
+                    <strong>Suggested Keywords:</strong><br>
+                    {% for kw in suggested_keywords %}
+                        <span style="background:#eee; padding:6px 10px; margin:4px;
+                                     display:inline-block; border-radius:8px; font-size:14px;">
+                            {{ kw }}
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
 
+        <small style="color:#666;">
+            AI-powered analysis • Auto-detects keywords • Fast insights
+        </small>
+    </div>
 
     <!-- Keyword Score -->
     <div class="card">
         <div class="section-title">📈 Keyword Score</div>
-        <div id="keyword_score">
-            {{ keyword_score or "Enter a keyword to begin." }}
-        </div>
+        {{ keyword_score or "Enter a URL to begin." }}
     </div>
-
 
     <!-- Site Audit -->
     <div class="card">
         <div class="section-title">🧹 Site Audit</div>
-        <div id="site_audit">
-            {{ site_audit or "Results will appear here…" }}
-        </div>
+        {{ site_audit or "Results will appear here…" }}
     </div>
-
 
     <!-- Optimization Tips -->
     <div class="card">
         <div class="section-title">💡 Optimization Tips</div>
-        <div id="optimization_tips">
-            {{ optimization_tips or "Results will appear here…" }}
-        </div>
+        {{ optimization_tips or "Results will appear here…" }}
     </div>
 
 </div>
