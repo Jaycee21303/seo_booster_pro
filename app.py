@@ -65,11 +65,36 @@ def signup():
 # -----------------------------
 #  DASHBOARD (requires login)
 # -----------------------------
-@app.route("/dashboard")
+@app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
-    if "user_id" not in session:
-        return redirect("/login")
-    return render_template("dashboard.html")
+    keyword_score = None
+    site_audit = None
+    optimization_tips = None
+    suggested_keywords = None
+
+    if request.method == "POST":
+        url = request.form.get("website_url")
+        manual_keyword = request.form.get("keyword", "").strip()
+
+        # Auto-detect keyword if none provided
+        if manual_keyword:
+            keyword = manual_keyword
+        else:
+            keyword = detect_keywords_from_page(url)
+
+        # Always generate suggestions
+        suggested_keywords = generate_keyword_suggestions(url)
+
+        # Run your main AI analysis here
+        keyword_score, site_audit, optimization_tips = run_seo_analysis(url, keyword)
+
+    return render_template(
+        "dashboard.html",
+        keyword_score=keyword_score,
+        site_audit=site_audit,
+        optimization_tips=optimization_tips,
+        suggested_keywords=suggested_keywords
+    )
 
 
 # -----------------------------
