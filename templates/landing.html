@@ -1,106 +1,155 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- HERO SECTION -->
-<div class="landing-hero" style="
-    max-width: 850px;
-    margin: 70px auto;
-    text-align: center;
-    padding: 20px;
-">
+<style>
+    body {
+        background: #f7f7fb;
+        color: #222;
+        font-family: 'Inter', sans-serif;
+    }
 
-    <h1 class="hero-title" style="
-        font-size: 38px;
+    /* Hero Section */
+    .hero {
+        width: 100%;
+        padding: 80px 0;
+        text-align: center;
+        background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+        color: white;
+        margin-bottom: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .hero h1 {
+        font-size: 44px;
         font-weight: 800;
-        line-height: 1.25;
-        color: #2a2a2a;
-        margin-bottom: 18px;
-    ">
-        AI SEO built for real businesses — rank higher, get found, and attract more customers.
-    </h1>
+        margin-bottom: 15px;
+        line-height: 1.2;
+    }
 
-    <p class="hero-sub" style="
+    .hero p {
         font-size: 18px;
-        color: #555;
+        opacity: 0.95;
+        max-width: 620px;
+        margin: auto;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .btn-main {
+        background: white;
+        color: #6A4CFF;
+        padding: 14px 22px;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: 700;
+        border: none;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid white;
+        padding: 12px 20px;
+        color: white;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    /* Pricing Section */
+    .pricing-card {
+        background: white;
         max-width: 700px;
-        margin: 0 auto 30px;
-        line-height: 1.5;
-    ">
-        Designed for local & small businesses: our AI shows you exactly how to improve your rankings,
-        outrank competitors, and increase customer traffic — with clear, actionable steps anyone can follow.
-        No confusing SEO jargon. Just results.
+        margin: auto;
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .pricing-title {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .price {
+        font-size: 40px;
+        font-weight: 800;
+        color: #6A4CFF;
+        margin: 15px 0;
+    }
+
+    .pricing-details {
+        color: #666;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .btn-price {
+        padding: 14px 24px;
+        background: #6A4CFF;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    /* Footer */
+    .footer {
+        text-align: center;
+        margin-top: 80px;
+        padding: 30px;
+        color: #777;
+        font-size: 14px;
+    }
+</style>
+
+
+<!-- HERO SECTION -->
+<div class="hero">
+    <h1>AI SEO built for real businesses</h1>
+    <p>
+        Rank higher, get found, and attract more customers.  
+        Our AI gives you clear, actionable insights—no jargon, no confusion.
     </p>
 
-    <a href="/signup"
-       class="cta-btn"
-       style="
-            display: inline-block;
-            background: #673ab7;
-            color: #fff;
-            padding: 14px 32px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            margin-right: 12px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-       ">
-       Start Free Trial
-    </a>
-
-    <a href="/login"
-       class="cta-login"
-       style="
-            font-size: 16px;
-            text-decoration: none;
-            color: #673ab7;
-            font-weight: bold;
-       ">
-       Login
-    </a>
+    <div class="hero-buttons">
+        <a href="/signup" class="btn-main">Start Free Trial</a>
+        <a href="/login" class="btn-outline">Login</a>
+    </div>
 </div>
 
-<!-- PRICING CARD -->
-<div class="pricing-box" style="
-    max-width: 500px;
-    margin: 40px auto 100px;
-    background: #fff;
-    padding: 30px 40px;
-    border-radius: 14px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
-    text-align: center;
-">
 
-    <h2 style="font-size: 26px; margin-top: 0; color: #2a2a2a;">Start Free</h2>
+<!-- PRICING BLOCK -->
+<div class="pricing-card">
+    <div class="pricing-title">Start Free</div>
+    <div class="price">$4.99 / month</div>
 
-    <p class="price" style="
-        font-size: 32px;
-        font-weight: 700;
-        color: #673ab7;
-        margin: 10px 0 5px;
-    ">
-        $4.99 / month
-    </p>
+    <div class="pricing-details">
+        30-day free trial • No credit card required • Cancel anytime
+    </div>
 
-    <p style="color: #555;">
-        30-day free trial · No credit card required · Cancel anytime
-    </p>
+    <a href="/signup" class="btn-price">Start Free Trial</a>
+</div>
 
-    <a href="/signup" class="cta-btn"
-       style="
-            display: inline-block;
-            margin-top: 20px;
-            background: #673ab7;
-            color: #fff;
-            padding: 14px 28px;
-            font-size: 17px;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-       ">
-       Start Free Trial
-    </a>
+
+
+<div class="footer">
+    © 2025 SEO Booster Pro — Built for small business growth.
 </div>
 
 {% endblock %}
