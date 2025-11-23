@@ -3,34 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title if title else "SEO Booster Pro" }}</title>
+    <title>SEO Booster Pro</title>
 
-    <!-- Correct CSS link -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f7f7fb;
+        }
+
+        /* NAVBAR (desktop) */
+        .navbar {
+            width: 100%;
+            padding: 18px 32px;
+            background: white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-left {
+            font-size: 20px;
+            font-weight: 700;
+            color: #6A4CFF;
+        }
+
+        .nav-links a {
+            margin-left: 22px;
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #6A4CFF;
+        }
+
+        /* MOBILE MENU */
+        .mobile-menu-btn {
+            display: none;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .mobile-menu a {
+            padding: 10px 0;
+            text-decoration: none;
+            color: #333;
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        .mobile-menu a:hover {
+            color: #6A4CFF;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        /* FOOTER (shown only on landing page) */
+        .footer {
+            width: 100%;
+            padding: 40px 0;
+            text-align: center;
+            color: #666;
+            font-size: 15px;
+            margin-top: 60px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById("mobileMenu");
+            menu.style.display = (menu.style.display === "flex") ? "none" : "flex";
+        }
+    </script>
 </head>
 
 <body>
 
+    <!-- ========================================= -->
+    <!-- NAVBAR (hidden ONLY on landing page "/" ) -->
+    <!-- ========================================= -->
+    {% if request.path != "/" %}
     <div class="navbar">
-        <div class="nav-logo">SEO Booster Pro</div>
+        <div class="nav-left">SEO Booster Pro</div>
 
-        <div class="nav-right">
-            {% if session.get('user_id') %}
-                <a href="/dashboard">Dashboard</a>
-                <a href="/settings">Settings</a>
-                <a href="/logout">Logout</a>
-            {% else %}
-                <a href="/login">Login</a>
-                <a href="/signup">Sign Up</a>
-            {% endif %}
+        <!-- Desktop Links -->
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Logout</a>
         </div>
+
+        <!-- Mobile Hamburger -->
+        <div class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</div>
     </div>
 
-    <div class="main">
-        <div class="container">
-            {% block content %}{% endblock %}
-        </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/settings">Settings</a>
+        <a href="/logout">Logout</a>
     </div>
+    {% endif %}
+
+    <!-- ========================================= -->
+    <!-- PAGE CONTENT -->
+    <!-- ========================================= -->
+    {% block content %}{% endblock %}
+
+
+    <!-- ========================================= -->
+    <!-- FOOTER (shown ONLY on landing page) -->
+    <!-- ========================================= -->
+    {% if request.path == "/" %}
+    <div class="footer">
+        © 2025 SEO Booster Pro — Built for real businesses.
+    </div>
+    {% endif %}
 
 </body>
 </html>
