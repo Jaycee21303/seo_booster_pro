@@ -1,18 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
-from openai import OpenAI
+import openai
 import os
 
-# -----------------------------------------------
-# OPENAI CLIENT
-# -----------------------------------------------
+# ---------------------------------------------------
+# OPENAI KEY SETUP
+# ---------------------------------------------------
 OPENAI_KEY = os.environ.get("OPENAI_KEY")
-client = OpenAI(api_key=OPENAI_KEY)
+openai.api_key = OPENAI_KEY
 
 
-# -----------------------------------------------
-# AUTO-DETECT PRIMARY KEYWORD FROM PAGE
-# -----------------------------------------------
+# ---------------------------------------------------
+# AUTO-DETECT PRIMARY KEYWORD
+# ---------------------------------------------------
 def detect_keywords_from_page(url):
     try:
         html = requests.get(url, timeout=10).text
@@ -20,14 +20,14 @@ def detect_keywords_from_page(url):
         text = soup.get_text(separator=" ")
 
         prompt = f"""
-        Extract the single most important SEO keyword for this webpage.
-        Return only the keyword. No punctuation. No description.
+        Extract the single most important SEO keyword from this webpage.
+        Return ONLY the keyword, no punctuation.
 
-        PAGE CONTENT:
+        CONTENT:
         {text[:4000]}
         """
 
-        res = client.responses.create(
+        res = openai.responses.create(
             model="gpt-4.1-mini",
             input=prompt
         )
@@ -39,9 +39,9 @@ def detect_keywords_from_page(url):
         return None
 
 
-# -----------------------------------------------
-# GENERATE KEYWORD SUGGESTIONS (5 keywords)
-# -----------------------------------------------
+# ---------------------------------------------------
+# KEYWORD SUGGESTIONS
+# ---------------------------------------------------
 def generate_keyword_suggestions(url):
     try:
         html = requests.get(url, timeout=10).text
@@ -49,22 +49,18 @@ def generate_keyword_suggestions(url):
         text = soup.get_text(separator=" ")
 
         prompt = f"""
-        Analyze this webpage and list the 5 strongest SEO keywords
-        it could realistically rank for.
+        List 5 strong SEO keywords this page could rank for.
+        Only output the keywords. No numbering.
 
-        Return ONLY the keywords.
-        No numbers. No bullets. No explanations.
-
-        PAGE CONTENT:
+        CONTENT:
         {text[:4000]}
         """
 
-        res = client.responses.create(
+        res = openai.responses.create(
             model="gpt-4.1-mini",
             input=prompt
         )
 
-        # Split into list
         suggestions = res.output_text.strip().split("\n")
         return [s.strip("•- ").strip() for s in suggestions if s.strip()]
 
@@ -73,9 +69,9 @@ def generate_keyword_suggestions(url):
         return []
 
 
-# -----------------------------------------------
-# URL TITLE + META EXTRACTION
-# -----------------------------------------------
+# ---------------------------------------------------
+# BASIC ON-PAGE ANALYSIS
+# ---------------------------------------------------
 def analyze_url(url):
     try:
         response = requests.get(url, timeout=8)
@@ -93,61 +89,43 @@ def analyze_url(url):
     meta_tag = soup.find("meta", attrs={"name": "description"})
     meta = meta_tag["content"].strip() if meta_tag and "content" in meta_tag.attrs else "No meta description found"
 
-    return {"title": title, "meta": meta}
+    return {
+        "title": title,
+        "meta": meta,
+    }
 
 
-# -----------------------------------------------
-# MAIN AI SEO ANALYSIS PIPELINE
-# -----------------------------------------------
+# ---------------------------------------------------
+# MAIN SEO ANALYSIS
+# ---------------------------------------------------
 def run_seo_analysis(url, keyword):
-    """
-    Returns:
-      keyword_score       – relevance score
-      site_audit          – list of issues + strengths
-      optimization_tips   – list of improvement tips
-    """
-
-    # Safety fallback
     if not keyword:
         keyword = "general keyword"
 
     prompt = f"""
-    You are an expert SEO auditor.
+    Perform an SEO audit for:
 
-    TASK:
-    Analyze the website URL: {url}
-    Target keyword: {keyword}
+    URL: {url}
+    Keyword: {keyword}
 
-    Produce the following:
+    Provide:
 
-    1. KEYWORD SCORE (0-100)
-       How well this page ranks for the keyword.
+    1. Keyword Score (0-100)
+    2. Site Audit (issues + strengths)
+    3. Optimizations Tips
 
-    2. SITE AUDIT
-       - Missing SEO elements
-       - Page weaknesses
-       - Technical issues
-       - On-page issues
-
-    3. OPTIMIZATION TIPS
-       - Specific actions to improve ranking
-       - Keyword placement suggestions
-       - Meta + title recommendations
-
-    Respond in clean text, NOT JSON.
+    Clear, simple text only.
     """
 
-    res = client.responses.create(
+    res = openai.responses.create(
         model="gpt-4.1",
         input=prompt
     )
 
     output = res.output_text
 
-    # For now, return raw text in sections
-    # (Can be upgraded later to structured output)
     return (
-        f"Keyword Match Score for '{keyword}':\n" + output[:200],  # truncated section
+        f"Keyword Score for '{keyword}':\n" + output[:200],
         "Site Audit:\n" + output,
         "Optimization Tips:\n" + output
     )
