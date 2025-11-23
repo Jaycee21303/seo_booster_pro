@@ -4,6 +4,36 @@ from bs4 import BeautifulSoup
 # ---------------------------------------------------
 # ANALYZE WEBSITE (title + meta)
 # ---------------------------------------------------
+def detect_keywords_from_page(url):
+    import requests
+    from bs4 import BeautifulSoup
+    from openai import OpenAI
+
+    client = OpenAI(api_key=OPENAI_KEY)
+
+    try:
+        html = requests.get(url, timeout=10).text
+        soup = BeautifulSoup(html, "html.parser")
+        text = soup.get_text(separator=" ")
+
+        prompt = f"""
+        Extract the single most important SEO keyword for this webpage.
+        Return only the keyword, nothing else.
+
+        Page text:
+        {text[:4000]}
+        """
+
+        res = client.responses.create(
+            model="gpt-4.1-mini",
+            input=prompt
+        )
+
+        return res.output_text.strip()
+
+    except:
+        return None
+
 def analyze_url(url):
     try:
         response = requests.get(url, timeout=8)
