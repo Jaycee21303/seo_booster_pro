@@ -11,6 +11,26 @@ openai.api_key = OPENAI_KEY
 
 
 # ---------------------------------------------------
+# INTERNAL HELPER – SAFE CHAT COMPLETION CALL
+# ---------------------------------------------------
+def ask_openai(prompt, model="gpt-4.1-mini"):
+    try:
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are an SEO expert."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1
+        )
+        return response["choices"][0]["message"]["content"].strip()
+
+    except Exception as e:
+        print("OpenAI error:", e)
+        return "Error: AI request failed."
+
+
+# ---------------------------------------------------
 # AUTO-DETECT PRIMARY KEYWORD
 # ---------------------------------------------------
 def detect_keywords_from_page(url):
@@ -21,18 +41,13 @@ def detect_keywords_from_page(url):
 
         prompt = f"""
         Extract the single most important SEO keyword from this webpage.
-        Return ONLY the keyword, no punctuation.
+        Return ONLY the keyword.
 
         CONTENT:
         {text[:4000]}
         """
 
-        res = openai.responses.create(
-            model="gpt-4.1-mini",
-            input=prompt
-        )
-
-        return res.output_text.strip()
+        return ask_openai(prompt, model="gpt-4.1-mini")
 
     except Exception as e:
         print("Keyword detection error:", e)
@@ -40,7 +55,7 @@ def detect_keywords_from_page(url):
 
 
 # ---------------------------------------------------
-# KEYWORD SUGGESTIONS
+# KEYWORD SUGGESTIONS (5 keywords)
 # ---------------------------------------------------
 def generate_keyword_suggestions(url):
     try:
@@ -50,19 +65,14 @@ def generate_keyword_suggestions(url):
 
         prompt = f"""
         List 5 strong SEO keywords this page could rank for.
-        Only output the keywords. No numbering.
+        Return ONLY the keywords, 1 per line, no numbers.
 
         CONTENT:
         {text[:4000]}
         """
 
-        res = openai.responses.create(
-            model="gpt-4.1-mini",
-            input=prompt
-        )
-
-        suggestions = res.output_text.strip().split("\n")
-        return [s.strip("•- ").strip() for s in suggestions if s.strip()]
+        result = ask_openai(prompt, model="gpt-4.1-mini")
+        return [s.strip("•- ").strip() for s in result.split("\n") if s.strip()]
 
     except Exception as e:
         print("Keyword suggestion error:", e)
@@ -89,14 +99,11 @@ def analyze_url(url):
     meta_tag = soup.find("meta", attrs={"name": "description"})
     meta = meta_tag["content"].strip() if meta_tag and "content" in meta_tag.attrs else "No meta description found"
 
-    return {
-        "title": title,
-        "meta": meta,
-    }
+    return {"title": title, "meta": meta}
 
 
 # ---------------------------------------------------
-# MAIN SEO ANALYSIS
+# MAIN SEO ANALYSIS PIPELINE
 # ---------------------------------------------------
 def run_seo_analysis(url, keyword):
     if not keyword:
@@ -110,22 +117,17 @@ def run_seo_analysis(url, keyword):
 
     Provide:
 
-    1. Keyword Score (0-100)
+    1. Keyword Score (0–100)
     2. Site Audit (issues + strengths)
-    3. Optimizations Tips
+    3. Optimization Tips
 
-    Clear, simple text only.
+    Respond in clean, plain text.
     """
 
-    res = openai.responses.create(
-        model="gpt-4.1",
-        input=prompt
-    )
-
-    output = res.output_text
+    output = ask_openai(prompt, model="gpt-4.1")
 
     return (
-        f"Keyword Score for '{keyword}':\n" + output[:200],
+        f"Keyword Score for '{keyword}':\n{output[:200]}",
         "Site Audit:\n" + output,
         "Optimization Tips:\n" + output
     )
