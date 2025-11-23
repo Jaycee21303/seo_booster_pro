@@ -61,3 +61,32 @@ def analyze_url(url):
         "meta": meta,
         "screenshot": screenshot_placeholder
     }
+def generate_keyword_suggestions(url):
+    import requests
+    from bs4 import BeautifulSoup
+    from openai import OpenAI
+
+    client = OpenAI(api_key=OPENAI_KEY)
+
+    try:
+        html = requests.get(url, timeout=10).text
+        soup = BeautifulSoup(html, "html.parser")
+        text = soup.get_text(separator=" ")
+
+        prompt = f"""
+        Analyze this webpage and list 5 strong SEO keywords it could rank for.
+        Return only the list, no descriptions, no numbers.
+        Text:
+        {text[:4000]}
+        """
+
+        res = client.responses.create(
+            model="gpt-4.1-mini",
+            input=prompt
+        )
+
+        suggestions = res.output_text.strip().split("\n")
+        return [s.strip("•- ") for s in suggestions if s.strip()]
+
+    except:
+        return []
