@@ -2,50 +2,61 @@
 {% block content %}
 
 <style>
-/* HERO */
-.hero-section {
-    padding: 90px 20px;
+/* -------------------------
+    GENERAL PAGE STYLE
+-------------------------- */
+body {
+    background: #f7f7fb;
+    font-family: 'Inter', sans-serif;
+    color: #222;
+}
+
+/* -------------------------
+    HERO SECTION
+-------------------------- */
+.hero {
     text-align: center;
+    padding: 80px 20px;
     background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
     color: white;
-    font-family: 'Inter', sans-serif;
 }
 
-.hero-title {
-    font-size: 46px;
+.hero h1 {
+    font-size: 48px;
     font-weight: 800;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
-.hero-subtitle {
+.hero p {
     font-size: 18px;
-    max-width: 650px;
-    margin: 0 auto 35px auto;
-    opacity: 0.92;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: auto;
+    margin-bottom: 30px;
 }
 
-.hero-btn {
-    padding: 16px 34px;
+.hero .cta-btn {
+    padding: 16px 32px;
     background: white;
     color: #6A4CFF;
-    border-radius: 10px;
-    border: none;
-    font-size: 20px;
+    font-size: 18px;
+    border-radius: 12px;
     font-weight: 700;
-    cursor: pointer;
     text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     transition: 0.2s;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
-.hero-btn:hover {
-    background: #f1ebff;
+.hero .cta-btn:hover {
+    transform: scale(1.05);
 }
 
-/* FEATURES */
-.features-section {
-    max-width: 1080px;
-    margin: 70px auto;
+/* -------------------------
+    FEATURES SECTION
+-------------------------- */
+.features {
+    max-width: 1100px;
+    margin: 60px auto;
     padding: 0 20px;
 }
 
@@ -54,225 +65,206 @@
     font-weight: 700;
     text-align: center;
     margin-bottom: 40px;
-    color: #333;
 }
 
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 30px;
+    gap: 25px;
 }
 
 .feature-card {
-    padding: 30px;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     text-align: center;
-    transition: 0.2s;
 }
 
-.feature-card:hover {
-    transform: translateY(-3px);
-}
-
-.feature-icon {
-    font-size: 40px;
-    margin-bottom: 15px;
-    color: #6A4CFF;
-}
-
-.feature-title {
+.feature-card h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #333;
     margin-bottom: 10px;
-}
-
-.feature-desc {
-    font-size: 15px;
-    color: #666;
-}
-
-/* PRICING */
-.pricing-section {
-    max-width: 1080px;
-    margin: 80px auto 100px auto;
-    padding: 0 20px;
-    font-family: 'Inter', sans-serif;
-}
-
-.pricing-title {
-    text-align: center;
-    font-size: 36px;
-    font-weight: 800;
-    margin-bottom: 50px;
-}
-
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-}
-
-.plan-card {
-    background: white;
-    padding: 35px;
-    border-radius: 16px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
-    text-align: center;
-}
-
-.plan-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #333;
-}
-
-.plan-price {
-    font-size: 38px;
-    font-weight: 800;
     color: #6A4CFF;
-    margin: 10px 0 20px 0;
 }
 
-.plan-features {
-    list-style: none;
-    padding-left: 0;
+/* -------------------------
+   PDF PREVIEW SECTION
+-------------------------- */
+.pdf-preview-section {
+    margin: 70px auto;
+    max-width: 900px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.pdf-preview-section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.pdf-preview-section p {
+    color: #555;
     margin-bottom: 25px;
 }
 
-.plan-features li {
-    font-size: 15px;
-    color: #444;
-    margin-bottom: 10px;
+/* Mockup image */
+.pdf-preview-img {
+    width: 100%;
+    max-width: 650px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    margin-top: 15px;
 }
 
-.plan-btn {
-    display: block;
-    text-align: center;
-    padding: 14px 0;
-    border-radius: 10px;
-    color: white;
+/* -------------------------
+    TESTIMONIALS
+-------------------------- */
+.testimonials {
+    background: white;
+    padding: 60px 20px;
+}
+
+.testimonials-title {
+    font-size: 32px;
     font-weight: 700;
-    text-decoration: none;
-    font-size: 17px;
-    transition: 0.2s;
-}
-
-.plan-btn:hover {
-    opacity: 0.85;
-}
-
-/* FOOTER */
-.footer {
     text-align: center;
-    padding: 40px 20px;
-    color: #777;
-    font-size: 14px;
+    margin-bottom: 40px;
 }
+
+.testimonial-grid {
+    max-width: 1100px;
+    margin: auto;
+    display: grid;
+    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.testimonial-card {
+    background: #f7f7fb;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.testimonial-card p {
+    font-size: 15px;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.testimonial-card .name {
+    font-weight: 700;
+    color: #6A4CFF;
+}
+
+/* -------------------------
+    FOOTER CTA
+-------------------------- */
+.footer-cta {
+    text-align: center;
+    padding: 70px 20px 100px;
+}
+
+.footer-cta .start-btn {
+    padding: 16px 34px;
+    background: #6A4CFF;
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.footer-cta .start-btn:hover {
+    transform: scale(1.05);
+}
+
 </style>
 
 
 
-<!-- HERO SECTION -->
-<div class="hero-section">
-    <div class="hero-title">Fast, Accurate SEO Analysis — No AI Needed</div>
-    <div class="hero-subtitle">
-        Get deep on-page SEO audits, keyword analysis, broken link checking, and performance insights.
-        100% local engine — no API keys, no monthly costs, no limits (with Pro).
-    </div>
+<!-- HERO -->
+<div class="hero">
+    <h1>Boost Your SEO in Minutes</h1>
+    <p>The fastest, cleanest, AI-powered SEO analyzer for creators, businesses, and marketers.</p>
 
-    <a href="/signup" class="hero-btn">Start Free — No Card Needed</a>
+    <a href="/signup" class="cta-btn">Get Started — It’s Free</a>
 </div>
 
 
 
-<!-- FEATURES SECTION -->
-<div class="features-section">
-    <div class="features-title">Everything You Need to Improve Rankings</div>
+<!-- FEATURES -->
+<div class="features">
+    <div class="features-title">Why SEO Booster Pro?</div>
 
     <div class="feature-grid">
         <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <div class="feature-title">Lightning-Fast Audits</div>
-            <div class="feature-desc">Scan any page in seconds with our optimized local SEO engine.</div>
+            <h3>⚡ Instant Results</h3>
+            <p>Run a full SEO audit in under 10 seconds with no API keys needed.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">🔗</div>
-            <div class="feature-title">Broken Link Checker</div>
-            <div class="feature-desc">Instant internal/external link analysis with shallow crawler.</div>
+            <h3>📈 Score + Breakdown</h3>
+            <p>Get a full SEO score, content quality rating, technical health, and more.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <div class="feature-title">SEO Score & Optimization Tips</div>
-            <div class="feature-desc">Get a 0-100 SEO score plus clear suggestions to boost your rankings.</div>
+            <h3>⚔️ Competitor Comparison</h3>
+            <p>Compare your site vs your competitor in a single dashboard.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">🔍</div>
-            <div class="feature-title">Keyword Analysis</div>
-            <div class="feature-desc">Local keyword extraction, density, and relevance scoring — no AI required.</div>
+            <h3>📄 Polished PDF Reports</h3>
+            <p>Download a beautiful one-page SEO report to send to clients.</p>
         </div>
     </div>
 </div>
 
 
 
-<!-- PRICING SECTION -->
-<div class="pricing-section">
-    <div class="pricing-title">Simple, Fair Pricing</div>
+<!-- PDF PREVIEW SECTION -->
+<div class="pdf-preview-section">
+    <h2>Professional PDF Reports</h2>
+    <p>Clients love clean, easy-to-read one-page reports. Now you can generate them instantly.</p>
 
-    <div class="pricing-grid">
+    <!-- Cartoon PDF preview -->
+    <img class="pdf-preview-img"
+         src="https://i.imgur.com/7Gb0V7D.png"
+         alt="SEO PDF Preview Mockup">
+</div>
 
-        <!-- FREE PLAN -->
-        <div class="plan-card">
-            <div class="plan-title">Free</div>
-            <div class="plan-price">$0</div>
-            <ul class="plan-features">
-                <li>3 scans per month</li>
-                <li>1 PDF export</li>
-                <li>Full audit results</li>
-                <li>No card required</li>
-            </ul>
-            <a href="/signup" class="plan-btn" style="background:#6A4CFF;">Get Started Free</a>
+
+
+<!-- TESTIMONIALS -->
+<div class="testimonials">
+    <div class="testimonials-title">Loved by Marketers & Creators</div>
+
+    <div class="testimonial-grid">
+        <div class="testimonial-card">
+            <p>"This tool saved me HOURS on SEO audits. I send the PDF to clients and they think I spent all day on it."</p>
+            <div class="name">— Alex R.</div>
         </div>
 
-        <!-- PRO PLAN -->
-        <div class="plan-card">
-            <div class="plan-title">Pro</div>
-            <div class="plan-price">$4.99/mo</div>
-            <ul class="plan-features">
-                <li>Unlimited scans</li>
-                <li>Unlimited PDFs</li>
-                <li>No ads</li>
-                <li>Priority processing</li>
-            </ul>
-            <a href="/upgrade" class="plan-btn" style="background:#00a86b;">Upgrade Now</a>
+        <div class="testimonial-card">
+            <p>"The competitor radar chart is honestly insane for a free tool. It looks like a $99/mo SaaS."</p>
+            <div class="name">— Jamie S.</div>
         </div>
 
-        <!-- PAY-AS-YOU-GO -->
-        <div class="plan-card">
-            <div class="plan-title">Pay-As-You-Go</div>
-            <div class="plan-price">$0.99/scan</div>
-            <ul class="plan-features">
-                <li>No subscription</li>
-                <li>Buy extra scans anytime</li>
-                <li>Instant unlock</li>
-            </ul>
-            <a href="/buy-scan" class="plan-btn" style="background:#ff9800;">Buy a Scan</a>
+        <div class="testimonial-card">
+            <p>"The breakdown is accurate, clean, and super actionable. I use it every day for my Shopify clients."</p>
+            <div class="name">— Devon M.</div>
         </div>
-
     </div>
 </div>
 
 
 
-<!-- FOOTER -->
-<div class="footer">
-    © {{ 2025 }} SEO Booster Pro — All rights reserved.
+<!-- FOOTER CTA -->
+<div class="footer-cta">
+    <a href="/signup" class="start-btn">Start Your First Free Scan</a>
 </div>
 
 {% endblock %}
