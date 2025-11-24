@@ -130,9 +130,9 @@ def logout():
     return redirect("/")
 
 
-# ---------------------------------------------------
+# -----------------------------
 # DASHBOARD
-# ---------------------------------------------------
+# -----------------------------
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
     user = current_user()
@@ -141,41 +141,90 @@ def dashboard():
 
     user["is_pro"] = is_pro(user)
 
-    limit_reached = False
-
-    if not user["is_pro"] and user["scans_used"] >= 3:
-        limit_reached = True
-
     keyword_score = None
     site_audit = None
     optimization_tips = None
 
-    if request.method == "POST" and not limit_reached:
+    # new: sub scores
+    content_score = None
+    technical_score_value = None
+    keyword_score_value = None
+    onpage_score = None
+    link_score = None
+
+    competitor_data = None  # passes into template
+
+    if request.method == "POST":
         url = request.form.get("website_url")
-        keyword = request.form.get("keyword") or None
+        keyword = request.form.get("keyword")
+        competitor_url = request.form.get("competitor_url")
 
-        # Run local SEO scan
-        score, audit, tips = run_local_seo_analysis(url, keyword)
+        # 🔥 FREE LIMIT LOGIC
+        if not user["is_pro"] and user["scans_used"] >= 3:
+            return render_template(
+                "dashboard.html",
+                limit_reached=True
+            )
 
-        keyword_score = score
-        site_audit = audit
-        optimization_tips = tips
+        # 🔥 RUN ANALYZER FOR USER'S URL
+        (
+            keyword_score,
+            site_audit,
+            optimization_tips,
+            content_score,
+            technical_score_value,
+            keyword_score_value,
+            onpage_score,
+            link_score
+        ) = run_local_seo_analysis(url, keyword)
 
-        # Update scan usage
+        # increment usage for free users
         if not user["is_pro"]:
             execute("UPDATE users SET scans_used=scans_used+1 WHERE id=%s", (user["id"],))
 
-    # Reload user fresh from DB
+        # 🔥 OPTIONALLY RUN COMPETITOR SCAN
+        if competitor_url and competitor_url.strip() != "":
+            (
+                comp_main_score,
+                comp_audit,
+                comp_tips,
+                comp_content_score,
+                comp_technical,
+                comp_keyword,
+                comp_onpage,
+                comp_link
+            ) = run_local_seo_analysis(competitor_url, keyword)
+
+            competitor_data = {
+                "score": comp_main_score,
+                "audit": comp_audit,
+                "tips": comp_tips,
+                "content_score": comp_content_score,
+                "technical_score": comp_technical,
+                "keywordcore": comp_keyword,
+                "onpage_score": comp_onpage,
+                "link_score": comp_link
+            }
+
+    # reload user
     user = current_user()
 
     return render_template(
         "dashboard.html",
         user=user,
-        limit_reached=limit_reached,
+        limit_reached=False,
         keyword_score=keyword_score,
         site_audit=site_audit,
-        optimization_tips=optimization_tips
+        optimization_tips=optimization_tips,
+        content_score=content_score,
+        technical_score=technical_score_value,
+        keywordcore=keyword_score_value,
+        onpage_score=onpage_score,
+        link_score=link_score,
+        competitor_data=competitor_data
     )
+
+
 
 
 # ---------------------------------------------------
