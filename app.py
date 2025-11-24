@@ -1,16 +1,12 @@
 from flask import Flask, render_template, request, redirect, session
 from utils.db import init_db, fetch_one, fetch_all, execute
-from utils.analyzer import (
-    detect_keywords_from_page,
-    generate_keyword_suggestions,
-    run_seo_analysis
-)
+from utils.analyzer import run_seo_analysis
 import os
 
 app = Flask(__name__)
 
 # -----------------------------
-# SECRET KEY (Render safe fallback)
+# SECRET KEY (for sessions)
 # -----------------------------
 app.secret_key = os.environ.get("SECRET_KEY", "devsecret123")
 
@@ -74,7 +70,7 @@ def signup():
 
 
 # -----------------------------
-# DASHBOARD
+# DASHBOARD (NOW 100% LOCAL ENGINE)
 # -----------------------------
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
@@ -85,48 +81,46 @@ def dashboard():
     site_audit = None
     optimization_tips = None
     suggested_keywords = None
+    json_data = None
 
     if request.method == "POST":
         url = request.form.get("website_url")
         manual_keyword = request.form.get("keyword", "").strip()
 
-        # Auto keyword detection OR manual keyword
-        if manual_keyword:
-            keyword = manual_keyword
-        else:
-            keyword = detect_keywords_from_page(url)
+        try:
+            # Run full local SEO engine
+            score, audit_text, tips_text, suggestions, json_output = run_seo_analysis(
+                url, manual_keyword
+            )
 
-        # Always generate keyword suggestions
-        suggested_keywords = generate_keyword_suggestions(url)
+            keyword_score = score
+            site_audit = audit_text
+            optimization_tips = tips_text
+            suggested_keywords = suggestions
+            json_data = json_output
 
-        # Main AI SEO analysis
-        keyword_score, site_audit, optimization_tips = run_seo_analysis(url, keyword)
+        except Exception as e:
+            site_audit = f"An error occurred during analysis: {str(e)}"
+            optimization_tips = ""
+            suggested_keywords = []
+            json_data = {}
 
     return render_template(
         "dashboard.html",
         keyword_score=keyword_score,
         site_audit=site_audit,
         optimization_tips=optimization_tips,
-        suggested_keywords=suggested_keywords
+        suggested_keywords=suggested_keywords,
+        json_data=json_data
     )
 
 
 # -----------------------------
-# SETTINGS
+# SETTINGS (No API Keys Needed)
 # -----------------------------
-@app.route("/settings", methods=["GET", 'POST'])
+@app.route("/settings")
 def settings():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    if request.method == "POST":
-        api_key = request.form.get("api_key")
-        execute("UPDATE users SET api_key=%s WHERE id=%s",
-                (api_key, session["user_id"]))
-        return redirect("/settings")
-
-    user = fetch_one("SELECT * FROM users WHERE id=%s", (session["user_id"],))
-    return render_template("settings.html", user=user)
+    return render_template("settings.html")
 
 
 # -----------------------------
