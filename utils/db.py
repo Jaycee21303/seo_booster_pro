@@ -4,18 +4,22 @@ import psycopg2.extras
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+
 def get_connection():
     return psycopg2.connect(DATABASE_URL, sslmode="require")
 
+
 def init_db():
     """
-    Creates the users table if missing,
-    and adds required columns (safe auto-migration).
+    Auto-creates required tables and missing columns.
+    Safe migrations: never deletes or overwrites user data.
     """
     conn = get_connection()
     cursor = conn.cursor()
 
-    # --- BASE TABLE CREATION ---
+    # ---------------------------
+    # USERS TABLE
+    # ---------------------------
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -25,30 +29,52 @@ def init_db():
         );
     """)
 
-    # --- SAFE COLUMN ADDITIONS ---
-    required_columns = {
+    # SAFE COLUMN ADDITIONS FOR users
+    required_user_columns = {
         "scans_used": "INTEGER DEFAULT 0",
-        "is_pro": "BOOLEAN DEFAULT FALSE"
+        "is_pro": "BOOLEAN DEFAULT FALSE",
+        "stripe_customer_id": "TEXT",
+        "stripe_subscription_id": "TEXT",
+        "subscription_status": "TEXT",
+        "current_period_end": "TIMESTAMP"
     }
 
-    for column, definition in required_columns.items():
+    for column, definition in required_user_columns.items():
         cursor.execute("""
             SELECT column_name 
             FROM information_schema.columns 
             WHERE table_name='users' AND column_name=%s;
         """, (column,))
-
         exists = cursor.fetchone()
+
         if not exists:
             cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {definition};")
-            print(f"Added missing column: {column}")
+            print(f"[DB] Added missing user column: {column}")
+
+    # ---------------------------
+    # SUBSCRIPTIONS TABLE
+    # (One subscription per user)
+    # ---------------------------
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            stripe_customer_id TEXT,
+            stripe_subscription_id TEXT,
+            status TEXT,
+            current_period_end TIMESTAMP,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+    """)
 
     conn.commit()
     cursor.close()
     conn.close()
 
 
-# --- QUERY HELPERS ---
+# ---------------------------------------
+# QUERY HELPERS
+# ---------------------------------------
 
 def fetch_one(query, params=None):
     conn = get_connection()
@@ -59,6 +85,7 @@ def fetch_one(query, params=None):
     conn.close()
     return row
 
+
 def fetch_all(query, params=None):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -67,6 +94,7 @@ def fetch_all(query, params=None):
     cursor.close()
     conn.close()
     return rows
+
 
 def execute(query, params=None):
     conn = get_connection()
@@ -77,3 +105,5 @@ def execute(query, params=None):
     conn.close()
 
 
+# Run migrations automatically
+init_db()
