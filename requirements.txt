@@ -6,7 +6,9 @@ psycopg2-binary==2.9.9
 beautifulsoup4==4.12.3
 requests==2.31.0
 
-# FORCE correct OpenAI version
-openai>=1.40.0
+openai==1.40.0
+
+# PDF GENERATION
+reportlab==4.0.9
 
 Werkzeug==3.0.1
