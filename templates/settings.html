@@ -1,38 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div id="messageBox" class="popup-message"></div>
+<style>
+.settings-container {
+    max-width: 500px;
+    margin: 70px auto;
+    padding: 35px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    font-family: 'Inter', sans-serif;
+}
 
-<div class="auth-container">
-    <h2 class="auth-title">Settings</h2>
+.settings-title {
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
 
-    <form method="POST">
+.settings-subtitle {
+    font-size: 15px;
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+}
 
-        <label>Your OpenAI API Key</label>
-        <input type="text" name="api_key" class="auth-input" 
-               placeholder="Enter your OpenAI API Key" 
-               value="{{ api_key or '' }}">
+.settings-info {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.6;
+    text-align: center;
+}
 
-        <button class="auth-btn">Save API Key</button>
-    </form>
+.settings-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #6A4CFF;
+}
+</style>
 
-    <p class="auth-switch">
-        Need your API key?  
-        <a href="https://platform.openai.com/settings/organization/api-keys" target="_blank">
-            Click here to get it.
-        </a>
-    </p>
+<div class="settings-container">
+    <div class="settings-icon">⚙️</div>
+    <div class="settings-title">Settings</div>
+    <div class="settings-subtitle">No configuration required</div>
+
+    <div class="settings-info">
+        SEO Booster Pro now runs entirely on our built-in SEO engine.<br>
+        No API keys, no setup, and no billing required.<br><br>
+
+        You're all set — just start analyzing websites!
+    </div>
 </div>
-
-<script>
-    // Popup after saving key
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("saved") === "1") {
-        let box = document.getElementById("messageBox");
-        box.innerText = "API Key Saved!";
-        box.style.display = "block";
-        setTimeout(() => box.style.display = "none", 2000);
-    }
-</script>
 
 {% endblock %}
