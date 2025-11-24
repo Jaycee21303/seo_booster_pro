@@ -32,4 +32,31 @@
             margin:auto;
             display:flex;
             justify-content:space-between;
-            ali
+            align-items:center;
+        ">
+            <div style="font-size:22px; font-weight:700; color:#6A4CFF;">
+                SEO Booster
+            </div>
+
+            <div>
+                <a href="/login" style="margin-right:20px; color:#6A4CFF; font-weight:600;">Login</a>
+                <a href="/signup" style="
+                    padding:10px 20px;
+                    background:#6A4CFF;
+                    color:white;
+                    border-radius:8px;
+                    font-weight:600;
+                    text-decoration:none;">
+                    Sign Up
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>
