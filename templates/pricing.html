@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width:800px; margin:auto; text-align:center; padding:60px;">
+
+    <h1 style="font-size:42px; color:#6A4CFF; font-weight:800;">
+        Upgrade to SEO Booster Pro
+    </h1>
+
+    <p style="max-width:500px; margin:auto; opacity:0.7; margin-bottom:40px;">
+        Unlock full SEO reports, unlimited scans, PDF exports, competitor analysis, and more.
+    </p>
+
+    <div style="
+        background:white;
+        padding:40px;
+        border-radius:16px;
+        box-shadow:0 4px 18px rgba(0,0,0,0.1);
+        max-width:450px;
+        margin:auto;
+        ">
+        
+        <h2 style="font-size:30px; margin-bottom:10px;">$4.99/month</h2>
+        <p style="opacity:0.7;">Start with a 14-day free trial</p>
+
+        <form action="/create-checkout-session" method="POST">
+            <button style="
+                margin-top:30px;
+                padding:16px 32px;
+                background:#6A4CFF;
+                color:white;
+                font-size:18px;
+                border:none;
+                border-radius:10px;
+                font-weight:700;
+                cursor:pointer;
+                width:100%;
+            ">
+                Start Free Trial
+            </button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
