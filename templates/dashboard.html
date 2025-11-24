@@ -178,7 +178,7 @@ body {
 #yourRadar { background: #6A4CFF; }
 #compRadar { background: #2D8CFF; }
 
-/* Hide competitor block until valid */
+/* Hide competitor block */
 .hidden { display: none; }
 </style>
 
@@ -201,6 +201,13 @@ body {
 
 <!-- MAIN -->
 <div class="dashboard-container">
+
+    {% if limit_reached %}
+    <div class="card">
+        <div class="section-title">⚠️ Free Tier Limit Reached</div>
+        <p>You’ve used all 3 free scans. Upgrade to PRO for unlimited scans and PDF exports.</p>
+    </div>
+    {% endif %}
 
     <!-- ANALYZER -->
     <div class="card">
@@ -260,9 +267,28 @@ body {
         </script>
 
         {% else %}
-        <p>Enter a URL to get started.</p>
+        <p>Enter a URL to begin.</p>
         {% endif %}
     </div>
+
+    <!-- PDF BUTTON -->
+    {% if keyword_score %}
+    <div style="text-align:center; margin-top:25px;">
+        <a href="/export-pdf"
+           style="
+               padding:14px 26px;
+               background:linear-gradient(135deg, #6A4CFF, #8F70FF);
+               color:white;
+               border-radius:10px;
+               text-decoration:none;
+               font-size:16px;
+               font-weight:600;
+               box-shadow:0 4px 10px rgba(0,0,0,0.12);
+           ">
+            📄 Download PDF Report
+        </a>
+    </div>
+    {% endif %}
 
     <!-- PROGRESS BARS -->
     {% if content_score %}
@@ -317,7 +343,7 @@ body {
         <pre style="white-space:pre-wrap;font-size:15px;">{{ optimization_tips or "Results will appear here…" }}</pre>
     </div>
 
-    <!-- COMPETITOR RADAR (Optional) -->
+    <!-- COMPETITOR RADAR -->
     {% if competitor_data %}
     <div class="card">
         <div class="section-title">⚔️ Competitor Comparison</div>
@@ -325,10 +351,7 @@ body {
         <div class="radar-container">
             <div class="radar-grid"></div>
 
-            <!-- Your radar -->
             <div id="yourRadar" class="radar-shape"></div>
-
-            <!-- Competitor radar -->
             <div id="compRadar" class="radar-shape"></div>
         </div>
 
@@ -349,7 +372,7 @@ body {
 
             scaleRadar(document.getElementById("compRadar"), [
                 {{ competitor_data.content_score }},
-                {{ competitor_data.keywordcore }},
+                {{ competitor_data.keyword_score }},
                 {{ competitor_data.technical_score }},
                 {{ competitor_data.onpage_score }},
                 {{ competitor_data.link_score }}
