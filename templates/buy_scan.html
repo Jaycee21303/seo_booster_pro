@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.buy-container {
+    max-width: 550px;
+    margin: 80px auto;
+    padding: 45px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+}
+
+.buy-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.buy-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.buy-price {
+    font-size: 42px;
+    font-weight: 900;
+    color: #00a86b;
+    margin-bottom: 25px;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.feature-list li {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.buy-btn {
+    display: inline-block;
+    padding: 16px 28px;
+    background: #00a86b;
+    color: white;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.buy-btn:hover {
+    opacity: 0.85;
+}
+
+.back-link {
+    display: block;
+    margin-top: 20px;
+    text-decoration: none;
+    font-size: 15px;
+    color: #666;
+}
+
+.back-link:hover {
+    color: #333;
+}
+</style>
+
+
+<div class="buy-container">
+
+    <div class="buy-title">Buy One More Scan</div>
+    <div class="buy-subtitle">You're out of free scans. Quickly purchase one more — no subscription required.</div>
+
+    <div class="buy-price">$0.99</div>
+
+    <ul class="feature-list">
+        <li>✔ Instant scan unlock</li>
+        <li>✔ No monthly plan required</li>
+        <li>✔ Use immediately on your next audit</li>
+    </ul>
+
+    <a href="/checkout-one" class="buy-btn">Continue to Payment</a>
+
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+
+</div>
+
+{% endblock %}
