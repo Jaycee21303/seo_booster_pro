@@ -1,429 +1,260 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
+from collections import Counter
 import re
-import json
-
-# ===============================
-# CONFIG LIMITS FOR T1 (RENDER FREE)
-# ===============================
-MAX_HTML_CHARS = 3500
-MAX_LINK_CHECKS = 25
-MAX_IMAGES_CHECK = 40
+import math
 
 
-# ===============================
-# SIMPLE STOPWORDS LIST
-# ===============================
-STOPWORDS = set("""
-the a an is are to of and in on for with by this that from at as be have has it its you your our their they we i 
-""".split())
+# ---------------------------------------------------
+# TEXT CLEANING
+# ---------------------------------------------------
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
-# ===============================
-# FETCH PAGE
-# ===============================
+# ---------------------------------------------------
+# FETCH + PARSE PAGE
+# ---------------------------------------------------
 def fetch_page(url):
     try:
-        response = requests.get(url, timeout=12, headers={
+        response = requests.get(url, timeout=10, headers={
             "User-Agent": "Mozilla/5.0"
         })
-        if response.status_code == 200:
-            return response.text
-        return None
+        if response.status_code != 200:
+            return None, None
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        return response.text, soup
+
     except:
-        return None
+        return None, None
 
 
-# ===============================
-# PARSE TEXT
-# ===============================
-def extract_text(html):
-    soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text(" ")
-    return text[:MAX_HTML_CHARS]
+# ---------------------------------------------------
+# TF-IDF KEYWORD MODELING (AI-like local logic)
+# ---------------------------------------------------
+def keyword_extract(text, top_n=10):
+    words = clean_text(text).split()
+    total = len(words)
+
+    if total == 0:
+        return []
+
+    freq = Counter(words)
+    scores = {}
+
+    # compute tf-idf-like heuristic score
+    for word, count in freq.items():
+        if len(word) < 4:
+            continue
+        tf = count / total
+        idf = math.log(1 + (total / (count + 1)))
+        scores[word] = tf * idf
+
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return [w for w, s in ranked[:top_n]]
 
 
-# ===============================
-# EXTRACT TITLE, META, HEADINGS
-# ===============================
-def parse_structure(html):
-    soup = BeautifulSoup(html, "html.parser")
-
-    title = soup.title.text.strip() if soup.title else ""
-    meta_desc = ""
-    tag = soup.find("meta", attrs={"name": "description"})
-    if tag and tag.get("content"):
-        meta_desc = tag["content"]
-
-    h1s = [h.get_text(" ").strip() for h in soup.find_all("h1")]
-    h2s = [h.get_text(" ").strip() for h in soup.find_all("h2")]
-    h3s = [h.get_text(" ").strip() for h in soup.find_all("h3")]
-
-    return title, meta_desc, h1s, h2s, h3s
-
-
-# ===============================
-# KEYWORD EXTRACTION
-# ===============================
-def extract_keywords(text, limit=10):
-    words = re.findall(r"[a-zA-Z]{3,}", text.lower())
-    freq = {}
-
-    for w in words:
-        if w not in STOPWORDS:
-            freq[w] = freq.get(w, 0) + 1
-
-    # sort by frequency
-    ranked = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-    return [w for w, c in ranked[:limit]]
-
-
-# ===============================
-# KEYWORD SUGGESTIONS (LOCAL)
-# ===============================
-def generate_keyword_suggestions(text):
-    kw = extract_keywords(text, limit=20)
-    return kw[:5]
-
-
-# ===============================
-# KEYWORD DENSITY
-# ===============================
-def keyword_density(text, keyword):
-    words = text.lower().split()
-    if len(words) == 0:
-        return 0
-    count = words.count(keyword.lower())
-    return round((count / len(words)) * 100, 2)
-
-
-# ===============================
-# IMAGE ALT CHECKING
-# ===============================
-def analyze_images(html):
-    soup = BeautifulSoup(html, "html.parser")
-    images = soup.find_all("img")
-
-    results = {
-        "total": len(images),
-        "missing_alt": 0,
-        "keyword_alt": 0,
-        "bad_alt": 0
-    }
-
-    for i, img in enumerate(images):
-        if i >= MAX_IMAGES_CHECK:
-            break
-
-        alt = img.get("alt", "").strip().lower()
-        if not alt:
-            results["missing_alt"] += 1
-        elif len(alt) < 3:
-            results["bad_alt"] += 1
-
-    return results
-
-
-# ===============================
-# LINK ANALYSIS + BROKEN LINK CHECKING
-# ===============================
-def analyze_links(html, url):
-    soup = BeautifulSoup(html, "html.parser")
-    anchors = soup.find_all("a")
-    base = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(url))
-
-    internal = 0
-    external = 0
+# ---------------------------------------------------
+# BROKEN LINK CHECK
+# ---------------------------------------------------
+def check_broken_links(url, soup):
     broken = []
+    links = soup.find_all("a")
 
-    checked = 0
+    for link in links:
+        href = link.get("href")
 
-    for a in anchors:
-        if checked >= MAX_LINK_CHECKS:
+        if not href or href.startswith("#") or href.startswith("mailto"):
+            continue
+
+        if href.startswith("/"):
+            base = url.rstrip("/")
+            href = base + href
+
+        try:
+            r = requests.get(href, timeout=5)
+            if r.status_code >= 400:
+                broken.append(href)
+        except:
+            broken.append(href)
+
+        if len(broken) >= 20:  # safety cap
             break
 
-        href = a.get("href")
-        if not href:
-            continue
+    return broken
 
-        full = urljoin(base, href)
 
-        # count internal/external
-        if urlparse(full).netloc == urlparse(url).netloc:
-            internal += 1
+# ---------------------------------------------------
+# STRUCTURAL SEO CHECKS
+# ---------------------------------------------------
+def structural_audit(soup):
+    findings = []
+
+    # Title
+    title = soup.find("title")
+    if not title or len(title.text.strip()) == 0:
+        findings.append("❌ Missing or empty <title> tag.")
+    else:
+        t = title.text.strip()
+        if len(t) < 20:
+            findings.append("⚠️ Title too short (<20 chars).")
+        elif len(t) > 70:
+            findings.append("⚠️ Title too long (>70 chars).")
         else:
-            external += 1
+            findings.append("✅ Title length looks good.")
 
-        # broken link check
-        try:
-            r = requests.head(full, timeout=4)
-            if r.status_code >= 400:
-                broken.append(full)
-        except:
-            broken.append(full)
-
-        checked += 1
-
-    return internal, external, broken
-
-
-# ===============================
-# CANONICAL, ROBOTS, SITEMAP
-# ===============================
-def analyze_meta_files(html, url):
-    soup = BeautifulSoup(html, "html.parser")
-    canonical = None
-    tag = soup.find("link", rel="canonical")
-    if tag and tag.get("href"):
-        canonical = tag["href"]
-
-    # robots.txt
-    base = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(url))
-    robots_url = base + "/robots.txt"
-
-    robots = None
-    try:
-        r = requests.get(robots_url, timeout=4)
-        if r.status_code == 200:
-            robots = r.text[:500]
-    except:
-        robots = None
-
-    # sitemap
-    sitemap_url = base + "/sitemap.xml"
-    sitemap = None
-    try:
-        r = requests.get(sitemap_url, timeout=4)
-        if r.status_code == 200:
-            sitemap = True
-    except:
-        sitemap = False
-
-    return canonical, robots, sitemap
-
-
-# ===============================
-# SCHEMA DETECTION
-# ===============================
-def detect_schema(html):
-    soup = BeautifulSoup(html, "html.parser")
-    scripts = soup.find_all("script", type="application/ld+json")
-    schemas = []
-
-    for s in scripts:
-        try:
-            data = json.loads(s.string)
-            schemas.append(data.get("@type", "Unknown"))
-        except:
-            continue
-
-    return schemas
-
-
-# ===============================
-# PAGE SPEED HEURISTICS
-# ===============================
-def analyze_speed(html):
-    soup = BeautifulSoup(html, "html.parser")
-
-    js = soup.find_all("script")
-    css = soup.find_all("link", rel="stylesheet")
-    imgs = soup.find_all("img")
-
-    return {
-        "js_files": len(js),
-        "css_files": len(css),
-        "image_count": len(imgs)
-    }
-
-
-# ===============================
-# FINAL SEO SCORE CALCULATION
-# ===============================
-def compute_score(title, meta, h1s, text, density, images, linkdata, canonical, schemas):
-    score = 0
-
-    # Title
-    if title:
-        score += 10
-        if len(title) > 20 and len(title) < 70:
-            score += 5
-
-    # Meta
-    if meta:
-        score += 10
-
-    # H1
-    if len(h1s) == 1:
-        score += 10
-
-    # Keyword density
-    if density > 0.3:
-        score += 10
-    if density > 1:
-        score += 5
-    if density > 3:
-        score -= 5  # too high
-
-    # Word count
-    wc = len(text.split())
-    if wc > 300:
-        score += 10
-    if wc > 700:
-        score += 5
-
-    # Images w/ alt
-    if images["missing_alt"] == 0:
-        score += 10
-
-    # Broken links
-    broken = linkdata[2]
-    if len(broken) == 0:
-        score += 10
+    # Meta description
+    meta = soup.find("meta", attrs={"name": "description"})
+    if not meta or not meta.get("content"):
+        findings.append("❌ Missing meta description.")
     else:
-        score -= len(broken) * 2
+        desc = meta["content"]
+        if len(desc) < 50:
+            findings.append("⚠️ Meta description too short.")
+        elif len(desc) > 160:
+            findings.append("⚠️ Meta description too long.")
+        else:
+            findings.append("✅ Meta description length is good.")
 
-    # Canonical
-    if canonical:
-        score += 5
-
-    # Schema
-    if schemas:
-        score += 10
-
-    return max(0, min(100, score))
-
-
-# ===============================
-# MAIN LOCAL SEO ENGINE
-# ===============================
-def run_seo_analysis(url, keyword):
-    html = fetch_page(url)
-    if not html:
-        return {
-            "score": 0,
-            "audit_text": "Could not load page.",
-            "tips_text": "",
-            "json": {}
-        }
-
-    text = extract_text(html)
-    title, meta, h1s, h2s, h3s = parse_structure(html)
-
-    # keyword detection fallback
-    if not keyword:
-        kws = extract_keywords(text)
-        keyword = kws[0] if kws else ""
-
-    # density
-    density = keyword_density(text, keyword)
-
-    # image audit
-    images = analyze_images(html)
-
-    # link audit
-    internal, external, broken = analyze_links(html, url)
-
-    # meta files
-    canonical, robots, sitemap = analyze_meta_files(html, url)
-
-    # schema
-    schemas = detect_schema(html)
-
-    # speed
-    speed = analyze_speed(html)
-
-    # score
-    score = compute_score(title, meta, h1s, text, density, images, (internal, external, broken), canonical, schemas)
-
-    # keyword suggestions
-    suggestions = generate_keyword_suggestions(text)
-
-    # ===========================
-    # BUILD JSON OUTPUT
-    # ===========================
-    json_output = {
-        "title": title,
-        "meta_description": meta,
-        "h1": h1s,
-        "keyword": keyword,
-        "keyword_density": density,
-        "word_count": len(text.split()),
-        "images": images,
-        "links": {
-            "internal": internal,
-            "external": external,
-            "broken": broken
-        },
-        "canonical": canonical,
-        "robots": robots,
-        "sitemap": sitemap,
-        "schemas": schemas,
-        "speed": speed,
-        "suggestions": suggestions,
-        "score": score
-    }
-
-    # ===========================
-    # BUILD TEXT OUTPUT
-    # ===========================
-    issues = []
-    tips = []
-    strengths = []
-
-    # Title
-    if not title:
-        issues.append("Missing title tag.")
-        tips.append("Add a descriptive and SEO-friendly title.")
-    else:
-        strengths.append("Title tag found.")
-
-    # Meta
-    if not meta:
-        issues.append("Missing meta description.")
-        tips.append("Add a meta description around 120–155 chars.")
-
-    # H1
+    # H1 tags
+    h1s = soup.find_all("h1")
     if len(h1s) == 0:
-        issues.append("Missing H1 tag.")
-        tips.append("Add a clear primary H1 heading.")
+        findings.append("❌ Missing H1 tag.")
     elif len(h1s) > 1:
-        issues.append("Multiple H1 tags detected.")
-        tips.append("Use only one H1 per page.")
+        findings.append("⚠️ Multiple H1 tags found.")
     else:
-        strengths.append("Proper H1 structure found.")
+        findings.append("✅ H1 structure looks good.")
 
-    # Density
-    if density < 0.3:
-        tips.append("Keyword density is low. Add keyword to content.")
-    elif density > 3:
-        tips.append("Keyword density is high. Reduce keyword usage.")
-
-    # Word count
-    wc = len(text.split())
-    if wc < 300:
-        tips.append("Content is thin. Increase to 600+ words.")
-
-    # Images
-    if images["missing_alt"] > 0:
-        issues.append(f"{images['missing_alt']} images missing ALT text.")
-        tips.append("Add ALT attributes for all images.")
-
-    # Broken links
-    if len(broken) > 0:
-        issues.append(f"{len(broken)} broken links detected.")
-        tips.append("Fix or remove broken links.")
-
-    # Canonical
-    if not canonical:
-        tips.append("Add a canonical tag to avoid duplicate content issues.")
+    # Image alt tags
+    imgs = soup.find_all("img")
+    missing_alt = sum(1 for img in imgs if not img.get("alt"))
+    if missing_alt > 0:
+        findings.append(f"⚠️ {missing_alt} images missing alt text.")
+    else:
+        findings.append("✅ All images have alt attributes.")
 
     # Schema
-    if len(schemas) == 0:
-        tips.append("Add schema markup for richer search results.")
+    if soup.find("script", type="application/ld+json"):
+        findings.append("✅ Structured data detected (JSON-LD).")
+    else:
+        findings.append("⚠️ No structured data detected.")
 
-    audit_text = "ISSUES:\n" + "\n".join(f"- {i}" for i in issues)
-    tips_text = "TIPS:\n" + "\n".join(f"- {t}" for t in tips)
+    # Mobile meta tag
+    viewport = soup.find("meta", attrs={"name": "viewport"})
+    if viewport:
+        findings.append("✅ Mobile-friendly viewport tag detected.")
+    else:
+        findings.append("⚠️ Missing mobile viewport tag.")
 
-    return score, audit_text, tips_text, suggestions, json_output
+    return findings
+
+
+# ---------------------------------------------------
+# KEYWORD RELEVANCE SCORING
+# ---------------------------------------------------
+def keyword_relevance_score(keyword, text):
+    if not keyword:
+        return 50  # neutral score
+
+    text = clean_text(text)
+    words = text.split()
+
+    if len(words) == 0:
+        return 20
+
+    count = words.count(keyword.lower())
+    density = count / len(words)
+
+    score = min(100, int(density * 20000))
+    return score
+
+
+# ---------------------------------------------------
+# AI-STYLE OPTIMIZATION TIPS (6–10 bullet points)
+# ---------------------------------------------------
+def generate_ai_style_tips(soup, keyword):
+    tips = []
+
+    title = soup.find("title").text.strip() if soup.find("title") else ""
+
+    if not keyword:
+        tips.append("• Consider focusing on one primary keyword to strengthen topical relevance.")
+    else:
+        tips.append(f"• Include your main keyword “{keyword}” naturally in the title, meta description, and H1.")
+
+    if len(title) < 40:
+        tips.append("• Expand your title to improve click-through rate and provide more context to search engines.")
+
+    if not soup.find("meta", attrs={"name": "description"}):
+        tips.append("• Add a compelling meta description with a clear value proposition.")
+    else:
+        tips.append("• Improve your meta description to increase engagement and SERP performance.")
+
+    if len(soup.find_all("h2")) < 2:
+        tips.append("• Add more H2 subheadings to structure your content better.")
+
+    if soup.find("script", type="application/ld+json") is None:
+        tips.append("• Implement structured data (JSON-LD) to enhance how search engines understand your page.")
+
+    imgs = soup.find_all("img")
+    if any(not img.get("alt") for img in imgs):
+        tips.append("• Ensure all images have descriptive alt text for accessibility and SEO.")
+
+    if len(tips) < 6:
+        tips.append("• Expand your content with more semantically related terms and supporting keywords.")
+
+    if len(tips) < 8:
+        tips.append("• Improve internal linking to help distribute authority and guide users.")
+
+    if len(tips) < 10:
+        tips.append("• Optimize page load speed by compressing images and deferring non-critical scripts.")
+
+    return "\n".join(tips)
+
+
+# ---------------------------------------------------
+# MAIN ENTRY POINT FOR APP: run_local_seo_analysis()
+# ---------------------------------------------------
+def run_local_seo_analysis(url, keyword=None):
+    html, soup = fetch_page(url)
+    if not soup:
+        return 0, "Error fetching page.", "Unable to analyze page."
+
+    text = soup.get_text(separator=" ")
+    text_clean = clean_text(text)
+
+    # extract top keywords
+    extracted_keywords = keyword_extract(text_clean)
+
+    # structural findings
+    structure = structural_audit(soup)
+
+    # broken links
+    broken = check_broken_links(url, soup)
+
+    # keyword relevance
+    score_keyword = keyword_relevance_score(keyword, text_clean)
+
+    # combined score (simple heuristic)
+    score = int(
+        score_keyword * 0.4
+        + (100 - min(len(broken) * 5, 50)) * 0.3
+        + (len([x for x in structure if x.startswith("✅")]) / len(structure)) * 100 * 0.3
+    )
+
+    score = max(5, min(100, score))
+
+    # build audit text
+    audit_text = "STRUCTURAL AUDIT:\n" + "\n".join(structure)
+    audit_text += "\n\nBROKEN LINKS:\n"
+    audit_text += "\n".join(broken) if broken else "No broken links detected."
+    audit_text += "\n\nKEYWORDS DETECTED:\n" + ", ".join(extracted_keywords)
+
+    # AI-style tips
+    tips = generate_ai_style_tips(soup, keyword)
+
+    return score, audit_text, tips
