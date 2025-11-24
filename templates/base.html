@@ -3,89 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Booster Pro</title>
 
-    <!-- Google Fonts -->
+    <title>SEO Booster</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- ⭐ Google AdSense Global Script -->
+    <script async 
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXX"
+        crossorigin="anonymous"></script>
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            margin: 0;
-            background: #f7f7fb;
-            font-family: 'Inter', sans-serif;
-            color: #222;
-        }
-
-        /* NAVIGATION BAR */
-        .navbar {
-            width: 100%;
-            padding: 18px 40px;
-            background: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .nav-left {
-            font-size: 22px;
-            font-weight: 700;
-            color: #6A4CFF;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-links a {
-            margin-left: 25px;
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .nav-links a:hover {
-            color: #6A4CFF;
-        }
-    </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="nav-left">
-            SEO Booster Pro
-            {% if session.get('is_pro') %}
-                <span style="
-                    background:#00c96b; 
-                    color:white; 
-                    padding:6px 10px; 
-                    border-radius:8px; 
-                    font-size:12px;
-                ">
-                    PRO
-                </span>
-            {% endif %}
-        </div>
+    <!-- NAVBAR (Optional – remove if your project doesn’t use one) -->
+    <nav style="
+        width:100%;
+        background:white;
+        padding:18px 22px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom:10px;
+    ">
+        <div style="
+            max-width:1200px;
+            margin:auto;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+            <div style="font-size:22px; font-weight:700; color:#6A4CFF;">
+                SEO Booster
+            </div>
 
-        <div class="nav-links">
-            <a href="/">Home</a>
-            {% if session.get("user_id") %}
-                <a href="/dashboard">Dashboard</a>
-                <a href="/settings">Settings</a>
-                <a href="/logout">Logout</a>
-            {% else %}
-                <a href="/login">Log In</a>
-                <a href="/signup">Sign Up</a>
-            {% endif %}
+            <div>
+                <a href="/login" style="margin-right:20px; color:#6A4CFF; font-weight:600;">Login</a>
+                <a href="/signup" style="
+                    padding:10px 20px;
+                    background:#6A4CFF;
+                    color:white;
+                    border-radius:8px;
+                    font-weight:600;
+                    text-decoration:none;">
+                    Sign Up
+                </a>
+            </div>
         </div>
-    </div>
+    </nav>
 
-    {% block content %}
-    {% endblock %}
+    <!-- MAIN CONTENT FROM CHILD TEMPLATES -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
 </body>
 </html>
