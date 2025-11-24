@@ -1,21 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
-import openai
+from openai import OpenAI
 import os
 
 # ---------------------------------------------------
-# OPENAI KEY SETUP
+# OPENAI CLIENT
 # ---------------------------------------------------
 OPENAI_KEY = os.environ.get("OPENAI_KEY")
-openai.api_key = OPENAI_KEY
+client = OpenAI(api_key=OPENAI_KEY)
 
 
 # ---------------------------------------------------
-# INTERNAL HELPER – SAFE CHAT COMPLETION CALL
+# SAFE CALL TO OPENAI
 # ---------------------------------------------------
 def ask_openai(prompt, model="gpt-4.1-mini"):
     try:
-        response = openai.ChatCompletion.create(
+        completion = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are an SEO expert."},
@@ -23,111 +23,140 @@ def ask_openai(prompt, model="gpt-4.1-mini"):
             ],
             temperature=0.1
         )
-        return response["choices"][0]["message"]["content"].strip()
+        return completion.choices[0].message.content.strip()
 
     except Exception as e:
-        print("OpenAI error:", e)
-        return "Error: AI request failed."
-
-
-# ---------------------------------------------------
-# AUTO-DETECT PRIMARY KEYWORD
-# ---------------------------------------------------
-def detect_keywords_from_page(url):
-    try:
-        html = requests.get(url, timeout=10).text
-        soup = BeautifulSoup(html, "html.parser")
-        text = soup.get_text(separator=" ")
-
-        prompt = f"""
-        Extract the single most important SEO keyword from this webpage.
-        Return ONLY the keyword.
-
-        CONTENT:
-        {text[:4000]}
-        """
-
-        return ask_openai(prompt, model="gpt-4.1-mini")
-
-    except Exception as e:
-        print("Keyword detection error:", e)
+        print("OpenAI Error:", e)
         return None
 
 
 # ---------------------------------------------------
-# KEYWORD SUGGESTIONS (5 keywords)
+# EXTRACT CLEAN TEXT FROM URL (LIMIT 3000 CHARS)
 # ---------------------------------------------------
-def generate_keyword_suggestions(url):
+def extract_page_text(url):
     try:
         html = requests.get(url, timeout=10).text
         soup = BeautifulSoup(html, "html.parser")
         text = soup.get_text(separator=" ")
+        return text[:3000]
 
-        prompt = f"""
-        List 5 strong SEO keywords this page could rank for.
-        Return ONLY the keywords, 1 per line, no numbers.
+    except:
+        return ""
 
-        CONTENT:
-        {text[:4000]}
-        """
 
-        result = ask_openai(prompt, model="gpt-4.1-mini")
-        return [s.strip("•- ").strip() for s in result.split("\n") if s.strip()]
+# ---------------------------------------------------
+# AUTO-KEYWORD DETECTION
+# ---------------------------------------------------
+def detect_keywords_from_page(url):
+    text = extract_page_text(url)
+    if not text:
+        return None
 
-    except Exception as e:
-        print("Keyword suggestion error:", e)
+    prompt = f"""
+    From the following webpage text, extract the SINGLE best SEO keyword.
+    Return ONLY the keyword.
+
+    Content:
+    {text}
+    """
+
+    result = ask_openai(prompt)
+    return result if result else None
+
+
+# ---------------------------------------------------
+# KEYWORD SUGGESTIONS
+# ---------------------------------------------------
+def generate_keyword_suggestions(url):
+    text = extract_page_text(url)
+    if not text:
         return []
 
+    prompt = f"""
+    Suggest the 5 best SEO keywords this page could rank for.
+    Return ONLY keywords, one per line, no numbering.
 
-# ---------------------------------------------------
-# BASIC ON-PAGE ANALYSIS
-# ---------------------------------------------------
-def analyze_url(url):
-    try:
-        response = requests.get(url, timeout=8)
-    except Exception as e:
-        return {"error": f"Could not reach URL: {str(e)}"}
+    Content:
+    {text}
+    """
 
-    if response.status_code != 200:
-        return {"error": f"URL responded with status code {response.status_code}"}
+    result = ask_openai(prompt)
+    if not result:
+        return []
 
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    title_tag = soup.find("title")
-    title = title_tag.text.strip() if title_tag else "No title found"
-
-    meta_tag = soup.find("meta", attrs={"name": "description"})
-    meta = meta_tag["content"].strip() if meta_tag and "content" in meta_tag.attrs else "No meta description found"
-
-    return {"title": title, "meta": meta}
+    return [k.strip("•- ").strip() for k in result.split("\n") if k.strip()]
 
 
 # ---------------------------------------------------
-# MAIN SEO ANALYSIS PIPELINE
+# MAIN SEO ANALYSIS (PROPER OUTPUT FORMAT)
 # ---------------------------------------------------
 def run_seo_analysis(url, keyword):
     if not keyword:
-        keyword = "general keyword"
+        keyword = "general topic"
 
     prompt = f"""
-    Perform an SEO audit for:
+    Perform an SEO analysis for the following:
 
     URL: {url}
-    Keyword: {keyword}
+    Target Keyword: {keyword}
 
-    Provide:
+    Provide results using this EXACT format:
 
-    1. Keyword Score (0–100)
-    2. Site Audit (issues + strengths)
-    3. Optimization Tips
-
-    Respond in clean, plain text.
+    SCORE: <number 0-100>
+    AUDIT:
+    <2-4 bullet points about issues + strengths>
+    TIPS:
+    <2-4 bullet points of improvements>
     """
 
-    output = ask_openai(prompt, model="gpt-4.1")
+    response = ask_openai(prompt, model="gpt-4.1")
+    if not response:
+        return 0, "AI request failed.", "AI request failed."
 
-    return (
-        f"Keyword Score for '{keyword}':\n{output[:200]}",
-        "Site Audit:\n" + output,
-        "Optimization Tips:\n" + output
-    )
+    # -------------------------------
+    # PARSE RESPONSE CLEANLY
+    # -------------------------------
+    score = 0
+    audit = ""
+    tips = ""
+
+    lines = response.split("\n")
+
+    current_section = None
+
+    for line in lines:
+        line = line.strip()
+
+        # SCORE
+        if line.startswith("SCORE:"):
+            num = line.replace("SCORE:", "").strip()
+            try:
+                score = int(num)
+            except:
+                score = 50  # fallback
+
+        # AUDIT section begins
+        elif line.startswith("AUDIT:"):
+            current_section = "audit"
+            continue
+
+        # TIPS section begins
+        elif line.startswith("TIPS:"):
+            current_section = "tips"
+            continue
+
+        else:
+            if current_section == "audit":
+                audit += line + "\n"
+            if current_section == "tips":
+                tips += line + "\n"
+
+    # FINAL CLEAN
+    audit = audit.strip() or "No audit data."
+    tips = tips.strip() or "No tips available."
+
+    # Guarantee score is valid integer
+    if score < 0 or score > 100:
+        score = 50
+
+    return score, audit, tips
