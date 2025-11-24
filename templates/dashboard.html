@@ -2,181 +2,186 @@
 {% block content %}
 
 <style>
-    body {
-        background: #f7f7fb;
-        font-family: 'Inter', sans-serif;
-        color: #222;
-    }
 
-    /* Top Navigation */
-    .navbar {
-        width: 100%;
-        padding: 18px 40px;
-        background: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+/* PAGE STRUCTURE */
+.dashboard-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Inter', sans-serif;
+}
 
-    .nav-left {
-        font-size: 22px;
-        font-weight: 700;
-        color: #6A4CFF;
-    }
+/* HEADER BANNER */
+.header-banner {
+    width: 100%;
+    padding: 45px 0;
+    text-align: center;
+    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+    color: white;
+    border-radius: 14px;
+    margin-bottom: 35px;
+}
 
-    .nav-links a {
-        margin-left: 25px;
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-    }
+.header-banner h1 {
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
 
-    .nav-links a:hover {
-        color: #6A4CFF;
-    }
+.header-banner p {
+    font-size: 17px;
+    opacity: 0.9;
+}
 
-    /* Header Banner */
-    .header-banner {
-        width: 100%;
-        padding: 50px 0;
-        text-align: center;
-        background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-        color: white;
-        margin-bottom: 35px;
-    }
+/* CARD */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 35px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+}
 
-    .header-banner h1 {
-        font-size: 42px;
-        font-weight: 800;
-        margin-bottom: 10px;
-    }
+.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #333;
+}
 
-    .header-banner p {
-        font-size: 17px;
-        opacity: 0.9;
-    }
+/* INPUT ROW */
+.input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
 
-    /* Dashboard Container */
-    .dashboard-container {
-        max-width: 900px;
-        margin: auto;
-        padding: 20px;
-    }
+input[type="url"], input[type="text"] {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+}
 
-    /* Card */
-    .card {
-        background: white;
-        border-radius: 14px;
-        padding: 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    }
+.run-btn {
+    padding: 14px 20px;
+    background: #6A4CFF;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.2s;
+}
 
-    .section-title {
-        font-size: 22px;
-        font-weight: 600;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+.run-btn:hover {
+    background: #563ae6;
+}
 
-    .input-row {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
+/* SCORE CIRCLE */
+.score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(#6A4CFF var(--percent), #eee 0deg);
+    margin: 0 auto 15px auto;
+    position: relative;
+}
 
-    input[type="url"], input[type="text"] {
-        padding: 12px 14px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        flex: 1;
-        font-size: 15px;
-    }
+.score-circle-inner {
+    width: 110px;
+    height: 110px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 800;
+    color: #333;
+}
 
-    .run-btn {
-        padding: 12px 18px;
-        border: none;
-        border-radius: 8px;
-        background: #6A4CFF;
-        color: white;
-        font-size: 15px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+/* LIMIT WARNING */
+.limit-box {
+    max-width: 700px;
+    margin: 0 auto 25px auto;
+    background: #fff1f1;
+    padding: 22px;
+    border-radius: 14px;
+    border: 1px solid #ffb8b8;
+    text-align: center;
+}
 
-    .run-btn:hover {
-        background: #5330e9;
-    }
+.limit-box h2 {
+    color: #b00000;
+    font-size: 24px;
+}
 
-    /* Circular Score */
-    .score-wrapper {
-        position: relative;
-        width: 160px;
-        height: 160px;
-        margin: auto;
-    }
+/* BUTTONS */
+.purple-btn {
+    padding: 12px 18px;
+    background:#6A4CFF;
+    color:white;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:700;
+}
 
-    .progress-ring-bg {
-        opacity: 0.25;
-    }
+.green-btn {
+    padding: 12px 18px;
+    background:#00a86b;
+    color:white;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:700;
+}
 
-    .progress-ring-fill {
-        transform: rotate(-90deg);
-        transform-origin: 50% 50%;
-        transition: stroke-dashoffset 1.2s ease, stroke 0.6s ease;
-    }
-
-    .score-number {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -52%);
-        font-size: 38px;
-        font-weight: 700;
-        color: #333;
-    }
 </style>
 
 
-<!-- NAVIGATION -->
-<div class="navbar">
-    <div class="nav-left">SEO Booster Pro</div>
-    <div class="nav-links">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/settings">Settings</a>
-        <a href="/logout">Logout</a>
-    </div>
-</div>
-
-<!-- HEADER -->
-<div class="header-banner">
-    <h1>SEO Dashboard</h1>
-    <p>Instant AI-powered insights to improve your rankings and visibility</p>
-</div>
-
-<!-- MAIN -->
 <div class="dashboard-container">
 
-    <!-- SEO Analyzer -->
+    <!-- FREE LIMIT REACHED -->
+    {% if limit_reached %}
+    <div class="limit-box">
+        <h2>You’ve hit your free monthly limit!</h2>
+        <p>You get 3 free scans and 1 PDF export. Upgrade or buy more scans to continue.</p>
+
+        <div style="margin-top:15px;">
+            <a href="/upgrade" class="purple-btn" style="margin-right:10px;">Upgrade to Pro – $4.99/mo</a>
+            <a href="/buy-scan" class="green-btn">Buy 1 Scan – $0.99</a>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- CURRENT USAGE -->
+    <div class="card">
+        <div class="section-title">Your Usage</div>
+
+        <p style="font-size:16px; color:#444; margin-bottom:10px;">
+            <strong>Scans Used:</strong> {{ user.scans_used }} / 3 (Free Tier)
+        </p>
+
+        <p style="font-size:16px; color:#444;">
+            <strong>PDF Exports Used:</strong> {{ user.pdf_downloads_used }} / 1 (Free Tier)
+        </p>
+    </div>
+
+
+    <!-- SEO ANALYZER -->
     <div class="card">
         <div class="section-title">🔍 SEO Analyzer</div>
 
+        {% if not limit_reached %}
         <form method="POST">
             <div class="input-row">
-                <input type="url" name="website_url"
-                       placeholder="Website URL (required)" required>
-
-                <input type="text" id="manual-keyword" name="keyword"
-                       placeholder="Keyword (optional)" style="display:none;">
-
-                <button class="run-btn" type="submit">Run SEO Analysis</button>
+                <input type="url" name="website_url" placeholder="Website URL" required>
+                <button class="run-btn" type="submit">Run Scan</button>
             </div>
 
             <small style="color:#6A4CFF; cursor:pointer;"
@@ -186,75 +191,70 @@
                 ">
                 + Add keyword manually (optional)
             </small>
-        </form>
 
+            <input type="text" id="manual-keyword" name="keyword"
+                   placeholder="Keyword (optional)"
+                   style="display:none; margin-top:10px;">
+        </form>
+        {% else %}
+        <p style="color:#b00000;">Upgrade or buy a scan to run more audits.</p>
+        {% endif %}
+
+        <!-- Suggested Keywords -->
         {% if suggested_keywords %}
-        <div style="margin-top:15px;">
+        <div style="margin-top:20px;">
             <strong>Suggested Keywords:</strong><br><br>
             {% for kw in suggested_keywords %}
-                <span style="background:#eee; padding:6px 12px; margin:4px;
-                             display:inline-block; border-radius:8px; font-size:14px;">
-                    {{ kw }}
-                </span>
+            <span style="
+                background:#eee;
+                padding:6px 10px;
+                margin:4px;
+                display:inline-block;
+                border-radius:8px;
+                font-size:14px;
+            ">
+                {{ kw }}
+            </span>
             {% endfor %}
         </div>
         {% endif %}
     </div>
 
-    <!-- Keyword Score with Circle -->
+
+    <!-- KEYWORD SCORE -->
+    {% if keyword_score %}
     <div class="card">
         <div class="section-title">📈 Keyword Score</div>
 
-        <div class="score-wrapper">
-            <svg class="progress-ring" width="160" height="160">
-                <circle class="progress-ring-bg" stroke="#cccccc" stroke-width="12"
-                    fill="transparent" r="70" cx="80" cy="80"/>
-                <circle class="progress-ring-fill" stroke="#4CAF50" stroke-width="12"
-                    stroke-linecap="round" fill="transparent" r="70" cx="80" cy="80"/>
-            </svg>
-
-            <div class="score-number" id="scoreNumber">
-                {{ keyword_score or 0 }}
-            </div>
+        <!-- Score Circle -->
+        <div class="score-circle" style="--percent: {{ score_percent }}deg;">
+            <div class="score-circle-inner">{{ score_number }}</div>
         </div>
-    </div>
 
-    <!-- Site Audit -->
+        <p style="text-align:center; color:#444; margin-top:10px;">
+            Keyword relevance score: {{ score_number }} / 100
+        </p>
+    </div>
+    {% endif %}
+
+
+    <!-- SITE AUDIT -->
+    {% if site_audit %}
     <div class="card">
         <div class="section-title">🧹 Site Audit</div>
-        {{ site_audit or "Results will appear here…" }}
+        <pre style="white-space:pre-wrap; font-size:15px; color:#333;">{{ site_audit }}</pre>
     </div>
+    {% endif %}
 
-    <!-- Optimization Tips -->
+
+    <!-- OPTIMIZATION TIPS -->
+    {% if optimization_tips %}
     <div class="card">
         <div class="section-title">💡 Optimization Tips</div>
-        {{ optimization_tips or "Results will appear here…" }}
+        <pre style="white-space:pre-wrap; font-size:15px; color:#333;">{{ optimization_tips }}</pre>
     </div>
+    {% endif %}
 
 </div>
-
-<!-- SCORE SCRIPT -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const score = parseInt("{{ keyword_score or 0 }}");
-    const circle = document.querySelector('.progress-ring-fill');
-    const radius = circle.r.baseVal.value;
-    const circumference = radius * 2 * Math.PI;
-
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
-    circle.style.strokeDashoffset = circumference;
-
-    const offset = circumference - (score / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
-
-    // Color transitions
-    if (score < 40) circle.style.stroke = "#ff4a4a";      // red
-    else if (score < 70) circle.style.stroke = "#ffb400"; // yellow
-    else circle.style.stroke = "#4CAF50";                 // green
-
-    // Update number
-    document.getElementById("scoreNumber").innerText = score;
-});
-</script>
 
 {% endblock %}
