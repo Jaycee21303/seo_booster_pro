@@ -2,106 +2,98 @@
 {% block content %}
 
 <style>
-.signup-container {
-    max-width: 420px;
+.upgrade-container {
+    max-width: 650px;
     margin: 80px auto;
-    padding: 40px;
+    padding: 45px;
     background: white;
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     font-family: 'Inter', sans-serif;
+    text-align: center;
 }
 
-.signup-title {
-    font-size: 30px;
+.upgrade-title {
+    font-size: 36px;
     font-weight: 800;
-    text-align: center;
     margin-bottom: 10px;
     color: #333;
 }
 
-.signup-subtitle {
-    font-size: 15px;
-    text-align: center;
+.upgrade-subtitle {
+    font-size: 16px;
     color: #666;
+    margin-bottom: 30px;
+}
+
+.upgrade-price {
+    font-size: 48px;
+    font-weight: 900;
+    color: #6A4CFF;
     margin-bottom: 25px;
 }
 
-.signup-input {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: 0.2s;
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 35px;
 }
 
-.signup-input:focus {
-    border-color: #6A4CFF;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(106,76,255,0.15);
+.feature-list li {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #444;
 }
 
-.signup-btn {
-    width: 100%;
-    padding: 16px;
+.upgrade-btn {
+    display: inline-block;
+    padding: 16px 28px;
     background: #6A4CFF;
     color: white;
-    font-size: 17px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+    border-radius: 12px;
+    font-size: 20px;
     font-weight: 700;
+    text-decoration: none;
     transition: 0.2s;
 }
 
-.signup-btn:hover {
-    background: #5535e6;
+.upgrade-btn:hover {
+    background: #563ae6;
 }
 
-.signup-footer {
-    text-align: center;
-    margin-top: 18px;
-    font-size: 15px;
-}
-
-.signup-footer a {
-    color: #6A4CFF;
-    font-weight: 600;
+.back-link {
+    display: block;
+    margin-top: 20px;
     text-decoration: none;
+    font-size: 15px;
+    color: #666;
 }
 
-.error-box {
-    background: #ffe0e0;
-    color: #b00000;
-    padding: 12px 14px;
-    border-radius: 10px;
-    margin-bottom: 18px;
-    font-size: 14px;
-    text-align: center;
+.back-link:hover {
+    color: #333;
 }
 </style>
 
-<div class="signup-container">
-    <div class="signup-title">Create Account</div>
-    <div class="signup-subtitle">Start using SEO Booster Pro instantly — no credit card required.</div>
 
-    {% if error %}
-        <div class="error-box">{{ error }}</div>
-    {% endif %}
+<div class="upgrade-container">
 
-    <form method="POST">
-        <input type="email" name="email" class="signup-input" placeholder="Email address" required>
-        <input type="password" name="password" class="signup-input" placeholder="Password" required>
+    <div class="upgrade-title">Upgrade to Pro</div>
+    <div class="upgrade-subtitle">Unlock unlimited scans and all premium features.</div>
 
-        <button class="signup-btn" type="submit">Create Account</button>
-    </form>
+    <div class="upgrade-price">$4.99 / month</div>
 
-    <div class="signup-footer">
-        Already have an account? <a href="/login">Log in</a>
-    </div>
+    <ul class="feature-list">
+        <li>✔ Unlimited SEO scans</li>
+        <li>✔ Unlimited PDF exports</li>
+        <li>✔ Priority processing</li>
+        <li>✔ No ads anywhere</li>
+        <li>✔ Access to all upcoming Pro features</li>
+    </ul>
+
+    <a href="/checkout-pro" class="upgrade-btn">Continue to Payment</a>
+
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+
 </div>
 
 {% endblock %}
-
