@@ -6,26 +6,34 @@
 
     <title>SEO Booster</title>
 
+    <!-- ⭐ REQUIRED: AdSense verification -->
+    <meta name="google-adsense-account" content="ca-pub-1967195027765056">
+
     <!-- Global CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- ⭐ Google AdSense Global Script (FINAL VERIFIED) -->
+    <!-- ⭐ REQUIRED: Global AdSense Script -->
     <script async 
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1967195027765056"
         crossorigin="anonymous"></script>
 
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
 </head>
 
-<body>
+<body style="margin:0; padding:0; font-family:Inter, sans-serif;">
 
+    <!-- NAVBAR -->
     <nav style="
         width:100%;
         background:white;
         padding:18px 22px;
         box-shadow:0 2px 8px rgba(0,0,0,0.08);
         margin-bottom:10px;
+        position:sticky;
+        top:0;
+        z-index:1000;
     ">
         <div style="
             max-width:1200px;
@@ -39,7 +47,9 @@
             </div>
 
             <div>
-                <a href="/login" style="margin-right:20px; color:#6A4CFF; font-weight:600;">Login</a>
+                <a href="/login" style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
+                    Login
+                </a>
                 <a href="/signup" style="
                     padding:10px 20px;
                     background:#6A4CFF;
@@ -53,10 +63,60 @@
         </div>
     </nav>
 
+
+    <!-- MAIN CONTENT -->
     <main>
         {% block content %}
         {% endblock %}
     </main>
+
+
+    <!-- ⭐ COOKIE CONSENT POPUP -->
+    <div id="cookie-popup" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        width: 320px;
+        z-index: 9999;
+        display: none;
+        font-family: Inter, sans-serif;
+    ">
+        <h3 style="margin-top:0; color:#6A4CFF;">We Use Cookies</h3>
+        <p style="font-size:14px;">
+            We use cookies to improve your experience, show ads, and analyze traffic.
+            By using this site, you agree to our 
+            <a href="/privacy" style="color:#6A4CFF; font-weight:600;">Privacy Policy</a>.
+        </p>
+
+        <button id="cookie-accept" style="
+            padding:10px 18px;
+            background:#6A4CFF;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:600;
+        ">Accept</button>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        if (!localStorage.getItem("cookieAccepted")) {
+            document.getElementById("cookie-popup").style.display = "block";
+        }
+
+        document.getElementById("cookie-accept").onclick = function() {
+            localStorage.setItem("cookieAccepted", "yes");
+            document.getElementById("cookie-popup").style.display = "none";
+        };
+
+    });
+    </script>
 
 </body>
 </html>
