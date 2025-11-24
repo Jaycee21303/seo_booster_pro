@@ -4,16 +4,16 @@ from openai import OpenAI
 import os
 
 # ---------------------------------------------------
-# OPENAI CLIENT
+# OpenAI client (new SDK)
 # ---------------------------------------------------
 OPENAI_KEY = os.environ.get("OPENAI_KEY")
 client = OpenAI(api_key=OPENAI_KEY)
 
 
 # ---------------------------------------------------
-# SAFE CALL TO OPENAI
+# SAFE OPENAI CALL
 # ---------------------------------------------------
-def ask_openai(prompt, model="gpt-4.1-mini"):
+def ask_openai(prompt, model="gpt-4o-mini"):
     try:
         completion = client.chat.completions.create(
             model=model,
@@ -31,7 +31,7 @@ def ask_openai(prompt, model="gpt-4.1-mini"):
 
 
 # ---------------------------------------------------
-# EXTRACT CLEAN TEXT FROM URL (LIMIT 3000 CHARS)
+# Extract text safely
 # ---------------------------------------------------
 def extract_page_text(url):
     try:
@@ -45,7 +45,7 @@ def extract_page_text(url):
 
 
 # ---------------------------------------------------
-# AUTO-KEYWORD DETECTION
+# Keyword detection
 # ---------------------------------------------------
 def detect_keywords_from_page(url):
     text = extract_page_text(url)
@@ -53,7 +53,7 @@ def detect_keywords_from_page(url):
         return None
 
     prompt = f"""
-    From the following webpage text, extract the SINGLE best SEO keyword.
+    Extract the main target SEO keyword from this content.
     Return ONLY the keyword.
 
     Content:
@@ -65,7 +65,7 @@ def detect_keywords_from_page(url):
 
 
 # ---------------------------------------------------
-# KEYWORD SUGGESTIONS
+# Keyword suggestions
 # ---------------------------------------------------
 def generate_keyword_suggestions(url):
     text = extract_page_text(url)
@@ -73,90 +73,72 @@ def generate_keyword_suggestions(url):
         return []
 
     prompt = f"""
-    Suggest the 5 best SEO keywords this page could rank for.
-    Return ONLY keywords, one per line, no numbering.
-
-    Content:
-    {text}
+    Provide 5 SEO keywords this page could rank for.
+    ONE KEYWORD PER LINE.
     """
 
     result = ask_openai(prompt)
     if not result:
         return []
 
-    return [k.strip("•- ").strip() for k in result.split("\n") if k.strip()]
+    return [k.strip() for k in result.split("\n") if k.strip()]
 
 
 # ---------------------------------------------------
-# MAIN SEO ANALYSIS (PROPER OUTPUT FORMAT)
+# Main SEO analysis
 # ---------------------------------------------------
 def run_seo_analysis(url, keyword):
     if not keyword:
         keyword = "general topic"
 
     prompt = f"""
-    Perform an SEO analysis for the following:
+    Perform an SEO analysis.
 
     URL: {url}
-    Target Keyword: {keyword}
+    Keyword: {keyword}
 
-    Provide results using this EXACT format:
+    Return EXACTLY this structure:
 
-    SCORE: <number 0-100>
+    SCORE: <0-100>
     AUDIT:
-    <2-4 bullet points about issues + strengths>
+    - Issue or strength
+    - Issue or strength
     TIPS:
-    <2-4 bullet points of improvements>
+    - Tip
+    - Tip
     """
 
-    response = ask_openai(prompt, model="gpt-4.1")
-    if not response:
+    output = ask_openai(prompt, model="gpt-4o")
+    if not output:
         return 0, "AI request failed.", "AI request failed."
 
     # -------------------------------
-    # PARSE RESPONSE CLEANLY
+    # Parse structured output
     # -------------------------------
-    score = 0
+    score = 50
     audit = ""
     tips = ""
+    section = None
 
-    lines = response.split("\n")
-
-    current_section = None
-
-    for line in lines:
+    for line in output.split("\n"):
         line = line.strip()
 
-        # SCORE
         if line.startswith("SCORE:"):
-            num = line.replace("SCORE:", "").strip()
             try:
-                score = int(num)
+                score = int(line.replace("SCORE:", "").strip())
             except:
-                score = 50  # fallback
+                score = 50
 
-        # AUDIT section begins
         elif line.startswith("AUDIT:"):
-            current_section = "audit"
-            continue
+            section = "audit"
 
-        # TIPS section begins
         elif line.startswith("TIPS:"):
-            current_section = "tips"
-            continue
+            section = "tips"
 
         else:
-            if current_section == "audit":
+            if section == "audit":
                 audit += line + "\n"
-            if current_section == "tips":
+            elif section == "tips":
                 tips += line + "\n"
 
-    # FINAL CLEAN
-    audit = audit.strip() or "No audit data."
-    tips = tips.strip() or "No tips available."
-
-    # Guarantee score is valid integer
-    if score < 0 or score > 100:
-        score = 50
-
-    return score, audit, tips
+    return score, audit.strip(), tips.strip()
