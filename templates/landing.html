@@ -2,8 +2,9 @@
 {% block content %}
 
 <style>
+/* HERO */
 .hero-section {
-    padding: 80px 20px;
+    padding: 90px 20px;
     text-align: center;
     background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
     color: white;
@@ -11,7 +12,7 @@
 }
 
 .hero-title {
-    font-size: 42px;
+    font-size: 46px;
     font-weight: 800;
     margin-bottom: 15px;
 }
@@ -19,30 +20,32 @@
 .hero-subtitle {
     font-size: 18px;
     max-width: 650px;
-    margin: 0 auto 30px auto;
-    opacity: 0.9;
+    margin: 0 auto 35px auto;
+    opacity: 0.92;
 }
 
 .hero-btn {
-    padding: 16px 28px;
+    padding: 16px 34px;
     background: white;
     color: #6A4CFF;
     border-radius: 10px;
     border: none;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.2s;
     text-decoration: none;
+    transition: 0.2s;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
 .hero-btn:hover {
-    background: #f0eaff;
+    background: #f1ebff;
 }
 
+/* FEATURES */
 .features-section {
-    max-width: 950px;
-    margin: 60px auto;
+    max-width: 1080px;
+    margin: 70px auto;
     padding: 0 20px;
 }
 
@@ -57,15 +60,20 @@
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 25px;
+    gap: 30px;
 }
 
 .feature-card {
-    padding: 25px;
+    padding: 30px;
     background: white;
-    border-radius: 14px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
     text-align: center;
+    transition: 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
 }
 
 .feature-icon {
@@ -85,48 +93,186 @@
     font-size: 15px;
     color: #666;
 }
+
+/* PRICING */
+.pricing-section {
+    max-width: 1080px;
+    margin: 80px auto 100px auto;
+    padding: 0 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.pricing-title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 50px;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.plan-card {
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    text-align: center;
+}
+
+.plan-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.plan-price {
+    font-size: 38px;
+    font-weight: 800;
+    color: #6A4CFF;
+    margin: 10px 0 20px 0;
+}
+
+.plan-features {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 25px;
+}
+
+.plan-features li {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 10px;
+}
+
+.plan-btn {
+    display: block;
+    text-align: center;
+    padding: 14px 0;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 17px;
+    transition: 0.2s;
+}
+
+.plan-btn:hover {
+    opacity: 0.85;
+}
+
+/* FOOTER */
+.footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: #777;
+    font-size: 14px;
+}
 </style>
 
-<!-- Hero -->
+
+
+<!-- HERO SECTION -->
 <div class="hero-section">
-    <div class="hero-title">AI-Free. Fast. Powerful SEO Analysis.</div>
+    <div class="hero-title">Fast, Accurate SEO Analysis — No AI Needed</div>
     <div class="hero-subtitle">
-        SEO Booster Pro scans any website with a full on-page audit, keyword analysis,
-        broken link checker, and performance insights — 100% locally, no API keys needed.
+        Get deep on-page SEO audits, keyword analysis, broken link checking, and performance insights.
+        100% local engine — no API keys, no monthly costs, no limits (with Pro).
     </div>
 
-    <a href="/signup" class="hero-btn">Get Started — Free</a>
+    <a href="/signup" class="hero-btn">Start Free — No Card Needed</a>
 </div>
 
-<!-- Features -->
+
+
+<!-- FEATURES SECTION -->
 <div class="features-section">
-    <div class="features-title">Why SEO Booster Pro?</div>
+    <div class="features-title">Everything You Need to Improve Rankings</div>
 
     <div class="feature-grid">
         <div class="feature-card">
             <div class="feature-icon">⚡</div>
             <div class="feature-title">Lightning-Fast Audits</div>
-            <div class="feature-desc">Analyze titles, meta tags, headings, images, links, and more in seconds.</div>
+            <div class="feature-desc">Scan any page in seconds with our optimized local SEO engine.</div>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon">🔗</div>
             <div class="feature-title">Broken Link Checker</div>
-            <div class="feature-desc">Detect internal and external broken links instantly with our built-in crawler.</div>
+            <div class="feature-desc">Instant internal/external link analysis with shallow crawler.</div>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon">📊</div>
-            <div class="feature-title">SEO Score & Tips</div>
-            <div class="feature-desc">Get a 0-100 SEO score plus clear optimization tips — no AI required.</div>
+            <div class="feature-title">SEO Score & Optimization Tips</div>
+            <div class="feature-desc">Get a 0-100 SEO score plus clear suggestions to boost your rankings.</div>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">🥇</div>
-            <div class="feature-title">No Keys. No Limits.</div>
-            <div class="feature-desc">Forget API keys and quotas. Everything runs locally, free and unlimited.</div>
+            <div class="feature-icon">🔍</div>
+            <div class="feature-title">Keyword Analysis</div>
+            <div class="feature-desc">Local keyword extraction, density, and relevance scoring — no AI required.</div>
         </div>
     </div>
+</div>
+
+
+
+<!-- PRICING SECTION -->
+<div class="pricing-section">
+    <div class="pricing-title">Simple, Fair Pricing</div>
+
+    <div class="pricing-grid">
+
+        <!-- FREE PLAN -->
+        <div class="plan-card">
+            <div class="plan-title">Free</div>
+            <div class="plan-price">$0</div>
+            <ul class="plan-features">
+                <li>3 scans per month</li>
+                <li>1 PDF export</li>
+                <li>Full audit results</li>
+                <li>No card required</li>
+            </ul>
+            <a href="/signup" class="plan-btn" style="background:#6A4CFF;">Get Started Free</a>
+        </div>
+
+        <!-- PRO PLAN -->
+        <div class="plan-card">
+            <div class="plan-title">Pro</div>
+            <div class="plan-price">$4.99/mo</div>
+            <ul class="plan-features">
+                <li>Unlimited scans</li>
+                <li>Unlimited PDFs</li>
+                <li>No ads</li>
+                <li>Priority processing</li>
+            </ul>
+            <a href="/upgrade" class="plan-btn" style="background:#00a86b;">Upgrade Now</a>
+        </div>
+
+        <!-- PAY-AS-YOU-GO -->
+        <div class="plan-card">
+            <div class="plan-title">Pay-As-You-Go</div>
+            <div class="plan-price">$0.99/scan</div>
+            <ul class="plan-features">
+                <li>No subscription</li>
+                <li>Buy extra scans anytime</li>
+                <li>Instant unlock</li>
+            </ul>
+            <a href="/buy-scan" class="plan-btn" style="background:#ff9800;">Buy a Scan</a>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!-- FOOTER -->
+<div class="footer">
+    © {{ 2025 }} SEO Booster Pro — All rights reserved.
 </div>
 
 {% endblock %}
