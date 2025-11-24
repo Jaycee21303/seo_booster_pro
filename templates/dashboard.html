@@ -2,138 +2,188 @@
 {% block content %}
 
 <style>
-    body {
-        background: #f7f7fb;
-        font-family: 'Inter', sans-serif;
-        color: #222;
-    }
+/* ------------------------------------
+   Basic Layout Styling
+------------------------------------ */
+body {
+    background: #f7f7fb;
+    font-family: 'Inter', sans-serif;
+    color: #222;
+}
 
-    .navbar {
-        width: 100%;
-        padding: 18px 40px;
-        background: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+.navbar {
+    width: 100%;
+    padding: 18px 40px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
 
-    .nav-left {
-        font-size: 22px;
-        font-weight: 700;
-        color: #6A4CFF;
-    }
+.nav-left {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6A4CFF;
+}
 
-    .nav-links a {
-        margin-left: 25px;
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-    }
-    .nav-links a:hover { color: #6A4CFF; }
+.nav-links a {
+    margin-left: 25px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+.nav-links a:hover { color: #6A4CFF; }
 
-    .header-banner {
-        width: 100%;
-        padding: 45px 0;
-        text-align: center;
-        background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-        color: white;
-        margin-bottom: 35px;
-    }
+.header-banner {
+    width: 100%;
+    padding: 45px 0;
+    text-align: center;
+    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+    color: white;
+    margin-bottom: 35px;
+}
 
-    .header-banner h1 { font-size: 38px; font-weight: 800; margin-bottom: 10px; }
-    .header-banner p { font-size: 17px; opacity: 0.9; }
+.header-banner h1 {
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.header-banner p {
+    font-size: 17px;
+    opacity: 0.9;
+}
 
-    .dashboard-container {
-        max-width: 900px;
-        margin: auto;
-        padding: 20px;
-    }
+.dashboard-container {
+    max-width: 950px;
+    margin: auto;
+    padding: 20px;
+}
 
-    .card {
-        background: white;
-        border-radius: 14px;
-        padding: 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    }
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
 
-    .section-title {
-        font-size: 22px;
-        font-weight: 600;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+.section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-    /* SCORE CIRCLE */
-    .score-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 15px;
-        margin-top: 5px;
-    }
+/* ------------------------------------
+   Score Circle
+------------------------------------ */
+.score-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .score-circle {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        background: conic-gradient(#ddd 0deg, #ddd 360deg);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        transition: background 1s ease;
-    }
+.score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(#ddd 0deg, #ddd 360deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
 
-    .score-circle-inner {
-        width: 120px;
-        height: 120px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 36px;
-        font-weight: 700;
-        color: #333;
-        position: absolute;
-    }
+.score-circle-inner {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    position: absolute;
+}
 
-    .limit-warning {
-        color: #b00000;
-        padding: 10px;
-        font-weight: bold;
-    }
+/* ------------------------------------
+   Progress Bars
+------------------------------------ */
+.progress-block {
+    margin: 12px 0;
+}
 
-    input[type="url"], input[type="text"] {
-        padding: 12px 14px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        flex: 1;
-        font-size: 15px;
-    }
+.progress-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
 
-    .run-btn {
-        padding: 12px 18px;
-        border: none;
-        border-radius: 8px;
-        background: #6A4CFF;
-        color: white;
-        font-size: 15px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-    .run-btn:hover { background: #5535e6; }
+.progress-bar {
+    width: 100%;
+    height: 16px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #6A4CFF;
+    border-radius: 10px;
+    transition: width 1.2s ease;
+}
+
+/* ------------------------------------
+   Radar Chart
+------------------------------------ */
+.radar-container {
+    width: 380px;
+    height: 380px;
+    margin: 25px auto;
+    position: relative;
+}
+
+.radar-grid {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #f0f0ff 0%, #ffffff 70%);
+}
+
+.radar-shape {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(
+        50% 0%,
+        85% 20%,
+        100% 60%,
+        75% 100%,
+        25% 100%,
+        0% 60%,
+        15% 20%
+    );
+    opacity: 0.22;
+    transform-origin: center;
+}
+
+#yourRadar { background: #6A4CFF; }
+#compRadar { background: #2D8CFF; }
+
+/* Hide competitor block until valid */
+.hidden { display: none; }
 </style>
 
 
+<!-- NAVIGATION -->
 <div class="navbar">
     <div class="nav-left">SEO Booster Pro</div>
     <div class="nav-links">
@@ -143,44 +193,42 @@
     </div>
 </div>
 
+<!-- HEADER -->
 <div class="header-banner">
     <h1>SEO Dashboard</h1>
     <p>Instant AI-powered insights to improve your rankings & visibility</p>
 </div>
 
-
+<!-- MAIN -->
 <div class="dashboard-container">
 
+    <!-- ANALYZER -->
     <div class="card">
         <div class="section-title">🔍 SEO Analyzer</div>
 
-        {% if limit_reached %}
-            <div class="limit-warning">
-                You used all 3 free scans. Upgrade for unlimited access.
-                <br><br>
-                <a href="/upgrade" style="color:#6A4CFF;font-weight:bold;">Upgrade Now →</a>
-            </div>
-        {% else %}
         <form method="POST">
-            <div class="input-row" style="display:flex; gap:10px;">
-                <input type="url" name="website_url" placeholder="Website URL (required)" required>
-                <input type="text" id="manual-keyword" name="keyword"
-                       placeholder="Keyword (optional)" style="display:none;">
-                <button class="run-btn" type="submit">Run SEO Analysis</button>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <input type="url" name="website_url" placeholder="Your website URL…" required
+                       style="flex:1; padding:12px; border:1px solid #ccc; border-radius:8px;">
+
+                <button type="submit" class="run-btn"
+                        style="background:#6A4CFF;color:white;padding:12px 18px;border-radius:8px;border:none;">
+                    Analyze
+                </button>
             </div>
 
-            <small style="color:#6A4CFF; cursor:pointer;"
-                onclick="document.getElementById('manual-keyword').style.display='block'; this.style.display='none';">
-                + Add keyword manually (optional)
-            </small>
-        </form>
-        {% endif %}
-    </div>
+            <input type="text" name="keyword" placeholder="Keyword (optional)"
+                   style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
 
+            <input type="url" name="competitor_url" placeholder="Competitor URL (optional)"
+                   style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;">
+        </form>
+
+    </div>
 
     <!-- SCORE CARD -->
     <div class="card">
-        <div class="section-title">📈 Keyword Score</div>
+        <div class="section-title">📈 SEO Score</div>
 
         {% if keyword_score %}
         <div class="score-wrapper">
@@ -196,14 +244,13 @@
             let current = 0;
 
             let color = "#6A4CFF";
-            if (finalScore >= 80) color = "#09c372";   // green
-            else if (finalScore >= 60) color = "#f7b731"; // yellow
-            else color = "#fa5252"; // red
+            if (finalScore >= 80) color = "#09c372";
+            else if (finalScore >= 60) color = "#f7b731";
+            else color = "#fa5252";
 
             let interval = setInterval(() => {
-                if (current >= finalScore) {
-                    clearInterval(interval);
-                } else {
+                if (current >= finalScore) clearInterval(interval);
+                else {
                     current++;
                     inner.innerText = current;
                     circle.style.background =
@@ -213,20 +260,104 @@
         </script>
 
         {% else %}
-        Enter a URL to begin.
+        <p>Enter a URL to get started.</p>
         {% endif %}
     </div>
 
+    <!-- PROGRESS BARS -->
+    {% if content_score %}
+    <div class="card">
+        <div class="section-title">📊 Detailed Breakdown</div>
 
+        <div class="progress-block">
+            <div class="progress-label">Content Quality</div>
+            <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
+        </div>
+
+        <div class="progress-block">
+            <div class="progress-label">Keyword Relevance</div>
+            <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
+        </div>
+
+        <div class="progress-block">
+            <div class="progress-label">Technical Health</div>
+            <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
+        </div>
+
+        <div class="progress-block">
+            <div class="progress-label">On-Page Structure</div>
+            <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
+        </div>
+
+        <div class="progress-block">
+            <div class="progress-label">Link Health</div>
+            <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
+        </div>
+
+        <script>
+            document.getElementById("pb-content").style.width = "{{ content_score }}%";
+            document.getElementById("pb-keyword").style.width = "{{ keywordcore }}%";
+            document.getElementById("pb-tech").style.width = "{{ technical_score }}%";
+            document.getElementById("pb-onpage").style.width = "{{ onpage_score }}%";
+            document.getElementById("pb-links").style.width = "{{ link_score }}%";
+        </script>
+
+    </div>
+    {% endif %}
+
+    <!-- AUDIT -->
     <div class="card">
         <div class="section-title">🧹 Site Audit</div>
-        {{ site_audit or "Results will appear here…" }}
+        <pre style="white-space:pre-wrap;font-size:15px;">{{ site_audit or "Results will appear here…" }}</pre>
     </div>
 
+    <!-- TIPS -->
     <div class="card">
         <div class="section-title">💡 Optimization Tips</div>
-        {{ optimization_tips or "Results will appear here…" }}
+        <pre style="white-space:pre-wrap;font-size:15px;">{{ optimization_tips or "Results will appear here…" }}</pre>
     </div>
+
+    <!-- COMPETITOR RADAR (Optional) -->
+    {% if competitor_data %}
+    <div class="card">
+        <div class="section-title">⚔️ Competitor Comparison</div>
+
+        <div class="radar-container">
+            <div class="radar-grid"></div>
+
+            <!-- Your radar -->
+            <div id="yourRadar" class="radar-shape"></div>
+
+            <!-- Competitor radar -->
+            <div id="compRadar" class="radar-shape"></div>
+        </div>
+
+        <script>
+            function scaleRadar(el, values) {
+                let avg = values.reduce((a,b)=>a+b) / values.length;
+                let scale = avg / 100;
+                el.style.transform = `scale(${scale})`;
+            }
+
+            scaleRadar(document.getElementById("yourRadar"), [
+                {{ content_score }},
+                {{ keywordcore }},
+                {{ technical_score }},
+                {{ onpage_score }},
+                {{ link_score }}
+            ]);
+
+            scaleRadar(document.getElementById("compRadar"), [
+                {{ competitor_data.content_score }},
+                {{ competitor_data.keywordcore }},
+                {{ competitor_data.technical_score }},
+                {{ competitor_data.onpage_score }},
+                {{ competitor_data.link_score }}
+            ]);
+        </script>
+
+    </div>
+    {% endif %}
 
 </div>
 
