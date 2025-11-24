@@ -3,172 +3,120 @@
 
 <style>
 .settings-container {
-    max-width: 700px;
+    max-width: 520px;
     margin: 70px auto;
+    padding: 35px;
     background: white;
-    padding: 40px;
-    border-radius: 18px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     font-family: 'Inter', sans-serif;
 }
 
 .settings-title {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 12px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
     color: #333;
 }
 
 .settings-subtitle {
     font-size: 15px;
+    text-align: center;
     color: #666;
     margin-bottom: 25px;
 }
 
-.settings-section {
-    margin-bottom: 35px;
-    padding-bottom: 25px;
-    border-bottom: 1px solid #e4e4e4;
-}
-
-.settings-section:last-child {
-    border-bottom: none;
-}
-
-.section-label {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #222;
-}
-
-.settings-row {
-    margin-bottom: 12px;
-}
-
-.settings-key {
-    font-weight: 600;
-    color: #444;
-}
-
-.settings-value {
-    color: #666;
+.settings-input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
 }
 
 .settings-btn {
-    display: inline-block;
-    padding: 12px 20px;
+    width: 100%;
+    padding: 14px;
     background: #6A4CFF;
     color: white;
-    border-radius: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
     font-weight: 600;
-    text-decoration: none;
     transition: 0.2s;
 }
 
 .settings-btn:hover {
-    background: #563ae6;
+    background: #5535e6;
 }
 
-.settings-btn-secondary {
+.plan-box {
+    background: #f7f7fb;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.upgrade-btn {
     display: inline-block;
+    margin-top: 10px;
     padding: 12px 20px;
-    background: #ff9800;
+    background: #6A4CFF;
     color: white;
-    border-radius: 10px;
     font-weight: 600;
+    border-radius: 8px;
     text-decoration: none;
-    transition: 0.2s;
 }
 
-.settings-btn-secondary:hover {
-    opacity: 0.85;
+.logout-link {
+    text-align: center;
+    margin-top: 20px;
 }
 
-.settings-btn-danger {
-    display: inline-block;
-    padding: 12px 20px;
-    background: #d9534f;
-    color: white;
-    border-radius: 10px;
+.logout-link a {
+    color: #6A4CFF;
+    text-decoration: none;
     font-weight: 600;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.settings-btn-danger:hover {
-    background: #c64542;
 }
 </style>
 
-
 <div class="settings-container">
+
     <div class="settings-title">Account Settings</div>
-    <div class="settings-subtitle">Manage your subscription, usage, and account information.</div>
+    <div class="settings-subtitle">Manage your account, plan, and preferences</div>
 
-
-    <!-- ACCOUNT INFO -->
-    <div class="settings-section">
-        <div class="section-label">Account Details</div>
-
-        <div class="settings-row">
-            <span class="settings-key">Email:</span>
-            <span class="settings-value">{{ user.email }}</span>
-        </div>
-
-        <div class="settings-row">
-            <span class="settings-key">Account Type:</span>
-            {% if user.is_pro %}
-                <span class="settings-value" style="color:#00a86b; font-weight:700;">PRO Member</span>
-            {% else %}
-                <span class="settings-value">Free Plan</span>
-            {% endif %}
-        </div>
-
+    <!-- PLAN INFO -->
+    <div class="plan-box">
         {% if user.is_pro %}
-        <div class="settings-row">
-            <span class="settings-key">Pro Expires:</span>
-            <span class="settings-value">{{ user.pro_expires }}</span>
-        </div>
+            <h3 style="margin-bottom:8px;">PRO Plan</h3>
+            <p>✓ Unlimited scans<br>✓ Unlimited PDF exports<br>✓ Competitor comparison</p>
+        {% else %}
+            <h3 style="margin-bottom:8px;">Free Plan</h3>
+            <p>You have used <b>{{ user.scans_used }}</b> of 3 free scans.</p>
+            <a href="#" class="upgrade-btn">Upgrade to PRO</a>
         {% endif %}
     </div>
 
+    <!-- API KEY (Optional Future Features) -->
+    <form method="POST">
+        <label style="font-weight:600;">AI API Key (Optional)</label>
+        <input type="text"
+               name="api_key"
+               value="{{ user.api_key or '' }}"
+               class="settings-input"
+               placeholder="Enter your API key (optional)">
 
-    <!-- USAGE LIMITS -->
-    <div class="settings-section">
-        <div class="section-label">Usage Overview</div>
+        <button class="settings-btn" type="submit">Save Settings</button>
+    </form>
 
-        <div class="settings-row">
-            <span class="settings-key">Scans Used:</span>
-            <span class="settings-value">{{ user.scans_used }} / 3 (Free Tier)</span>
-        </div>
-
-        <div class="settings-row">
-            <span class="settings-key">PDF Exports Used:</span>
-            <span class="settings-value">{{ user.pdf_downloads_used }} / 1 (Free Tier)</span>
-        </div>
-
-        {% if not user.is_pro %}
-            <a href="/upgrade" class="settings-btn">Upgrade to Pro</a>
-            <a href="/buy-scan" class="settings-btn-secondary" style="margin-left:10px;">Buy 1 Scan – $0.99</a>
-        {% endif %}
-    </div>
-
-
-    <!-- PASSWORD RESET (UI Only For Now) -->
-    <div class="settings-section">
-        <div class="section-label">Security</div>
-        <a href="#" class="settings-btn">Reset Password</a>
-    </div>
-
-
-    <!-- LOGOUT -->
-    <div class="settings-section">
-        <div class="section-label">Logout</div>
-        <a href="/logout" class="settings-btn-danger">Log Out</a>
+    <div class="logout-link">
+        <a href="/logout">Logout</a>
     </div>
 
 </div>
 
 {% endblock %}
-
