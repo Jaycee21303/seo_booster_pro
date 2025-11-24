@@ -42,7 +42,7 @@
     /* Header Banner */
     .header-banner {
         width: 100%;
-        padding: 45px 0;
+        padding: 50px 0;
         text-align: center;
         background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
         color: white;
@@ -50,7 +50,7 @@
     }
 
     .header-banner h1 {
-        font-size: 38px;
+        font-size: 42px;
         font-weight: 800;
         margin-bottom: 10px;
     }
@@ -112,7 +112,35 @@
     }
 
     .run-btn:hover {
-        background: #573ae6;
+        background: #5330e9;
+    }
+
+    /* Circular Score */
+    .score-wrapper {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        margin: auto;
+    }
+
+    .progress-ring-bg {
+        opacity: 0.25;
+    }
+
+    .progress-ring-fill {
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        transition: stroke-dashoffset 1.2s ease, stroke 0.6s ease;
+    }
+
+    .score-number {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -52%);
+        font-size: 38px;
+        font-weight: 700;
+        color: #333;
     }
 </style>
 
@@ -130,22 +158,21 @@
 <!-- HEADER -->
 <div class="header-banner">
     <h1>SEO Dashboard</h1>
-    <p>Instant AI-powered insights to improve your rankings & visibility</p>
+    <p>Instant AI-powered insights to improve your rankings and visibility</p>
 </div>
 
 <!-- MAIN -->
 <div class="dashboard-container">
 
+    <!-- SEO Analyzer -->
     <div class="card">
         <div class="section-title">🔍 SEO Analyzer</div>
 
         <form method="POST">
             <div class="input-row">
-
                 <input type="url" name="website_url"
                        placeholder="Website URL (required)" required>
 
-                <!-- Hidden manual keyword field -->
                 <input type="text" id="manual-keyword" name="keyword"
                        placeholder="Keyword (optional)" style="display:none;">
 
@@ -161,30 +188,35 @@
             </small>
         </form>
 
-        <!-- Suggested Keywords -->
-        <div id="suggested_keywords" style="margin-top:15px; color:#444;">
-            {% if suggested_keywords %}
-                <div style="margin-top:10px;">
-                    <strong>Suggested Keywords:</strong><br>
-                    {% for kw in suggested_keywords %}
-                        <span style="background:#eee; padding:6px 10px; margin:4px;
-                                     display:inline-block; border-radius:8px; font-size:14px;">
-                            {{ kw }}
-                        </span>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        {% if suggested_keywords %}
+        <div style="margin-top:15px;">
+            <strong>Suggested Keywords:</strong><br><br>
+            {% for kw in suggested_keywords %}
+                <span style="background:#eee; padding:6px 12px; margin:4px;
+                             display:inline-block; border-radius:8px; font-size:14px;">
+                    {{ kw }}
+                </span>
+            {% endfor %}
         </div>
-
-        <small style="color:#666;">
-            AI-powered analysis • Auto-detects keywords • Fast insights
-        </small>
+        {% endif %}
     </div>
 
-    <!-- Keyword Score -->
+    <!-- Keyword Score with Circle -->
     <div class="card">
         <div class="section-title">📈 Keyword Score</div>
-        {{ keyword_score or "Enter a URL to begin." }}
+
+        <div class="score-wrapper">
+            <svg class="progress-ring" width="160" height="160">
+                <circle class="progress-ring-bg" stroke="#cccccc" stroke-width="12"
+                    fill="transparent" r="70" cx="80" cy="80"/>
+                <circle class="progress-ring-fill" stroke="#4CAF50" stroke-width="12"
+                    stroke-linecap="round" fill="transparent" r="70" cx="80" cy="80"/>
+            </svg>
+
+            <div class="score-number" id="scoreNumber">
+                {{ keyword_score or 0 }}
+            </div>
+        </div>
     </div>
 
     <!-- Site Audit -->
@@ -200,5 +232,29 @@
     </div>
 
 </div>
+
+<!-- SCORE SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const score = parseInt("{{ keyword_score or 0 }}");
+    const circle = document.querySelector('.progress-ring-fill');
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = circumference;
+
+    const offset = circumference - (score / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+
+    // Color transitions
+    if (score < 40) circle.style.stroke = "#ff4a4a";      // red
+    else if (score < 70) circle.style.stroke = "#ffb400"; // yellow
+    else circle.style.stroke = "#4CAF50";                 // green
+
+    // Update number
+    document.getElementById("scoreNumber").innerText = score;
+});
+</script>
 
 {% endblock %}
