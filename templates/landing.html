@@ -2,154 +2,131 @@
 {% block content %}
 
 <style>
-    body {
-        background: #f7f7fb;
-        color: #222;
-        font-family: 'Inter', sans-serif;
-    }
+.hero-section {
+    padding: 80px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
 
-    /* Hero Section */
-    .hero {
-        width: 100%;
-        padding: 80px 0;
-        text-align: center;
-        background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-        color: white;
-        margin-bottom: 50px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    }
+.hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
 
-    .hero h1 {
-        font-size: 44px;
-        font-weight: 800;
-        margin-bottom: 15px;
-        line-height: 1.2;
-    }
+.hero-subtitle {
+    font-size: 18px;
+    max-width: 650px;
+    margin: 0 auto 30px auto;
+    opacity: 0.9;
+}
 
-    .hero p {
-        font-size: 18px;
-        opacity: 0.95;
-        max-width: 620px;
-        margin: auto;
-        line-height: 1.6;
-    }
+.hero-btn {
+    padding: 16px 28px;
+    background: white;
+    color: #6A4CFF;
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+}
 
-    .hero-buttons {
-        margin-top: 30px;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-    }
+.hero-btn:hover {
+    background: #f0eaff;
+}
 
-    .btn-main {
-        background: white;
-        color: #6A4CFF;
-        padding: 14px 22px;
-        border-radius: 10px;
-        font-size: 17px;
-        font-weight: 700;
-        border: none;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-        cursor: pointer;
-        text-decoration: none;
-    }
+.features-section {
+    max-width: 950px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
 
-    .btn-outline {
-        background: transparent;
-        border: 2px solid white;
-        padding: 12px 20px;
-        color: white;
-        border-radius: 10px;
-        font-size: 17px;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-    }
+.features-title {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #333;
+}
 
-    /* Pricing Section */
-    .pricing-card {
-        background: white;
-        max-width: 700px;
-        margin: auto;
-        padding: 40px;
-        border-radius: 16px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+}
 
-    .pricing-title {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
+.feature-card {
+    padding: 25px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    text-align: center;
+}
 
-    .price {
-        font-size: 40px;
-        font-weight: 800;
-        color: #6A4CFF;
-        margin: 15px 0;
-    }
+.feature-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+    color: #6A4CFF;
+}
 
-    .pricing-details {
-        color: #666;
-        font-size: 15px;
-        margin-bottom: 20px;
-    }
+.feature-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
 
-    .btn-price {
-        padding: 14px 24px;
-        background: #6A4CFF;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 17px;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    /* Footer */
-    .footer {
-        text-align: center;
-        margin-top: 80px;
-        padding: 30px;
-        color: #777;
-        font-size: 14px;
-    }
+.feature-desc {
+    font-size: 15px;
+    color: #666;
+}
 </style>
 
-
-<!-- HERO SECTION -->
-<div class="hero">
-    <h1>AI SEO built for real businesses</h1>
-    <p>
-        Rank higher, get found, and attract more customers.  
-        Our AI gives you clear, actionable insights—no jargon, no confusion.
-    </p>
-
-    <div class="hero-buttons">
-        <a href="/signup" class="btn-main">Start Free Trial</a>
-        <a href="/login" class="btn-outline">Login</a>
-    </div>
-</div>
-
-
-<!-- PRICING BLOCK -->
-<div class="pricing-card">
-    <div class="pricing-title">Start Free</div>
-    <div class="price">$4.99 / month</div>
-
-    <div class="pricing-details">
-        30-day free trial • No credit card required • Cancel anytime
+<!-- Hero -->
+<div class="hero-section">
+    <div class="hero-title">AI-Free. Fast. Powerful SEO Analysis.</div>
+    <div class="hero-subtitle">
+        SEO Booster Pro scans any website with a full on-page audit, keyword analysis,
+        broken link checker, and performance insights — 100% locally, no API keys needed.
     </div>
 
-    <a href="/signup" class="btn-price">Start Free Trial</a>
+    <a href="/signup" class="hero-btn">Get Started — Free</a>
 </div>
 
+<!-- Features -->
+<div class="features-section">
+    <div class="features-title">Why SEO Booster Pro?</div>
 
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Lightning-Fast Audits</div>
+            <div class="feature-desc">Analyze titles, meta tags, headings, images, links, and more in seconds.</div>
+        </div>
 
-<div class="footer">
-    © 2025 SEO Booster Pro — Built for small business growth.
+        <div class="feature-card">
+            <div class="feature-icon">🔗</div>
+            <div class="feature-title">Broken Link Checker</div>
+            <div class="feature-desc">Detect internal and external broken links instantly with our built-in crawler.</div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">SEO Score & Tips</div>
+            <div class="feature-desc">Get a 0-100 SEO score plus clear optimization tips — no AI required.</div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🥇</div>
+            <div class="feature-title">No Keys. No Limits.</div>
+            <div class="feature-desc">Forget API keys and quotas. Everything runs locally, free and unlimited.</div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
