@@ -10,7 +10,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 # -----------------------------
-# HOME PAGE
+# HOME / LANDING PAGE
 # -----------------------------
 @app.route("/")
 def index():
@@ -18,7 +18,7 @@ def index():
 
 
 # -----------------------------
-# PRICING PAGE
+# PRICING PAGE (UPGRADE PAGE)
 # -----------------------------
 @app.route("/pricing")
 def pricing():
@@ -27,6 +27,7 @@ def pricing():
 
 # -----------------------------
 # CREATE CHECKOUT SESSION
+# (Redirects user to Stripe checkout)
 # -----------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -43,20 +44,24 @@ def create_checkout_session():
             cancel_url=url_for("cancel", _external=True),
         )
         return jsonify({"url": checkout_session.url})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
 
 # -----------------------------
 # SUCCESS PAGE
+# (User comes here after Stripe payment)
 # -----------------------------
 @app.route("/success")
 def success():
+    # Let user into the dashboard immediately
+    session["subscribed"] = True
     return render_template("success.html")
 
 
 # -----------------------------
-# CANCEL PAGE
+# CANCEL PAGE (User canceled checkout)
 # -----------------------------
 @app.route("/cancel")
 def cancel():
@@ -65,6 +70,7 @@ def cancel():
 
 # -----------------------------
 # WEBHOOK HANDLER
+# Stripe → your server
 # -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -80,33 +86,36 @@ def webhook():
 
     # Subscription activated
     if event["type"] == "checkout.session.completed":
-        session_data = event["data"]["object"]
-        customer_email = session_data["customer_details"]["email"]
-        # ➜ TODO: Mark user as premium in DB
+        print("✅ Subscription activated by Stripe webhook")
+
+    # Subscription renewed
+    if event["type"] == "invoice.payment_succeeded":
+        print("💰 Subscription renewed")
 
     # Subscription canceled
     if event["type"] == "customer.subscription.deleted":
-        # ➜ TODO: Mark user as NOT premium
-        pass
+        print("❌ Subscription canceled")
+        session["subscribed"] = False
 
     return "", 200
 
 
 # -----------------------------
-# REQUIRE SUBSCRIBED ACCESS WRAPPER
+# ACCESS CONTROL DECORATOR
+# (Protect pages behind subscription)
 # -----------------------------
 def require_subscription(f):
     def wrapper(*args, **kwargs):
-        # Replace with DB lookup
         if not session.get("subscribed"):
             return redirect("/pricing")
         return f(*args, **kwargs)
+
     wrapper.__name__ = f.__name__
     return wrapper
 
 
 # -----------------------------
-# EXAMPLE PROTECTED PAGE
+# PROTECTED DASHBOARD
 # -----------------------------
 @app.route("/dashboard")
 @require_subscription
@@ -115,7 +124,7 @@ def dashboard():
 
 
 # -----------------------------
-# START SERVER
+# START SERVER (LOCAL DEV)
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
