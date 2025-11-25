@@ -9,21 +9,11 @@ def get_connection():
     return psycopg2.connect(DATABASE_URL, sslmode="require")
 
 
-# ============================================================
-#  DATABASE INITIALIZATION / AUTO-MIGRATION
-# ============================================================
-
 def init_db():
-    """
-    Builds tables if missing, and auto-adds columns safely.
-    NEVER deletes/modifies existing user data.
-    """
     conn = get_connection()
     cursor = conn.cursor()
 
-    # --------------------------------------------------------
-    # USERS TABLE
-    # --------------------------------------------------------
+    # Create table if missing
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -33,53 +23,33 @@ def init_db():
         );
     """)
 
+    # Missing columns that MUST be added
     required_user_columns = {
-        "scans_used": "INTEGER DEFAULT 0",
-        "is_pro": "BOOLEAN DEFAULT FALSE",
         "is_admin": "BOOLEAN DEFAULT FALSE",
+        "is_pro": "BOOLEAN DEFAULT FALSE",
+        "scans_used": "INTEGER DEFAULT 0",
         "stripe_customer_id": "TEXT",
         "stripe_subscription_id": "TEXT",
         "subscription_status": "TEXT",
         "current_period_end": "TIMESTAMP"
     }
 
-    # Add missing columns safely
     for column, definition in required_user_columns.items():
         cursor.execute("""
-            SELECT column_name
-            FROM information_schema.columns
+            SELECT column_name 
+            FROM information_schema.columns 
             WHERE table_name='users' AND column_name=%s;
         """, (column,))
         exists = cursor.fetchone()
 
         if not exists:
             cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {definition};")
-            print(f"[DB] Added missing column to users: {column}")
-
-    # --------------------------------------------------------
-    # SUBSCRIPTIONS TABLE
-    # (Each user may have 0–1 active subscription)
-    # --------------------------------------------------------
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS subscriptions (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            stripe_customer_id TEXT,
-            stripe_subscription_id TEXT,
-            status TEXT,
-            current_period_end TIMESTAMP,
-            created_at TIMESTAMP DEFAULT NOW()
-        );
-    """)
+            print(f"[DB] Added missing user column: {column}")
 
     conn.commit()
     cursor.close()
     conn.close()
 
-
-# ============================================================
-#  QUERY HELPERS
-# ============================================================
 
 def fetch_one(query, params=None):
     conn = get_connection()
@@ -110,8 +80,5 @@ def execute(query, params=None):
     conn.close()
 
 
-# ============================================================
-#  RUN MIGRATIONS ON SERVICE STARTUP
-# ============================================================
-
+# Auto-run migrations
 init_db()
