@@ -60,6 +60,22 @@
     background: #5535e6;
 }
 
+.google-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+.google-btn:hover {
+    background: #f3f3f3;
+}
+
 .signup-footer {
     text-align: center;
     margin-top: 18px;
@@ -91,11 +107,16 @@
         <div class="error-box">{{ error }}</div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" action="/signup">
         <input type="email" name="email" class="signup-input" placeholder="Email address" required>
         <input type="password" name="password" class="signup-input" placeholder="Password" required>
 
         <button class="signup-btn" type="submit">Create Account</button>
+    </form>
+
+    <!-- GOOGLE SIGNUP PLACEHOLDER -->
+    <form action="/google-login" method="GET">
+        <button class="google-btn" type="submit">Sign Up with Google (coming soon)</button>
     </form>
 
     <div class="signup-footer">
