@@ -51,19 +51,71 @@ def debug_users():
 # ===================================================================
 # AUTO-CREATE ADMIN USER (ID = 1)
 # ===================================================================
+@app.route("/admin/users")
+def admin_users():
+    if not session.get("is_admin"):
+        return "Access denied", 403
 
-def ensure_admin_exists():
-    execute("""
-        INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
-        VALUES (1, 'admin@admin.com', 'M4ry321!', TRUE, TRUE, 0)
-        ON CONFLICT (id)
-        DO UPDATE SET 
-            email=EXCLUDED.email,
-            password=EXCLUDED.password,
-            is_pro=TRUE,
-            is_admin=TRUE;
+    page = int(request.args.get("page", 1))
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    users = fetch_all("""
+        SELECT id, email, is_pro, scans_used
+        FROM users
+        ORDER BY id DESC
+        LIMIT %s OFFSET %s
+    """, (per_page, offset))
+
+    next_users = fetch_all("""
+        SELECT id FROM users
+        ORDER BY id DESC
+        LIMIT 1 OFFSET %s
+    """, (offset + per_page,))
+
+    has_more = len(next_users) > 0
+
+    return render_template("admin_users.html",
+                           users=users,
+                           page=page,
+                           has_more=has_more)
+
     """)
     print("✔ Admin user ensured: admin@admin.com / M4ry321!")
+# ===================================================================
+# ADMIN ACTION ROUTES
+# ===================================================================
+
+@app.route("/admin/delete/<int:user_id>")
+def admin_delete(user_id):
+    if not session.get("is_admin"):
+        return "Access denied", 403
+    if user_id == session["user_id"]:
+        return "You cannot delete yourself.", 400
+
+    execute("DELETE FROM users WHERE id=%s", (user_id,))
+    return redirect("/admin/users")
+
+
+@app.route("/admin/reset-scans/<int:user_id>")
+def admin_reset_scans(user_id):
+    if not session.get("is_admin"):
+        return "Access denied", 403
+
+    execute("UPDATE users SET scans_used=0 WHERE id=%s", (user_id,))
+    return redirect("/admin/users")
+
+
+@app.route("/admin/toggle-pro/<int:user_id>")
+def admin_toggle_pro(user_id):
+    if not session.get("is_admin"):
+        return "Access denied", 403
+
+    user = fetch_one("SELECT is_pro FROM users WHERE id=%s", (user_id,))
+    new_status = not user["is_pro"]
+
+    execute("UPDATE users SET is_pro=%s WHERE id=%s", (new_status, user_id))
+    return redirect("/admin/users")
 
 
 # ===================================================================
