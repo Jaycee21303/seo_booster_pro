@@ -60,6 +60,22 @@
     background: #5535e6;
 }
 
+.google-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+.google-btn:hover {
+    background: #f3f3f3;
+}
+
 .login-footer {
     text-align: center;
     margin-top: 18px;
@@ -90,17 +106,6 @@
 }
 </style>
 
-<script>
-    // If already logged in, skip login page completely
-    fetch("/api/check-session")
-        .then(res => res.json())
-        .then(data => {
-            if (data.logged_in) {
-                window.location.href = "/dashboard";
-            }
-        });
-</script>
-
 <div class="login-container">
     <div class="login-title">Welcome Back</div>
     <div class="login-subtitle">Log in to access your SEO dashboard.</div>
@@ -109,7 +114,7 @@
         <div class="error-box">{{ error }}</div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" action="/login">
         <input type="email" name="email" class="login-input" placeholder="Email address" required>
         <input type="password" name="password" class="login-input" placeholder="Password" required>
 
@@ -118,6 +123,11 @@
         <div class="login-note">
             Every user gets <strong>3 free SEO scans</strong>.
         </div>
+    </form>
+
+    <!-- GOOGLE LOGIN PLACEHOLDER -->
+    <form action="/google-login" method="GET">
+        <button class="google-btn" type="submit">Continue with Google (coming soon)</button>
     </form>
 
     <div class="login-footer">
