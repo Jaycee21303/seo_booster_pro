@@ -4,7 +4,7 @@ import stripe, requests, re, os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from utils.pdf_builder import generate_pdf_report
-from db import fetch_one, fetch_all, execute   # <= YOUR DATABASE SYSTEM
+from utils.db import fetch_one, fetch_all, execute   # <= YOUR DATABASE SYSTEM
 
 # --------------------------------------------------------------
 # CONFIG
