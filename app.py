@@ -482,6 +482,25 @@ def change_password():
 
     return render_template("settings.html", success="Password updated successfully!")
 
+# -------------------------------------------
+# ADMIN USERS PAGE (View all users)
+# -------------------------------------------
+from utils.db import fetch_all
+
+@app.route("/admin/users")
+def admin_users():
+    # Simple protection (you can improve this later)
+    if not session.get("user") or session.get("user") != "admin@admin.com":
+        return "Access denied", 403
+
+    users = fetch_all("""
+        SELECT id, email, is_pro, scans_used, subscription_status, current_period_end
+        FROM users
+        ORDER BY id DESC;
+    """)
+
+    return render_template("admin_users.html", users=users)
+
 # ==============================================================
 # RUN SERVER
 # ==============================================================
