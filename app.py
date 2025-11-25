@@ -10,6 +10,16 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 # ====================================================
+# Utility – Track Free Scan Count
+# ====================================================
+def get_scan_count():
+    return session.get("scan_count", 0)
+
+def increment_scan_count():
+    session["scan_count"] = get_scan_count() + 1
+
+
+# ====================================================
 # HOME / LANDING PAGE
 # ====================================================
 @app.route("/")
@@ -26,7 +36,6 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # Simple fake login (remove later when DB added)
         if email and password:
             session["user"] = email
             return redirect("/dashboard")
@@ -45,10 +54,11 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # Simple fake signup (remove later when DB added)
         if email and password:
             session["user"] = email
-            return redirect("/pricing")
+            session["subscribed"] = False  # new user = free tier
+            session["scan_count"] = 0  # give 3 free scans
+            return redirect("/dashboard")
 
         return render_template("signup.html", error="Signup failed")
 
@@ -64,7 +74,7 @@ def pricing():
 
 
 # ====================================================
-# CREATE CHECKOUT SESSION
+# CREATE CHECKOUT SESSION (Stripe)
 # ====================================================
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -132,32 +142,55 @@ def webhook():
 
 
 # ====================================================
-# SUBSCRIPTION GUARD
-# ====================================================
-def require_subscription(f):
-    def wrapper(*args, **kwargs):
-        if not session.get("subscribed"):
-            return redirect("/pricing")
-        return f(*args, **kwargs)
-
-    wrapper.__name__ = f.__name__
-    return wrapper
-
-
-# ====================================================
-# DASHBOARD (PROTECTED)
+# PROTECTED DASHBOARD (Always Accessible)
 # ====================================================
 @app.route("/dashboard")
-@require_subscription
 def dashboard():
     if not session.get("user"):
         return redirect("/login")
-
     return render_template("dashboard.html")
 
 
 # ====================================================
-# RUN LOCAL
+# SEO SCAN ENDPOINT (Core Feature)
+# ====================================================
+@app.route("/scan", methods=["POST"])
+def scan():
+    # Unlimited scans for subscribed users
+    if session.get("subscribed"):
+        return jsonify(process_scan(unlimited=True))
+
+    # Free-tier users only get 3 scans
+    scans = get_scan_count()
+
+    if scans < 3:
+        increment_scan_count()
+        result = process_scan()
+        result["limit_reached"] = (scans + 1 >= 3)
+        return jsonify(result)
+
+    # Over 3 scans → block + trigger popup in frontend
+    return jsonify({
+        "error": "limit",
+        "message": "You have used all 3 free scans",
+        "limit_reached": True
+    }), 403
+
+
+# ====================================================
+# SEO SCAN PROCESSOR (Mock Function – Replace with Real Logic)
+# ====================================================
+def process_scan(unlimited=False):
+    # Replace with your actual SEO logic
+    return {
+        "score": 87,
+        "details": "Mock SEO scan result for demonstration",
+        "unlimited": unlimited
+    }
+
+
+# ====================================================
+# RUN SERVER (LOCAL ONLY)
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True)
