@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin: Users</h2>
+<table border="1" cellspacing="0" cellpadding="8">
+  <tr>
+    <th>ID</th>
+    <th>Email</th>
+    <th>Pro</th>
+    <th>Admin</th>
+    <th>Scans Used</th>
+    <th>Actions</th>
+  </tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ u.is_pro }}</td>
+    <td>{{ u.is_admin }}</td>
+    <td>{{ u.scans_used }}</td>
+    <td>
+      <a href="/admin/edit/{{ u.id }}">Edit</a> |
+      <a href="/admin/delete/{{ u.id }}">Delete</a> |
+      <a href="/admin/reset_scans/{{ u.id }}">Reset Scans</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
