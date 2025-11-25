@@ -427,20 +427,6 @@ def admin_set_pro(user_id, status):
     return redirect("/admin/users")
 
 
-# ============================================
-# TEMP FIX: Add is_admin column if missing
-# ============================================
-@app.route("/fixdb")
-def fixdb():
-    try:
-        execute("""
-            ALTER TABLE users
-            ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
-        """)
-        return "DB FIXED: is_admin column ensured.", 200
-    except Exception as e:
-        return f"ERROR: {str(e)}", 500
-
 
 # ===================================================================
 # RUN + AUTO-ADMIN
