@@ -437,6 +437,14 @@ def admin_users():
 def google_login():
     return "Google login coming soon!"
 
+# ==============================================================
+# ADMIN USERS PAGE
+# ==============================================================
+
+@app.route("/admin/users")
+def admin_users():
+    users = fetch_all("SELECT * FROM users ORDER BY id DESC")
+    return render_template("admin_users.html", users=users)
 
 # ==============================================================
 # RUN SERVER
