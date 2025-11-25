@@ -426,6 +426,29 @@ def admin_set_pro(user_id, status):
     execute("UPDATE users SET is_pro=%s WHERE id=%s", (bool(status), user_id))
     return redirect("/admin/users")
 
+# ===================================================
+# TEMP FIX: FORCE ADMIN SETUP (DELETE AFTER RUNNING)
+# ===================================================
+@app.route("/force-admin")
+def force_admin():
+    try:
+        # 1. Add is_admin column if missing
+        execute("""
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+        """)
+
+        # 2. Make sure admin user exists (ID = 1)
+        execute("""
+            UPDATE users
+            SET is_admin = TRUE, is_pro = TRUE
+            WHERE id = 1;
+        """)
+
+        return "Admin fix applied. You can now log in and access /admin/users. REMOVE this route now."
+    except Exception as e:
+        return f"Error: {e}"
+
 
 # ===================================================================
 # RUN + AUTO-ADMIN
