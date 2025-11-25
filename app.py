@@ -21,16 +21,19 @@ app = Flask(__name__)
 app.secret_key = "super-secret-key"
 stripe.api_key = STRIPE_SECRET_KEY
 
+# ===================================================================
+# NEW HOME ROUTE (FIXES 404)
+# ===================================================================
+@app.route("/")
+def index():
+    return render_template("landing.html")
+
 
 # ===================================================================
 # AUTO-CREATE ADMIN USER (ID = 1)
 # ===================================================================
 
 def ensure_admin_exists():
-    """
-    Ensures admin always exists with ID=1.
-    Updates password/is_pro/is_admin if row already exists.
-    """
     execute("""
         INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
         VALUES (1, 'admin@admin.com', 'M4ry321!', TRUE, TRUE, 0)
@@ -119,8 +122,6 @@ def readability_score(text):
         return 90
 
 
-# -------- Full Analyzer --------
-
 def analyze_html(html, url, keyword=None):
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(" ", strip=True)
@@ -171,22 +172,22 @@ def analyze_html(html, url, keyword=None):
 # ===================================================================
 
 def ai_summary(data):
-    return f"Your site scored {data['score']}. Solid foundation — small updates to structure, keyword usage, and technical signals can boost rankings fast."
+    return f"Your site scored {data['score']} — solid foundation with room for improvement."
 
 def ai_action_plan(data):
-    return "Improve headings, expand keyword usage, fix missing alt tags, and check technical signals for a strong SEO boost."
+    return "Improve headings, keyword usage, alt tags, and technical signals."
 
 def ai_google_thinks(data):
-    return "Google sees helpful content but under-optimized structure. Improve clarity, metadata, and technical reliability."
+    return "Helpful content but under-optimized. Improve structure + metadata."
 
 def ai_competitor_summary(main, comp):
-    return f"Your site scored {main['score']} vs competitor {comp['score']}. They lead in content depth; you lead in technical structure."
+    return f"Your score {main['score']} vs competitor {comp['score']}."
 
 def ai_competitor_advantages(main, comp):
-    return "Competitor has deeper content structure and stronger keyword embedding."
+    return "Competitor has stronger keyword depth."
 
 def ai_competitor_disadvantages(main, comp):
-    return "Competitor struggles with weak internal links and missing alt tags — your advantage."
+    return "Competitor missing internal links and alt tags."
 
 
 # ===================================================================
@@ -223,7 +224,7 @@ def run_full_scan(url, keyword=None, competitor_url=None):
 
 
 # ===================================================================
-# AUTH ROUTES
+# AUTH
 # ===================================================================
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -259,7 +260,6 @@ def login():
 
         session["user_id"] = user["id"]
         session["is_pro"] = user["is_pro"]
-
         session["is_admin"] = (user["id"] == 1)
 
         return redirect("/dashboard")
@@ -282,7 +282,10 @@ def dashboard():
     if not session.get("user_id"):
         return redirect("/login")
 
-    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (session["user_id"],))
+    user = fetch_one(
+        "SELECT is_pro, scans_used FROM users WHERE id=%s",
+        (session["user_id"],)
+    )
 
     scans_left = None if user["is_pro"] else max(0, 3 - user["scans_used"])
 
@@ -294,7 +297,7 @@ def dashboard():
 
 
 # ===================================================================
-# SCAN ROUTE
+# SCAN API
 # ===================================================================
 
 @app.route("/scan", methods=["POST"])
@@ -302,16 +305,26 @@ def scan():
     if not session.get("user_id"):
         return jsonify({"error": "auth"}), 403
 
-    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (session["user_id"],))
+    user = fetch_one(
+        "SELECT is_pro, scans_used FROM users WHERE id=%s",
+        (session["user_id"],)
+    )
 
     if not user["is_pro"] and user["scans_used"] >= 3:
         return jsonify({"error": "limit"}), 403
 
     if not user["is_pro"]:
-        execute("UPDATE users SET scans_used=scans_used+1 WHERE id=%s", (session["user_id"],))
+        execute(
+            "UPDATE users SET scans_used=scans_used+1 WHERE id=%s",
+            (session["user_id"],)
+        )
 
     data = request.get_json()
-    result = run_full_scan(data.get("url"), data.get("keyword"), data.get("competitor"))
+    result = run_full_scan(
+        data.get("url"),
+        data.get("keyword"),
+        data.get("competitor")
+    )
 
     session["latest_scan"] = result
     return jsonify(result)
@@ -403,7 +416,7 @@ def webhook():
 
 
 # ===================================================================
-# ADMIN ROUTES
+# ADMIN
 # ===================================================================
 
 @app.route("/admin/users")
@@ -427,12 +440,12 @@ def admin_set_pro(user_id, status):
     return redirect("/admin/users")
 
 
-
 # ===================================================================
-# RUN + AUTO-ADMIN
+# RUN
 # ===================================================================
 
 ensure_admin_exists()
 
 if __name__ == "__main__":
     app.run(debug=True)
+
