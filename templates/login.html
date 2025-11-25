@@ -81,7 +81,25 @@
     font-size: 14px;
     text-align: center;
 }
+
+.login-note {
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+    color: #888;
+}
 </style>
+
+<script>
+    // If already logged in, skip login page completely
+    fetch("/api/check-session")
+        .then(res => res.json())
+        .then(data => {
+            if (data.logged_in) {
+                window.location.href = "/dashboard";
+            }
+        });
+</script>
 
 <div class="login-container">
     <div class="login-title">Welcome Back</div>
@@ -96,6 +114,10 @@
         <input type="password" name="password" class="login-input" placeholder="Password" required>
 
         <button class="login-btn" type="submit">Log In</button>
+
+        <div class="login-note">
+            Every user gets <strong>3 free SEO scans</strong>.
+        </div>
     </form>
 
     <div class="login-footer">
