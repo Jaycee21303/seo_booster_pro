@@ -3,119 +3,85 @@
 
 <style>
 .settings-container {
-    max-width: 520px;
-    margin: 70px auto;
-    padding: 35px;
+    max-width: 480px;
+    margin: 60px auto;
     background: white;
-    border-radius: 14px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    font-family: 'Inter', sans-serif;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-family: Inter, sans-serif;
 }
 
 .settings-title {
     font-size: 28px;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 10px;
-    color: #333;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #6A4CFF;
 }
 
-.settings-subtitle {
-    font-size: 15px;
-    text-align: center;
-    color: #666;
-    margin-bottom: 25px;
-}
-
-.settings-input {
-    width: 100%;
-    padding: 12px 14px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 15px;
-}
-
-.settings-btn {
+.input-box {
     width: 100%;
     padding: 14px;
-    background: #6A4CFF;
-    color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.settings-btn:hover {
-    background: #5535e6;
-}
-
-.plan-box {
-    background: #f7f7fb;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    text-align: center;
-}
-
-.upgrade-btn {
-    display: inline-block;
     margin-top: 10px;
-    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.save-btn {
+    width: 100%;
+    padding: 16px;
+    margin-top: 20px;
     background: #6A4CFF;
     color: white;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.success-box {
+    background: #d9ffe0;
+    padding: 12px;
+    color: #0a8f37;
     border-radius: 8px;
-    text-decoration: none;
+    margin-bottom: 15px;
 }
 
-.logout-link {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.logout-link a {
-    color: #6A4CFF;
-    text-decoration: none;
-    font-weight: 600;
+.error-box {
+    background: #ffe0e0;
+    padding: 12px;
+    color: #b30000;
+    border-radius: 8px;
+    margin-bottom: 15px;
 }
 </style>
 
 <div class="settings-container">
-
+    
     <div class="settings-title">Account Settings</div>
-    <div class="settings-subtitle">Manage your account, plan, and preferences</div>
 
-    <!-- PLAN INFO -->
-    <div class="plan-box">
-        {% if user.is_pro %}
-            <h3 style="margin-bottom:8px;">PRO Plan</h3>
-            <p>✓ Unlimited scans<br>✓ Unlimited PDF exports<br>✓ Competitor comparison</p>
-        {% else %}
-            <h3 style="margin-bottom:8px;">Free Plan</h3>
-            <p>You have used <b>{{ user.scans_used }}</b> of 3 free scans.</p>
-            <a href="#" class="upgrade-btn">Upgrade to PRO</a>
-        {% endif %}
-    </div>
+    {% if success %}
+    <div class="success-box">{{ success }}</div>
+    {% endif %}
 
-    <!-- API KEY (Optional Future Features) -->
-    <form method="POST">
-        <label style="font-weight:600;">AI API Key (Optional)</label>
-        <input type="text"
-               name="api_key"
-               value="{{ user.api_key or '' }}"
-               class="settings-input"
-               placeholder="Enter your API key (optional)">
+    {% if error %}
+    <div class="error-box">{{ error }}</div>
+    {% endif %}
 
-        <button class="settings-btn" type="submit">Save Settings</button>
+    <form method="POST" action="/change-password">
+        <label>Current Password</label>
+        <input type="password" name="current_password" class="input-box" required>
+
+        <label>New Password</label>
+        <input type="password" name="new_password" class="input-box" required>
+
+        <label>Confirm New Password</label>
+        <input type="password" name="confirm_password" class="input-box" required>
+
+        <button class="save-btn" type="submit">Change Password</button>
     </form>
-
-    <div class="logout-link">
-        <a href="/logout">Logout</a>
-    </div>
 
 </div>
 
