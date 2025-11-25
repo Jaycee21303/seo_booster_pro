@@ -8,7 +8,7 @@
     </h1>
 
     <p style="max-width:500px; margin:auto; opacity:0.7; margin-bottom:40px;">
-        Unlock full SEO reports, unlimited scans, PDF exports, competitor analysis, and more.
+        Unlock unlimited scans, full SEO reports, PDF exports, competitor analysis, and more.
     </p>
 
     <div style="
@@ -21,26 +21,59 @@
         ">
         
         <h2 style="font-size:30px; margin-bottom:10px;">$4.99/month</h2>
-        <p style="opacity:0.7;">Start with a 14-day free trial</p>
+        <p style="opacity:0.7;">Includes a 14-day free trial</p>
 
-        <form action="/create-checkout-session" method="POST">
-            <button style="
-                margin-top:30px;
-                padding:16px 32px;
-                background:#6A4CFF;
-                color:white;
-                font-size:18px;
-                border:none;
-                border-radius:10px;
-                font-weight:700;
-                cursor:pointer;
-                width:100%;
-            ">
-                Start Free Trial
-            </button>
-        </form>
+        <p style="opacity:0.6; font-size:14px; margin-top:10px;">
+            You currently have <strong>3 free scans</strong> on the Free Plan.
+        </p>
+
+        <button id="checkout-btn" onclick="startCheckout()" style="
+            margin-top:30px;
+            padding:16px 32px;
+            background:#6A4CFF;
+            color:white;
+            font-size:18px;
+            border:none;
+            border-radius:10px;
+            font-weight:700;
+            cursor:pointer;
+            width:100%;
+        ">
+            Start Free Trial
+        </button>
+
+        <a href="/dashboard" style="display:block; margin-top:20px; opacity:0.6; font-size:14px;">
+            ← Back to Dashboard
+        </a>
+
     </div>
 
 </div>
+
+
+<script>
+function startCheckout() {
+    const btn = document.getElementById("checkout-btn");
+    btn.textContent = "Redirecting...";
+    btn.style.opacity = "0.6";
+    btn.style.pointerEvents = "none";
+
+    fetch("/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            alert("Error: " + (data.error || "Something went wrong"));
+            btn.textContent = "Start Free Trial";
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+        }
+    });
+}
+</script>
 
 {% endblock %}
