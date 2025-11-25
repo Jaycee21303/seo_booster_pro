@@ -447,6 +447,42 @@ def admin_users():
     return render_template("admin_users.html", users=users)
 
 # ==============================================================
+# SETTINGS PAGE (Change Password)
+# ==============================================================
+
+from werkzeug.security import check_password_hash, generate_password_hash
+
+@app.route("/settings")
+@login_required
+def settings():
+    return render_template("settings.html")
+
+
+@app.route("/change-password", methods=["POST"])
+@login_required
+def change_password():
+    user = current_user()
+
+    current_pw = request.form.get("current_password")
+    new_pw = request.form.get("new_password")
+    confirm_pw = request.form.get("confirm_password")
+
+    # 1. Confirm current password is correct
+    if not check_password_hash(user["password"], current_pw):
+        return render_template("settings.html", error="Current password is incorrect.")
+
+    # 2. New passwords must match
+    if new_pw != confirm_pw:
+        return render_template("settings.html", error="New passwords do not match.")
+
+    # 3. Update DB with new hashed password
+    hashed_pw = generate_password_hash(new_pw)
+
+    execute("UPDATE users SET password=%s WHERE id=%s", (hashed_pw, user["id"]))
+
+    return render_template("settings.html", success="Password updated successfully!")
+
+# ==============================================================
 # RUN SERVER
 # ==============================================================
 
