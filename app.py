@@ -3,11 +3,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import stripe, requests, re, os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from utils.pdf_builder import generate_pdf_report
-from utils.db import fetch_one, fetch_all, execute   # <= YOUR DATABASE SYSTEM
 
 # --------------------------------------------------------------
-# CONFIG
+# IMPORTS (DB + PDF)
+# --------------------------------------------------------------
+from utils.db import fetch_one, fetch_all, execute
+from utils.pdf_builder import generate_pdf_report
+
+# --------------------------------------------------------------
+# CONFIG (Stripe)
 # --------------------------------------------------------------
 from config import (
     STRIPE_PUBLIC_KEY,
@@ -22,7 +26,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 # ==============================================================
-# SEO ENGINE (unchanged — exact same logic you had)
+# SEO ENGINE
 # ==============================================================
 
 def fetch_html(url):
@@ -54,7 +58,6 @@ def count_links(soup, base_url):
     internal = 0
     external = 0
     base_domain = base_url.split("//")[1].split("/")[0]
-
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         if href.startswith("http"):
@@ -64,14 +67,12 @@ def count_links(soup, base_url):
                 external += 1
         else:
             internal += 1
-
     return internal, external
 
 def broken_links(soup, base_url):
     broken = 0
     for a in soup.find_all("a", href=True):
-        href = a["href"]
-        full = urljoin(base_url, href)
+        full = urljoin(base_url, a["href"])
         try:
             r = requests.head(full, timeout=5)
             if r.status_code >= 400:
@@ -86,8 +87,7 @@ def readability_score(text):
         return 40
     elif length < 800:
         return 70
-    else:
-        return 90
+    return 90
 
 def analyze_html(html, url, keyword=None):
     soup = BeautifulSoup(html, "html.parser")
@@ -133,49 +133,34 @@ def analyze_html(html, url, keyword=None):
     }
 
 
-# --------------------------------------------------------------
+# ==============================================================
 # AI TEXT (unchanged)
-# --------------------------------------------------------------
+# ==============================================================
 
 def ai_summary(data):
     return (
-        f"Great job running your scan! Your site scored {data['score']}. "
-        "This shows you already have a solid base. With a few technical tune-ups and stronger keyword use, "
-        "you can see easy wins."
+        f"Great job running your scan! Your site scored {data['score']}."
     )
 
 def ai_action_plan(data):
-    return (
-        "Improve your heading structure, meta descriptions, and internal linking. "
-        "Fix missing alt tags and consider enriching content with additional keyword variations."
-    )
+    return "Improve headings, meta descriptions, and fix alt tags."
 
 def ai_google_thinks(data):
-    return (
-        "Google sees your site as useful but slightly under-optimized. "
-        "More clarity in structure and technical polish can help rankings climb."
-    )
+    return "Google sees your site as helpful but under-optimized."
 
 def ai_competitor_summary(main, comp):
-    return (
-        f"Your score: {main['score']} vs competitor: {comp['score']}. "
-        "They are strong in content depth, but you have an advantage in technical hygiene."
-    )
+    return f"Your score: {main['score']} vs competitor: {comp['score']}."
 
 def ai_competitor_advantages(main, comp):
-    return (
-        "Competitor has deeper keyword integration and more layered content organization."
-    )
+    return "Competitor has deeper keyword integration."
 
 def ai_competitor_disadvantages(main, comp):
-    return (
-        "Competitor struggles with broken links, missing alt tags, and technical structure."
-    )
+    return "Competitor struggles with broken links."
 
 
-# --------------------------------------------------------------
+# ==============================================================
 # FULL SCAN
-# --------------------------------------------------------------
+# ==============================================================
 
 def run_full_scan(url, keyword=None, competitor_url=None):
     html = fetch_html(url)
@@ -213,7 +198,7 @@ def run_full_scan(url, keyword=None, competitor_url=None):
 
 
 # ==============================================================
-# AUTH HELPERS
+# AUTH
 # ==============================================================
 
 def current_user():
@@ -258,7 +243,6 @@ def signup():
 
         user = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
         session["user_id"] = user["id"]
-
         return redirect("/dashboard")
 
     return render_template("signup.html")
@@ -299,7 +283,6 @@ def dashboard():
     user = current_user()
     subscribed = user["is_pro"]
     scans_left = None if subscribed else max(0, 3 - user["scans_used"])
-
     return render_template("dashboard.html",
                            subscribed=subscribed,
                            scans_left=scans_left)
@@ -313,7 +296,6 @@ def dashboard():
 @login_required
 def scan():
     user = current_user()
-
     data = request.get_json()
     url = data.get("url")
     keyword = data.get("keyword")
@@ -322,12 +304,10 @@ def scan():
     if not user["is_pro"]:
         if user["scans_used"] >= 3:
             return jsonify({"error": "limit"}), 403
-
         execute("UPDATE users SET scans_used = scans_used + 1 WHERE id=%s", (user["id"],))
 
     result = run_full_scan(url, keyword, competitor)
     session["latest_scan"] = result
-
     return jsonify(result)
 
 
@@ -344,7 +324,6 @@ def pricing():
 @login_required
 def create_checkout_session():
     user = current_user()
-
     checkout_session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         mode="subscription",
@@ -353,7 +332,6 @@ def create_checkout_session():
         success_url=url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
         cancel_url=url_for("cancel", _external=True),
     )
-
     return jsonify({"url": checkout_session.url})
 
 
@@ -374,7 +352,6 @@ def cancel():
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
-
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
     except Exception as e:
@@ -382,7 +359,6 @@ def webhook():
 
     if event["type"] == "checkout.session.completed":
         email = event["data"]["object"]["customer_details"]["email"]
-
         execute("UPDATE users SET is_pro = TRUE WHERE email=%s", (email,))
 
     return "", 200
@@ -395,13 +371,11 @@ def webhook():
 @app.route("/export-pdf")
 @login_required
 def export_pdf():
-
     data = session.get("latest_scan")
     if not data:
         return "No scan available.", 400
 
     filepath = "/tmp/seo_report.pdf"
-
     generate_pdf_report(
         filepath=filepath,
         url=data.get("url"),
@@ -415,94 +389,38 @@ def export_pdf():
         tips_text=data.get("tips"),
         competitor_data=data.get("competitor_data")
     )
-
     return send_file(filepath, as_attachment=True, download_name="SEO_Report.pdf")
 
 
 # ==============================================================
-# ADMIN (VIEW ALL USERS)
-# ==============================================================
-
-@app.route("/admin/all_users")
-def admin_users():
-    users = fetch_all("SELECT id, email, is_pro, scans_used FROM users ORDER BY id DESC")
-    return render_template("admin_users.html", users=users)
-
-
-# ==============================================================
-# GOOGLE LOGIN (placeholder)
-# ==============================================================
-
-@app.route("/google-login")
-def google_login():
-    return "Google login coming soon!"
-
-# ==============================================================
-# ADMIN USERS PAGE
+# ADMIN PANEL
 # ==============================================================
 
 @app.route("/admin/users")
-def admin_users_page():
-    users = fetch_all("SELECT * FROM users ORDER BY id DESC")
-    return render_template("admin_users.html", users=users)
-
-# ==============================================================
-# SETTINGS PAGE (Change Password)
-# ==============================================================
-
-from werkzeug.security import check_password_hash, generate_password_hash
-
-@app.route("/settings")
-@login_required
-def settings():
-    return render_template("settings.html")
-
-
-@app.route("/change-password", methods=["POST"])
-@login_required
-def change_password():
-    user = current_user()
-
-    current_pw = request.form.get("current_password")
-    new_pw = request.form.get("new_password")
-    confirm_pw = request.form.get("confirm_password")
-
-    # 1. Confirm current password is correct
-    if not check_password_hash(user["password"], current_pw):
-        return render_template("settings.html", error="Current password is incorrect.")
-
-    # 2. New passwords must match
-    if new_pw != confirm_pw:
-        return render_template("settings.html", error="New passwords do not match.")
-
-    # 3. Update DB with new hashed password
-    hashed_pw = generate_password_hash(new_pw)
-
-    execute("UPDATE users SET password=%s WHERE id=%s", (hashed_pw, user["id"]))
-
-    return render_template("settings.html", success="Password updated successfully!")
-
-# -------------------------------------------
-# ADMIN USERS PAGE (View all users)
-# -------------------------------------------
-from utils.db import fetch_all
-
-@app.route("/admin/users")
 def admin_users():
-    # Simple protection (you can improve this later)
-    if not session.get("user") or session.get("user") != "admin@admin.com":
+    if session.get("user_id") != 1:  # <-- TEMP simple admin rule (first user is admin)
         return "Access denied", 403
 
     users = fetch_all("""
-        SELECT id, email, is_pro, scans_used, subscription_status, current_period_end
+        SELECT id, email, is_pro, scans_used
         FROM users
         ORDER BY id DESC;
     """)
 
     return render_template("admin_users.html", users=users)
 
+
 # ==============================================================
-# RUN SERVER
+# GOOGLE LOGIN PLACEHOLDER
+# ==============================================================
+
+@app.route("/google-login")
+def google_login():
+    return "Google login coming soon!"
+
+
+# ==============================================================
+# RUN
 # ==============================================================
 
 if __name__ == "__main__":
