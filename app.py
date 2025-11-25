@@ -9,26 +9,63 @@ app.secret_key = "super-secret-key"
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-# -----------------------------
+# ====================================================
 # HOME / LANDING PAGE
-# -----------------------------
+# ====================================================
 @app.route("/")
 def index():
     return render_template("landing.html")
 
 
-# -----------------------------
-# PRICING PAGE (UPGRADE PAGE)
-# -----------------------------
+# ====================================================
+# LOGIN
+# ====================================================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Simple fake login (remove later when DB added)
+        if email and password:
+            session["user"] = email
+            return redirect("/dashboard")
+
+        return render_template("login.html", error="Invalid login")
+
+    return render_template("login.html")
+
+
+# ====================================================
+# SIGNUP
+# ====================================================
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Simple fake signup (remove later when DB added)
+        if email and password:
+            session["user"] = email
+            return redirect("/pricing")
+
+        return render_template("signup.html", error="Signup failed")
+
+    return render_template("signup.html")
+
+
+# ====================================================
+# PRICING PAGE
+# ====================================================
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
 
 
-# -----------------------------
+# ====================================================
 # CREATE CHECKOUT SESSION
-# (Redirects user to Stripe checkout)
-# -----------------------------
+# ====================================================
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     try:
@@ -37,7 +74,7 @@ def create_checkout_session():
             mode="subscription",
             line_items=[{
                 "price": STRIPE_PRICE_ID,
-                "quantity": 1
+                "quantity": 1,
             }],
             allow_promotion_codes=True,
             success_url=url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
@@ -49,29 +86,23 @@ def create_checkout_session():
         return jsonify({"error": str(e)}), 400
 
 
-# -----------------------------
-# SUCCESS PAGE
-# (User comes here after Stripe payment)
-# -----------------------------
+# ====================================================
+# SUCCESS / CANCEL
+# ====================================================
 @app.route("/success")
 def success():
-    # Let user into the dashboard immediately
     session["subscribed"] = True
     return render_template("success.html")
 
 
-# -----------------------------
-# CANCEL PAGE (User canceled checkout)
-# -----------------------------
 @app.route("/cancel")
 def cancel():
     return render_template("cancel.html")
 
 
-# -----------------------------
-# WEBHOOK HANDLER
-# Stripe → your server
-# -----------------------------
+# ====================================================
+# STRIPE WEBHOOK
+# ====================================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
@@ -86,7 +117,7 @@ def webhook():
 
     # Subscription activated
     if event["type"] == "checkout.session.completed":
-        print("✅ Subscription activated by Stripe webhook")
+        print("✅ Subscription activated")
 
     # Subscription renewed
     if event["type"] == "invoice.payment_succeeded":
@@ -100,10 +131,9 @@ def webhook():
     return "", 200
 
 
-# -----------------------------
-# ACCESS CONTROL DECORATOR
-# (Protect pages behind subscription)
-# -----------------------------
+# ====================================================
+# SUBSCRIPTION GUARD
+# ====================================================
 def require_subscription(f):
     def wrapper(*args, **kwargs):
         if not session.get("subscribed"):
@@ -114,17 +144,20 @@ def require_subscription(f):
     return wrapper
 
 
-# -----------------------------
-# PROTECTED DASHBOARD
-# -----------------------------
+# ====================================================
+# DASHBOARD (PROTECTED)
+# ====================================================
 @app.route("/dashboard")
 @require_subscription
 def dashboard():
+    if not session.get("user"):
+        return redirect("/login")
+
     return render_template("dashboard.html")
 
 
-# -----------------------------
-# START SERVER (LOCAL DEV)
-# -----------------------------
+# ====================================================
+# RUN LOCAL
+# ====================================================
 if __name__ == "__main__":
     app.run(debug=True)
