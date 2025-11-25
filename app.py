@@ -1,23 +1,20 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
-from werkzeug.security import generate_password_hash, check_password_hash
 import stripe, requests, re, os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-# --------------------------------------------------------------
-# IMPORTS (DB + PDF)
-# --------------------------------------------------------------
+# DB layer
 from utils.db import fetch_one, fetch_all, execute
+
+# PDF generator
 from utils.pdf_builder import generate_pdf_report
 
-# --------------------------------------------------------------
-# CONFIG (Stripe)
-# --------------------------------------------------------------
+# Stripe keys
 from config import (
     STRIPE_PUBLIC_KEY,
     STRIPE_SECRET_KEY,
     STRIPE_PRICE_ID,
-    WEBHOOK_SECRET,
+    WEBHOOK_SECRET
 )
 
 app = Flask(__name__)
@@ -25,9 +22,9 @@ app.secret_key = "super-secret-key"
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-# ==============================================================
+# ===================================================================
 # SEO ENGINE
-# ==============================================================
+# ===================================================================
 
 def fetch_html(url):
     try:
@@ -39,6 +36,7 @@ def fetch_html(url):
     except:
         return None
 
+
 def count_headers(soup):
     return (
         len(soup.find_all("h1")),
@@ -46,18 +44,22 @@ def count_headers(soup):
         len(soup.find_all("h3")),
     )
 
+
 def count_keyword_density(text, keyword):
     if not keyword:
         return 0
     return text.lower().count(keyword.lower())
 
+
 def find_missing_alt(imgs):
     return sum(1 for img in imgs if not img.get("alt"))
+
 
 def count_links(soup, base_url):
     internal = 0
     external = 0
     base_domain = base_url.split("//")[1].split("/")[0]
+
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         if href.startswith("http"):
@@ -67,12 +69,15 @@ def count_links(soup, base_url):
                 external += 1
         else:
             internal += 1
+
     return internal, external
+
 
 def broken_links(soup, base_url):
     broken = 0
     for a in soup.find_all("a", href=True):
-        full = urljoin(base_url, a["href"])
+        href = a["href"]
+        full = urljoin(base_url, href)
         try:
             r = requests.head(full, timeout=5)
             if r.status_code >= 400:
@@ -81,13 +86,18 @@ def broken_links(soup, base_url):
             broken += 1
     return broken
 
+
 def readability_score(text):
     length = len(text.split())
     if length < 300:
         return 40
     elif length < 800:
         return 70
-    return 90
+    else:
+        return 90
+
+
+# -------- Full Analyzer --------
 
 def analyze_html(html, url, keyword=None):
     soup = BeautifulSoup(html, "html.parser")
@@ -98,11 +108,13 @@ def analyze_html(html, url, keyword=None):
     meta_desc = meta_tag["content"] if meta_tag and meta_tag.get("content") else ""
 
     h1, h2, h3 = count_headers(soup)
+
     imgs = soup.find_all("img")
     missing_alt = find_missing_alt(imgs)
 
     internal, external = count_links(soup, url)
     bl = broken_links(soup, url)
+
     density = count_keyword_density(text, keyword)
     readability = readability_score(text)
 
@@ -133,39 +145,54 @@ def analyze_html(html, url, keyword=None):
     }
 
 
-# ==============================================================
-# AI TEXT (unchanged)
-# ==============================================================
+# ===================================================================
+# AI TEXT OUTPUTS
+# ===================================================================
 
 def ai_summary(data):
     return (
-        f"Great job running your scan! Your site scored {data['score']}."
+        f"Your site scored {data['score']}. You’re on a solid foundation, but small adjustments in content structure and keyword usage could quickly boost rankings."
     )
 
+
 def ai_action_plan(data):
-    return "Improve headings, meta descriptions, and fix alt tags."
+    return (
+        "Improve your heading structure, expand keyword usage, and fix missing alt tags. These changes will greatly improve SEO performance."
+    )
+
 
 def ai_google_thinks(data):
-    return "Google sees your site as helpful but under-optimized."
+    return (
+        "Google sees your site as helpful but under-optimized. Adding clarity, stronger keyword integration, and cleaner technical signals will help you rank higher."
+    )
+
 
 def ai_competitor_summary(main, comp):
-    return f"Your score: {main['score']} vs competitor: {comp['score']}."
+    return (
+        f"Your site scored {main['score']} vs {comp['score']} for the competitor. They lead in content depth, but you shine in technical strength and link structure."
+    )
+
 
 def ai_competitor_advantages(main, comp):
-    return "Competitor has deeper keyword integration."
+    return (
+        "Competitor uses a more layered content structure and stronger keyword embedding."
+    )
+
 
 def ai_competitor_disadvantages(main, comp):
-    return "Competitor struggles with broken links."
+    return (
+        "Competitor struggles with missing alt tags and weak internal links, giving you a strategic advantage."
+    )
 
 
-# ==============================================================
-# FULL SCAN
-# ==============================================================
+# ===================================================================
+# FULL SCAN ENGINE
+# ===================================================================
 
 def run_full_scan(url, keyword=None, competitor_url=None):
     html = fetch_html(url)
     if not html:
-        return {"error": "unreachable", "message": "Site could not be scanned."}
+        return {"error": "unreachable"}
 
     main = analyze_html(html, url, keyword)
 
@@ -181,13 +208,7 @@ def run_full_scan(url, keyword=None, competitor_url=None):
         html2 = fetch_html(competitor_url)
         if html2:
             comp = analyze_html(html2, competitor_url, keyword)
-            response["competitor_data"] = {
-                "content_score": comp["content"],
-                "keyword_score": comp["keyword"],
-                "technical_score": comp["technical"],
-                "onpage_score": comp["onpage"],
-                "link_score": comp["links"]
-            }
+            response["competitor_data"] = comp
             response["competitor_summary"] = ai_competitor_summary(main, comp)
             response["competitor_advantages"] = ai_competitor_advantages(main, comp)
             response["competitor_disadvantages"] = ai_competitor_disadvantages(main, comp)
@@ -197,52 +218,25 @@ def run_full_scan(url, keyword=None, competitor_url=None):
     return response
 
 
-# ==============================================================
-# AUTH
-# ==============================================================
-
-def current_user():
-    if "user_id" not in session:
-        return None
-    return fetch_one("SELECT * FROM users WHERE id=%s", (session["user_id"],))
-
-def login_required(func):
-    def wrapper(*args, **kwargs):
-        if "user_id" not in session:
-            return redirect("/login")
-        return func(*args, **kwargs)
-    wrapper.__name__ = func.__name__
-    return wrapper
-
-
-# ==============================================================
-# ROUTES
-# ==============================================================
-
-@app.route("/")
-def index():
-    return render_template("landing.html")
-
+# ===================================================================
+# AUTH ROUTES
+# ===================================================================
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        email = request.form.get("email").strip().lower()
+        email = request.form.get("email")
         password = request.form.get("password")
 
-        exists = fetch_one("SELECT id FROM users WHERE email=%s", (email,))
-        if exists:
-            return render_template("signup.html", error="Email already registered.")
-
-        hashed_pw = generate_password_hash(password)
-
         execute("""
-            INSERT INTO users (email, password, scans_used, is_pro)
-            VALUES (%s, %s, 0, FALSE)
-        """, (email, hashed_pw))
+            INSERT INTO users (email, password, is_pro, is_admin)
+            VALUES (%s, %s, FALSE, FALSE)
+        """, (email, password))
 
-        user = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
+        user = fetch_one("SELECT id FROM users WHERE email=%s", (email,))
         session["user_id"] = user["id"]
+        session["is_pro"] = False
+
         return redirect("/dashboard")
 
     return render_template("signup.html")
@@ -251,17 +245,17 @@ def signup():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email").strip().lower()
+        email = request.form.get("email")
         password = request.form.get("password")
 
         user = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
-        if not user:
+        if not user or user["password"] != password:
             return render_template("login.html", error="Invalid email or password.")
 
-        if not check_password_hash(user["password"], password):
-            return render_template("login.html", error="Incorrect password.")
-
         session["user_id"] = user["id"]
+        session["is_pro"] = user["is_pro"]
+        session["is_admin"] = user["is_admin"]
+
         return redirect("/dashboard")
 
     return render_template("login.html")
@@ -273,47 +267,82 @@ def logout():
     return redirect("/")
 
 
-# ==============================================================
+# ===================================================================
 # DASHBOARD
-# ==============================================================
+# ===================================================================
 
 @app.route("/dashboard")
-@login_required
 def dashboard():
-    user = current_user()
-    subscribed = user["is_pro"]
-    scans_left = None if subscribed else max(0, 3 - user["scans_used"])
+    if not session.get("user_id"):
+        return redirect("/login")
+
+    user_id = session["user_id"]
+    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (user_id,))
+
+    scans_left = None if user["is_pro"] else max(0, 3 - user["scans_used"])
+
     return render_template("dashboard.html",
-                           subscribed=subscribed,
+                           subscribed=user["is_pro"],
                            scans_left=scans_left)
 
 
-# ==============================================================
-# SCAN AJAX
-# ==============================================================
+# ===================================================================
+# SCAN ROUTE
+# ===================================================================
 
 @app.route("/scan", methods=["POST"])
-@login_required
 def scan():
-    user = current_user()
-    data = request.get_json()
-    url = data.get("url")
-    keyword = data.get("keyword")
-    competitor = data.get("competitor")
+    if not session.get("user_id"):
+        return jsonify({"error": "auth"}), 403
+
+    user_id = session["user_id"]
+    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (user_id,))
+
+    if not user["is_pro"] and user["scans_used"] >= 3:
+        return jsonify({"error": "limit"}), 403
 
     if not user["is_pro"]:
-        if user["scans_used"] >= 3:
-            return jsonify({"error": "limit"}), 403
-        execute("UPDATE users SET scans_used = scans_used + 1 WHERE id=%s", (user["id"],))
+        execute("UPDATE users SET scans_used=scans_used+1 WHERE id=%s", (user_id,))
 
-    result = run_full_scan(url, keyword, competitor)
+    data = request.get_json()
+    result = run_full_scan(data.get("url"), data.get("keyword"), data.get("competitor"))
+
     session["latest_scan"] = result
     return jsonify(result)
 
 
-# ==============================================================
+# ===================================================================
+# PDF EXPORT
+# ===================================================================
+
+@app.route("/export-pdf")
+def export_pdf():
+    data = session.get("latest_scan")
+    if not data:
+        return "No scan available.", 400
+
+    filepath = "/tmp/seo_report.pdf"
+
+    generate_pdf_report(
+        filepath=filepath,
+        url=data["url"],
+        main_score=data["score"],
+        content_score=data["content"],
+        technical_score=data["technical"],
+        keyword_score=data["keyword"],
+        onpage_score=data["onpage"],
+        link_score=data["links"],
+        audit_text=data["audit"],
+        tips_text=data["tips"],
+        competitor_data=data.get("competitor_data")
+    )
+
+    return send_file(filepath, as_attachment=True, download_name="SEO_Report.pdf")
+
+
+# ===================================================================
 # STRIPE
-# ==============================================================
+# ===================================================================
 
 @app.route("/pricing")
 def pricing():
@@ -321,25 +350,26 @@ def pricing():
 
 
 @app.route("/create-checkout-session", methods=["POST"])
-@login_required
 def create_checkout_session():
-    user = current_user()
-    checkout_session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        mode="subscription",
-        line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
-        allow_promotion_codes=True,
-        success_url=url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url=url_for("cancel", _external=True),
-    )
-    return jsonify({"url": checkout_session.url})
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+            allow_promotion_codes=True,
+            success_url=url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=url_for("cancel", _external=True),
+        )
+        return jsonify({"url": checkout_session.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @app.route("/success")
-@login_required
 def success():
-    user = current_user()
-    execute("UPDATE users SET is_pro = TRUE WHERE id=%s", (user["id"],))
+    user_id = session.get("user_id")
+    execute("UPDATE users SET is_pro=TRUE WHERE id=%s", (user_id,))
+    session["is_pro"] = True
     return render_template("success.html")
 
 
@@ -352,76 +382,50 @@ def cancel():
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
     except Exception as e:
-        return f"Webhook Error: {e}", 400
+        return "Webhook Error", 400
 
-    if event["type"] == "checkout.session.completed":
-        email = event["data"]["object"]["customer_details"]["email"]
-        execute("UPDATE users SET is_pro = TRUE WHERE email=%s", (email,))
+    if event["type"] == "customer.subscription.deleted":
+        user_id = session.get("user_id")
+        if user_id:
+            execute("UPDATE users SET is_pro=FALSE WHERE id=%s", (user_id,))
+            session["is_pro"] = False
 
     return "", 200
 
 
-# ==============================================================
-# PDF EXPORT
-# ==============================================================
-
-@app.route("/export-pdf")
-@login_required
-def export_pdf():
-    data = session.get("latest_scan")
-    if not data:
-        return "No scan available.", 400
-
-    filepath = "/tmp/seo_report.pdf"
-    generate_pdf_report(
-        filepath=filepath,
-        url=data.get("url"),
-        main_score=data.get("score"),
-        content_score=data.get("content"),
-        technical_score=data.get("technical"),
-        keyword_score=data.get("keyword"),
-        onpage_score=data.get("onpage"),
-        link_score=data.get("links"),
-        audit_text=data.get("audit"),
-        tips_text=data.get("tips"),
-        competitor_data=data.get("competitor_data")
-    )
-    return send_file(filepath, as_attachment=True, download_name="SEO_Report.pdf")
-
-
-# ==============================================================
-# ADMIN PANEL
-# ==============================================================
+# ===================================================================
+# ADMIN ROUTES
+# ===================================================================
 
 @app.route("/admin/users")
 def admin_users():
-    if session.get("user_id") != 1:  # <-- TEMP simple admin rule (first user is admin)
+    if session.get("user_id") != 1:
         return "Access denied", 403
 
     users = fetch_all("""
         SELECT id, email, is_pro, scans_used
-        FROM users
-        ORDER BY id DESC;
+        FROM users ORDER BY id DESC
     """)
 
     return render_template("admin_users.html", users=users)
 
 
-# ==============================================================
-# GOOGLE LOGIN PLACEHOLDER
-# ==============================================================
+@app.route("/admin/set_pro/<int:user_id>/<int:status>")
+def admin_set_pro(user_id, status):
+    if session.get("user_id") != 1:
+        return "Access denied", 403
 
-@app.route("/google-login")
-def google_login():
-    return "Google login coming soon!"
+    execute("UPDATE users SET is_pro=%s WHERE id=%s", (bool(status), user_id))
+    return redirect("/admin/users")
 
 
-# ==============================================================
+# ===================================================================
 # RUN
-# ==============================================================
+# ===================================================================
 
 if __name__ == "__main__":
     app.run(debug=True)
