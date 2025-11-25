@@ -23,6 +23,28 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 # ===================================================================
+# AUTO-CREATE ADMIN USER (ID = 1)
+# ===================================================================
+
+def ensure_admin_exists():
+    """
+    Ensures admin always exists with ID=1.
+    Updates password/is_pro/is_admin if row already exists.
+    """
+    execute("""
+        INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
+        VALUES (1, 'admin@admin.com', 'M4ry321!', TRUE, TRUE, 0)
+        ON CONFLICT (id)
+        DO UPDATE SET 
+            email=EXCLUDED.email,
+            password=EXCLUDED.password,
+            is_pro=TRUE,
+            is_admin=TRUE;
+    """)
+    print("✔ Admin user ensured: admin@admin.com / M4ry321!")
+
+
+# ===================================================================
 # SEO ENGINE
 # ===================================================================
 
@@ -108,7 +130,6 @@ def analyze_html(html, url, keyword=None):
     meta_desc = meta_tag["content"] if meta_tag and meta_tag.get("content") else ""
 
     h1, h2, h3 = count_headers(soup)
-
     imgs = soup.find_all("img")
     missing_alt = find_missing_alt(imgs)
 
@@ -150,39 +171,22 @@ def analyze_html(html, url, keyword=None):
 # ===================================================================
 
 def ai_summary(data):
-    return (
-        f"Your site scored {data['score']}. You’re on a solid foundation, but small adjustments in content structure and keyword usage could quickly boost rankings."
-    )
-
+    return f"Your site scored {data['score']}. Solid foundation — small updates to structure, keyword usage, and technical signals can boost rankings fast."
 
 def ai_action_plan(data):
-    return (
-        "Improve your heading structure, expand keyword usage, and fix missing alt tags. These changes will greatly improve SEO performance."
-    )
-
+    return "Improve headings, expand keyword usage, fix missing alt tags, and check technical signals for a strong SEO boost."
 
 def ai_google_thinks(data):
-    return (
-        "Google sees your site as helpful but under-optimized. Adding clarity, stronger keyword integration, and cleaner technical signals will help you rank higher."
-    )
-
+    return "Google sees helpful content but under-optimized structure. Improve clarity, metadata, and technical reliability."
 
 def ai_competitor_summary(main, comp):
-    return (
-        f"Your site scored {main['score']} vs {comp['score']} for the competitor. They lead in content depth, but you shine in technical strength and link structure."
-    )
-
+    return f"Your site scored {main['score']} vs competitor {comp['score']}. They lead in content depth; you lead in technical structure."
 
 def ai_competitor_advantages(main, comp):
-    return (
-        "Competitor uses a more layered content structure and stronger keyword embedding."
-    )
-
+    return "Competitor has deeper content structure and stronger keyword embedding."
 
 def ai_competitor_disadvantages(main, comp):
-    return (
-        "Competitor struggles with missing alt tags and weak internal links, giving you a strategic advantage."
-    )
+    return "Competitor struggles with weak internal links and missing alt tags — your advantage."
 
 
 # ===================================================================
@@ -236,6 +240,7 @@ def signup():
         user = fetch_one("SELECT id FROM users WHERE email=%s", (email,))
         session["user_id"] = user["id"]
         session["is_pro"] = False
+        session["is_admin"] = False
 
         return redirect("/dashboard")
 
@@ -254,7 +259,8 @@ def login():
 
         session["user_id"] = user["id"]
         session["is_pro"] = user["is_pro"]
-        session["is_admin"] = user["is_admin"]
+
+        session["is_admin"] = (user["id"] == 1)
 
         return redirect("/dashboard")
 
@@ -276,14 +282,15 @@ def dashboard():
     if not session.get("user_id"):
         return redirect("/login")
 
-    user_id = session["user_id"]
-    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (user_id,))
+    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (session["user_id"],))
 
     scans_left = None if user["is_pro"] else max(0, 3 - user["scans_used"])
 
-    return render_template("dashboard.html",
-                           subscribed=user["is_pro"],
-                           scans_left=scans_left)
+    return render_template(
+        "dashboard.html",
+        subscribed=user["is_pro"],
+        scans_left=scans_left
+    )
 
 
 # ===================================================================
@@ -295,14 +302,13 @@ def scan():
     if not session.get("user_id"):
         return jsonify({"error": "auth"}), 403
 
-    user_id = session["user_id"]
-    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (user_id,))
+    user = fetch_one("SELECT is_pro, scans_used FROM users WHERE id=%s", (session["user_id"],))
 
     if not user["is_pro"] and user["scans_used"] >= 3:
         return jsonify({"error": "limit"}), 403
 
     if not user["is_pro"]:
-        execute("UPDATE users SET scans_used=scans_used+1 WHERE id=%s", (user_id,))
+        execute("UPDATE users SET scans_used=scans_used+1 WHERE id=%s", (session["user_id"],))
 
     data = request.get_json()
     result = run_full_scan(data.get("url"), data.get("keyword"), data.get("competitor"))
@@ -367,9 +373,9 @@ def create_checkout_session():
 
 @app.route("/success")
 def success():
-    user_id = session.get("user_id")
-    execute("UPDATE users SET is_pro=TRUE WHERE id=%s", (user_id,))
-    session["is_pro"] = True
+    if session.get("user_id"):
+        execute("UPDATE users SET is_pro=TRUE WHERE id=%s", (session["user_id"],))
+        session["is_pro"] = True
     return render_template("success.html")
 
 
@@ -385,13 +391,12 @@ def webhook():
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
-    except Exception as e:
+    except:
         return "Webhook Error", 400
 
     if event["type"] == "customer.subscription.deleted":
-        user_id = session.get("user_id")
-        if user_id:
-            execute("UPDATE users SET is_pro=FALSE WHERE id=%s", (user_id,))
+        if session.get("user_id"):
+            execute("UPDATE users SET is_pro=FALSE WHERE id=%s", (session["user_id"],))
             session["is_pro"] = False
 
     return "", 200
@@ -406,10 +411,9 @@ def admin_users():
     if session.get("user_id") != 1:
         return "Access denied", 403
 
-    users = fetch_all("""
-        SELECT id, email, is_pro, scans_used
-        FROM users ORDER BY id DESC
-    """)
+    users = fetch_all(
+        "SELECT id, email, is_pro, scans_used FROM users ORDER BY id DESC"
+    )
 
     return render_template("admin_users.html", users=users)
 
@@ -424,8 +428,10 @@ def admin_set_pro(user_id, status):
 
 
 # ===================================================================
-# RUN
+# RUN + AUTO-ADMIN
 # ===================================================================
+
+ensure_admin_exists()
 
 if __name__ == "__main__":
     app.run(debug=True)
