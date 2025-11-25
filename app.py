@@ -1,20 +1,18 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 from utils.db import fetch_one, fetch_all, execute
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
+
 
 # ============================================================
 # AUTO-CREATE ADMIN (ID = 1)
 # ============================================================
 
 def ensure_admin_exists():
-    """
-    Creates or updates the main admin row (ID=1)
-    """
+    """Creates or updates the built-in admin user (ID=1)."""
     execute("""
         INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
         VALUES (1, 'admin@admin.com', %s, TRUE, TRUE, 0)
@@ -24,14 +22,14 @@ def ensure_admin_exists():
             password = EXCLUDED.password,
             is_admin = TRUE;
     """, (generate_password_hash("M4ry321!"),))
-
     print("✓ Admin ensured: admin@admin.com / M4ry321!")
 
 
 ensure_admin_exists()
 
+
 # ============================================================
-# HELPERS
+# SESSION HELPERS
 # ============================================================
 
 def current_user():
@@ -43,11 +41,11 @@ def current_user():
 
 def admin_required():
     user = current_user()
-    return user and user["is_admin"] == True
+    return user and user["is_admin"] is True
 
 
 # ============================================================
-# ROUTES: AUTH
+# AUTH ROUTES
 # ============================================================
 
 @app.route("/")
@@ -81,9 +79,9 @@ def login():
         email = request.form["email"].strip().lower()
         password = request.form["password"]
 
-        row = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
-        if row and check_password_hash(row["password"], password):
-            session["user_id"] = row["id"]
+        user = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
+        if user and check_password_hash(user["password"], password):
+            session["user_id"] = user["id"]
             return redirect("/dashboard")
 
         return render_template("login.html", error="Invalid email or password")
@@ -103,20 +101,22 @@ def logout():
 
 @app.route("/dashboard")
 def dashboard():
-    if not current_user():
+    user = current_user()
+    if not user:
         return redirect("/login")
-    return render_template("dashboard.html", user=current_user())
+    return render_template("dashboard.html", user=user)
 
 
 @app.route("/settings")
 def settings():
-    if not current_user():
+    user = current_user()
+    if not user:
         return redirect("/login")
-    return render_template("settings.html", user=current_user())
+    return render_template("settings.html", user=user)
 
 
 # ============================================================
-# ADMIN PANEL — USERS LIST
+# ADMIN — USERS LIST
 # ============================================================
 
 @app.route("/admin/users")
@@ -124,11 +124,11 @@ def admin_users():
     if not admin_required():
         return "Access Denied"
 
-    # --- Search ---
+    # Search
     q = request.args.get("q", "").strip().lower()
 
-    # --- Sorting ---
-    sort = request.args.get("sort", "id_asc")
+    # Sorting
+    sort = request.args.get("sort", "id_desc")
     order_sql = {
         "id_asc": "id ASC",
         "id_desc": "id DESC",
@@ -138,9 +138,9 @@ def admin_users():
         "pro_desc": "is_pro DESC",
         "scans_asc": "scans_used ASC",
         "scans_desc": "scans_used DESC",
-    }.get(sort, "id ASC")
+    }.get(sort, "id DESC")
 
-    # --- Query ---
+    # Query
     if q:
         users = fetch_all(f"""
             SELECT * FROM users
@@ -150,11 +150,14 @@ def admin_users():
     else:
         users = fetch_all(f"SELECT * FROM users ORDER BY {order_sql}")
 
-    return render_template("admin_users.html", users=users, q=q, sort=sort)
+    return render_template("admin_users.html",
+                           users=users,
+                           q=q,
+                           sort=sort)
 
 
 # ============================================================
-# ADMIN: EDIT USER
+# ADMIN — EDIT USER
 # ============================================================
 
 @app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
@@ -168,8 +171,8 @@ def admin_edit_user(user_id):
 
     if request.method == "POST":
         email = request.form["email"]
-        is_pro = True if request.form.get("is_pro") == "on" else False
-        is_admin = True if request.form.get("is_admin") == "on" else False
+        is_pro = request.form.get("is_pro") == "on"
+        is_admin = request.form.get("is_admin") == "on"
 
         execute("""
             UPDATE users
@@ -183,7 +186,7 @@ def admin_edit_user(user_id):
 
 
 # ============================================================
-# ADMIN: DELETE USER
+# ADMIN — DELETE USER
 # ============================================================
 
 @app.route("/admin/delete/<int:user_id>")
@@ -196,7 +199,7 @@ def admin_delete_user(user_id):
 
 
 # ============================================================
-# ADMIN: RESET SCANS
+# ADMIN — RESET USER SCAN COUNT
 # ============================================================
 
 @app.route("/admin/reset_scans/<int:user_id>")
@@ -216,13 +219,16 @@ def admin_reset_scans(user_id):
 def privacy():
     return render_template("privacy.html")
 
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
 
+
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
+
 
 @app.route("/about")
 def about():
@@ -230,7 +236,7 @@ def about():
 
 
 # ============================================================
-# START
+# RUN APP
 # ============================================================
 
 if __name__ == "__main__":
