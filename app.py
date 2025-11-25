@@ -1,8 +1,15 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-import stripe, requests, re
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
+import stripe, requests, re, os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from config import STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, WEBHOOK_SECRET
+from utils.pdf_builder import generate_pdf_report   # <-- YOUR PDF SYSTEM
+
+from config import (
+    STRIPE_PUBLIC_KEY,
+    STRIPE_SECRET_KEY,
+    STRIPE_PRICE_ID,
+    WEBHOOK_SECRET
+)
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
@@ -11,14 +18,13 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 # ===================================================================
-#   ADVANCED SEO ENGINE (MAIN + COMPETITOR)
+# ADVANCED SEO ENGINE (MAIN + COMPETITOR)
 # ===================================================================
 
 def fetch_html(url):
-    """Fetch HTML with safe headers."""
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers, timeout=8)
+        r = requests.get(url, headers=headers, timeout=10)
         if r.status_code != 200:
             return None
         return r.text
@@ -47,11 +53,12 @@ def find_missing_alt(imgs):
 def count_links(soup, base_url):
     internal = 0
     external = 0
+    base_domain = base_url.split("//")[1].split("/")[0]
 
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         if href.startswith("http"):
-            if base_url.split("//")[1].split("/")[0] in href:
+            if base_domain in href:
                 internal += 1
             else:
                 external += 1
@@ -67,7 +74,7 @@ def broken_links(soup, base_url):
         href = a["href"]
         full = urljoin(base_url, href)
         try:
-            r = requests.head(full, timeout=4)
+            r = requests.head(full, timeout=5)
             if r.status_code >= 400:
                 broken += 1
         except:
@@ -85,16 +92,16 @@ def readability_score(text):
         return 90
 
 
+# --------- Full analysis (all restored features) ---------
+
 def analyze_html(html, url, keyword=None):
     soup = BeautifulSoup(html, "html.parser")
-
-    # Extract TEXT
     text = soup.get_text(" ", strip=True)
 
     # Title / Meta
     title = soup.title.string if soup.title else ""
-    meta = soup.find("meta", attrs={"name": "description"})
-    meta_desc = meta["content"] if meta and meta.get("content") else ""
+    meta_tag = soup.find("meta", attrs={"name": "description"})
+    meta_desc = meta_tag["content"] if meta_tag and meta_tag.get("content") else ""
 
     # Headers
     h1, h2, h3 = count_headers(soup)
@@ -107,22 +114,20 @@ def analyze_html(html, url, keyword=None):
     internal, external = count_links(soup, url)
     bl = broken_links(soup, url)
 
-    # Keyword density
+    # Keyword
     density = count_keyword_density(text, keyword)
 
     # Readability
     readability = readability_score(text)
 
-    # -------------------------
-    # SCORE FORMULA (restored)
-    # -------------------------
+    # ---- Weighted SEO scoring (restored full version) ----
     content_score = min(100, 50 + readability // 2 + h2 * 2 + h3)
     keyword_score = min(100, 20 + density * 5)
     technical_score = min(100, 90 - missing_alt * 2 - bl * 3)
     onpage_score = min(100, 30 + h1 * 8 + len(meta_desc) // 8)
     link_score = min(100, 20 + internal + external // 2 - bl)
 
-    overall = int(
+    final_score = int(
         0.22 * content_score +
         0.22 * keyword_score +
         0.22 * technical_score +
@@ -131,7 +136,7 @@ def analyze_html(html, url, keyword=None):
     )
 
     return {
-        "score": overall,
+        "score": final_score,
         "content": content_score,
         "keyword": keyword_score,
         "technical": technical_score,
@@ -139,69 +144,69 @@ def analyze_html(html, url, keyword=None):
         "links": link_score,
         "broken_links": bl,
         "keyword_density": density,
-        "readability": readability
+        "readability": readability,
     }
 
 
 
 # ===================================================================
-#   AI STYLE RESPONSES (Friendly ChatGPT Tone, 3–5 sentences)
+# AI STYLE RESPONSES (friendly, 3–5 sentences)
 # ===================================================================
 
 def ai_summary(data):
     return (
-        f"Here's what I found! Your overall SEO score of {data['score']} suggests "
-        "a solid foundation with plenty of room for improvement. Your content structure "
-        "and metadata look promising, but keyword usage and technical factors could use "
-        "a little tuning. With a few targeted adjustments, you can dramatically boost your visibility."
+        f"Great job running your scan! Your site scored {data['score']}, which shows "
+        "that you already have a solid foundation to build from. A few elements like "
+        "technical fine-tuning and stronger keyword usage could give you an easy boost. "
+        "Overall, you're headed in the right direction — small adjustments will create big gains."
     )
 
 
 def ai_action_plan(data):
     return (
-        "First, focus on tightening your on-page structure with clearer headings and better metadata. "
-        "Try adding more keyword-rich sections and improving internal links. "
-        "Fixing technical issues like missing alt tags and reducing broken links will also help your rankings. "
-        "Once those essentials are polished, your site will be in a strong position for long-term SEO growth."
+        "To strengthen your SEO, try improving your heading structure and making sure your metadata is clean and clear. "
+        "Expanding keyword usage inside your copy will help search engines better understand your topic. "
+        "Fixing missing alt tags and resolving broken links will also improve technical performance. "
+        "With just a few of these steps, your rankings can climb quickly."
     )
 
 
 def ai_google_thinks(data):
     return (
-        "From Google's perspective, your site appears informative but slightly under-optimized. "
-        "Search engines may see strong content depth but notice gaps in structure or technical hygiene. "
-        "With some tuning, your pages will be easier for both users and search engines to understand."
+        "From Google's perspective, your site looks helpful but slightly under-optimized. "
+        "The content shows good potential, but there are signals that more clarity and structure are needed. "
+        "A bit more technical polish will help Google understand your pages more confidently."
     )
 
 
 def ai_competitor_summary(main, comp):
     return (
-        "I compared your site to your competitor, and the results are interesting! "
-        f"Your site scores {main['score']} while theirs scores {comp['score']}, giving you unique strengths. "
-        "They may excel in certain areas like keyword relevance or content depth, but you have clear advantages "
-        "in technical health and internal navigation. With a few improvements, you can close the gap quickly."
+        f"I compared your site against the competitor, and the results are interesting! "
+        f"Your overall score is {main['score']} versus their {comp['score']}. "
+        "They shine in some content areas, but you have advantages in technical strength and navigation. "
+        "With a few adjustments, you can quickly close the gap."
     )
 
 
 def ai_competitor_advantages(main, comp):
     return (
-        "Your competitor seems to have stronger keyword targeting and slightly deeper page content. "
-        "They may also benefit from a richer heading structure. "
-        "These strengths help them capture more search intent across multiple variations of your target keyword."
+        "The competitor seems to have deeper keyword integration and more layered content sections. "
+        "Their use of headings may be more consistent, helping them capture secondary search intent. "
+        "These strengths give them a slight edge in relevance scoring."
     )
 
 
 def ai_competitor_disadvantages(main, comp):
     return (
-        "They struggle with technical issues such as broken links or missing alt attributes, "
-        "which can hurt their long-term rankings. Their internal linking also appears weaker. "
-        "Improving your keyword structure will help you surpass them overall."
+        "However, they also struggle in areas like technical structure, missing alt tags, and internal linking. "
+        "These weaknesses hurt their long-term rankings and offer you a clear opportunity. "
+        "Improving your keyword usage could help you overtake them."
     )
 
 
 
 # ===================================================================
-#   COMBINED FULL SCAN (MAIN + COMPETITOR)
+# FULL SCAN + COMPETITOR
 # ===================================================================
 
 def run_full_scan(url, keyword=None, competitor_url=None):
@@ -211,37 +216,38 @@ def run_full_scan(url, keyword=None, competitor_url=None):
 
     main = analyze_html(html, url, keyword)
 
-    output = {
+    response = {
         **main,
+        "url": url,
         "audit": ai_summary(main),
         "tips": ai_action_plan(main),
-        "google_view": ai_google_thinks(main)
+        "google_view": ai_google_thinks(main),
     }
 
-    # COMPETITOR LOGIC
+    # COMPETITOR
     if competitor_url:
         html2 = fetch_html(competitor_url)
         if html2:
             comp = analyze_html(html2, competitor_url, keyword)
-            output["competitor_data"] = {
+            response["competitor_data"] = {
                 "content_score": comp["content"],
                 "keyword_score": comp["keyword"],
                 "technical_score": comp["technical"],
                 "onpage_score": comp["onpage"],
-                "link_score": comp["links"],
+                "link_score": comp["links"]
             }
-            output["competitor_summary"] = ai_competitor_summary(main, comp)
-            output["competitor_advantages"] = ai_competitor_advantages(main, comp)
-            output["competitor_disadvantages"] = ai_competitor_disadvantages(main, comp)
+            response["competitor_summary"] = ai_competitor_summary(main, comp)
+            response["competitor_advantages"] = ai_competitor_advantages(main, comp)
+            response["competitor_disadvantages"] = ai_competitor_disadvantages(main, comp)
         else:
-            output["competitor_data"] = None
+            response["competitor_data"] = None
 
-    return output
+    return response
 
 
 
 # ===================================================================
-# STATIC ROUTES
+# ROUTES
 # ===================================================================
 
 @app.route("/")
@@ -258,11 +264,9 @@ def dashboard():
     scans = session.get("scan_count", 0)
     scans_left = None if subscribed else max(0, 3 - scans)
 
-    return render_template(
-        "dashboard.html",
-        subscribed=subscribed,
-        scans_left=scans_left
-    )
+    return render_template("dashboard.html",
+                           subscribed=subscribed,
+                           scans_left=scans_left)
 
 
 
@@ -366,47 +370,70 @@ def webhook():
 
 
 # ===================================================================
-# AJAX SCAN ENDPOINT
+# AJAX SCAN
 # ===================================================================
 
 @app.route("/scan", methods=["POST"])
 def scan():
     if not session.get("user"):
-        return jsonify({"error": "auth", "message": "Login required"}), 403
+        return jsonify({"error": "auth"}), 403
 
     data = request.get_json()
-
     url = data.get("url")
     keyword = data.get("keyword")
     competitor = data.get("competitor")
 
-    if not url:
-        return jsonify({"error": "invalid", "message": "URL required"}), 400
+    # FREE LIMITS
+    if not session.get("subscribed"):
+        scans = session.get("scan_count", 0)
+        if scans >= 3:
+            return jsonify({"error": "limit", "limit_reached": True}), 403
+        session["scan_count"] = scans + 1
 
-    # PRO = unlimited scans
-    if session.get("subscribed"):
-        return jsonify(run_full_scan(url, keyword, competitor))
+    result = run_full_scan(url, keyword, competitor)
+    session["latest_scan"] = result
 
-    # FREE = 3 scans
-    scans = session.get("scan_count", 0)
-    if scans >= 3:
-        return jsonify({
-            "error": "limit",
-            "limit_reached": True,
-            "message": "All 3 free scans used."
-        }), 403
-
-    session["scan_count"] = scans + 1
-
-    return jsonify(run_full_scan(url, keyword, competitor))
+    return jsonify(result)
 
 
 
 # ===================================================================
-# LAUNCH
+# PDF EXPORT
+# ===================================================================
+
+@app.route("/export-pdf")
+def export_pdf():
+
+    data = session.get("latest_scan")
+    if not data:
+        return "No scan available.", 400
+
+    filepath = "/tmp/seo_report.pdf"
+
+    generate_pdf_report(
+        filepath=filepath,
+        url=data.get("url"),
+        main_score=data.get("score"),
+        content_score=data.get("content"),
+        technical_score=data.get("technical"),
+        keyword_score=data.get("keyword"),
+        onpage_score=data.get("onpage"),
+        link_score=data.get("links"),
+        audit_text=data.get("audit"),
+        tips_text=data.get("tips"),
+        competitor_data=data.get("competitor_data")
+    )
+
+    return send_file(filepath, as_attachment=True, download_name="SEO_Report.pdf")
+
+
+
+# ===================================================================
+# RUN SERVER
 # ===================================================================
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
