@@ -1,248 +1,237 @@
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 import os
-import psycopg2
-import psycopg2.extras
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from utils.db import fetch_one, fetch_all, execute
 
-# ------------------------------
-# FLASK APP
-# ------------------------------
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
+app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
 
+# ============================================================
+# AUTO-CREATE ADMIN (ID = 1)
+# ============================================================
 
-# ------------------------------
-# DATABASE CONNECTION
-# ------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL")
-
-
-def get_conn():
-    return psycopg2.connect(DATABASE_URL, sslmode="require")
-
-
-# ------------------------------
-# SAFE DB INIT (NO DATA LOSS)
-# ------------------------------
-def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
-
-    # Create users table
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            is_admin BOOLEAN DEFAULT FALSE,
-            is_pro BOOLEAN DEFAULT FALSE,
-            scans_used INTEGER DEFAULT 0,
-            stripe_customer_id TEXT,
-            stripe_subscription_id TEXT,
-            subscription_status TEXT,
-            current_period_end TIMESTAMP
-        );
-    """)
-
-    # Ensure admin user exists (ID = 1)
-    cur.execute("""
-        INSERT INTO users (id, email, password, is_admin, is_pro)
-        VALUES (1, 'admin@admin.com', %s, TRUE, TRUE)
-        ON CONFLICT (id) DO UPDATE SET
+def ensure_admin_exists():
+    """
+    Creates or updates the main admin row (ID=1)
+    """
+    execute("""
+        INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
+        VALUES (1, 'admin@admin.com', %s, TRUE, TRUE, 0)
+        ON CONFLICT (id)
+        DO UPDATE SET
             email = EXCLUDED.email,
             password = EXCLUDED.password,
-            is_admin = TRUE,
-            is_pro = TRUE;
+            is_admin = TRUE;
     """, (generate_password_hash("M4ry321!"),))
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    print("✓ Admin ensured: admin@admin.com / M4ry321!")
 
 
-init_db()
+ensure_admin_exists()
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+def current_user():
+    uid = session.get("user_id")
+    if not uid:
+        return None
+    return fetch_one("SELECT * FROM users WHERE id=%s", (uid,))
 
 
-# ------------------------------
-# LOGIN REQUIRED DECORATOR
-# ------------------------------
-def require_login(f):
-    def wrapper(*args, **kwargs):
-        if "user_id" not in session:
-            return redirect("/login")
-        return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
-    return wrapper
+def admin_required():
+    user = current_user()
+    return user and user["is_admin"] == True
 
 
-def require_admin(f):
-    def wrapper(*args, **kwargs):
-        if "user_id" not in session:
-            return redirect("/login")
-        if not session.get("is_admin"):
-            return "Access denied"
-        return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
-    return wrapper
-
-
-# ------------------------------
-# ROUTES
-# ------------------------------
+# ============================================================
+# ROUTES: AUTH
+# ============================================================
 
 @app.route("/")
-def index():
+def landing():
     return render_template("landing.html")
 
 
-# LOGIN
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+        password = request.form["password"]
+
+        hashed = generate_password_hash(password)
+
+        execute("""
+            INSERT INTO users (email, password)
+            VALUES (%s, %s)
+        """, (email, hashed))
+
+        row = fetch_one("SELECT id FROM users WHERE email=%s", (email,))
+        session["user_id"] = row["id"]
+        return redirect("/dashboard")
+
+    return render_template("signup.html")
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"].strip().lower()
         password = request.form["password"]
 
-        conn = get_conn()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        row = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
+        if row and check_password_hash(row["password"], password):
+            session["user_id"] = row["id"]
+            return redirect("/dashboard")
 
-        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
-        user = cur.fetchone()
-
-        conn.close()
-
-        if not user:
-            return render_template("login.html", error="Invalid login")
-
-        if not check_password_hash(user["password"], password):
-            return render_template("login.html", error="Invalid login")
-
-        session["user_id"] = user["id"]
-        session["email"] = user["email"]
-        session["is_admin"] = user["is_admin"]
-
-        return redirect("/dashboard")
+        return render_template("login.html", error="Invalid email or password")
 
     return render_template("login.html")
 
 
-# LOGOUT
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
-# Google Ads File
-@app.route('/ads.txt')
-def ads_txt():
-    return app.send_static_file('ads.txt')
 
+# ============================================================
+# USER DASHBOARD
+# ============================================================
 
-# DASHBOARD (USER)
 @app.route("/dashboard")
-@require_login
 def dashboard():
-    return render_template("dashboard.html")
+    if not current_user():
+        return redirect("/login")
+    return render_template("dashboard.html", user=current_user())
 
 
-# SETTINGS
 @app.route("/settings")
-@require_login
 def settings():
-    return render_template("settings.html")
+    if not current_user():
+        return redirect("/login")
+    return render_template("settings.html", user=current_user())
 
 
-# ------------------------------
-# ADMIN PANEL — OPTION A FEATURES
-# ------------------------------
+# ============================================================
+# ADMIN PANEL — USERS LIST
+# ============================================================
 
 @app.route("/admin/users")
-@require_admin
 def admin_users():
-    search = request.args.get("search", "")
-    sort = request.args.get("sort", "id_desc")
+    if not admin_required():
+        return "Access Denied"
 
-    conn = get_conn()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # --- Search ---
+    q = request.args.get("q", "").strip().lower()
 
-    base_query = "SELECT * FROM users WHERE email ILIKE %s"
-    search_like = f"%{search}%"
+    # --- Sorting ---
+    sort = request.args.get("sort", "id_asc")
+    order_sql = {
+        "id_asc": "id ASC",
+        "id_desc": "id DESC",
+        "email_asc": "LOWER(email) ASC",
+        "email_desc": "LOWER(email) DESC",
+        "pro_asc": "is_pro ASC",
+        "pro_desc": "is_pro DESC",
+        "scans_asc": "scans_used ASC",
+        "scans_desc": "scans_used DESC",
+    }.get(sort, "id ASC")
 
-    # Sorting
-    if sort == "id_asc":
-        order = " ORDER BY id ASC"
-    elif sort == "email":
-        order = " ORDER BY email ASC"
+    # --- Query ---
+    if q:
+        users = fetch_all(f"""
+            SELECT * FROM users
+            WHERE LOWER(email) LIKE %s
+            ORDER BY {order_sql}
+        """, (f"%{q}%",))
     else:
-        order = " ORDER BY id DESC"
+        users = fetch_all(f"SELECT * FROM users ORDER BY {order_sql}")
 
-    cur.execute(base_query + order, (search_like,))
-    users = cur.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "admin_users.html",
-        users=users,
-        search=search,
-        sort=sort
-    )
+    return render_template("admin_users.html", users=users, q=q, sort=sort)
 
 
-# DELETE USER
-@app.route("/admin/delete/<int:user_id>", methods=["POST"])
-@require_admin
+# ============================================================
+# ADMIN: EDIT USER
+# ============================================================
+
+@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
+def admin_edit_user(user_id):
+    if not admin_required():
+        return "Access Denied"
+
+    user = fetch_one("SELECT * FROM users WHERE id=%s", (user_id,))
+    if not user:
+        return "User not found"
+
+    if request.method == "POST":
+        email = request.form["email"]
+        is_pro = True if request.form.get("is_pro") == "on" else False
+        is_admin = True if request.form.get("is_admin") == "on" else False
+
+        execute("""
+            UPDATE users
+            SET email=%s, is_pro=%s, is_admin=%s
+            WHERE id=%s
+        """, (email, is_pro, is_admin, user_id))
+
+        return redirect("/admin/users")
+
+    return render_template("admin_edit_user.html", user=user)
+
+
+# ============================================================
+# ADMIN: DELETE USER
+# ============================================================
+
+@app.route("/admin/delete/<int:user_id>")
 def admin_delete_user(user_id):
-    if user_id == 1:
-        return "Cannot delete admin."
+    if not admin_required():
+        return "Access Denied"
 
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
-    conn.commit()
-    conn.close()
-
+    execute("DELETE FROM users WHERE id=%s", (user_id,))
     return redirect("/admin/users")
 
 
-# RESET SCANS
-@app.route("/admin/reset-scans/<int:user_id>", methods=["POST"])
-@require_admin
+# ============================================================
+# ADMIN: RESET SCANS
+# ============================================================
+
+@app.route("/admin/reset_scans/<int:user_id>")
 def admin_reset_scans(user_id):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET scans_used=0 WHERE id=%s", (user_id,))
-    conn.commit()
-    conn.close()
+    if not admin_required():
+        return "Access Denied"
 
+    execute("UPDATE users SET scans_used=0 WHERE id=%s", (user_id,))
     return redirect("/admin/users")
 
 
-# TOGGLE PRO STATUS
-@app.route("/admin/toggle-pro/<int:user_id>", methods=["POST"])
-@require_admin
-def admin_toggle_pro(user_id):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE users
-        SET is_pro = NOT is_pro
-        WHERE id=%s
-    """, (user_id,))
-    conn.commit()
-    conn.close()
+# ============================================================
+# POLICY PAGES
+# ============================================================
 
-    return redirect("/admin/users")
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
 
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
 
-# 404 FIX
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("landing.html"), 404
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 
-# ------------------------------
-# RUN
-# ------------------------------
+# ============================================================
+# START
+# ============================================================
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
