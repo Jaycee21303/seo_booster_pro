@@ -19,7 +19,6 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
 </head>
 
 <body style="margin:0; padding:0; font-family:Inter, sans-serif;">
@@ -42,23 +41,38 @@
             justify-content:space-between;
             align-items:center;
         ">
+            
+            <!-- LEFT LOGO -->
             <div style="font-size:22px; font-weight:700; color:#6A4CFF;">
                 SEO Booster
             </div>
 
+            <!-- RIGHT NAV LINKS -->
             <div>
-                <a href="/login" style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
-                    Login
-                </a>
-                <a href="/signup" style="
-                    padding:10px 20px;
-                    background:#6A4CFF;
-                    color:white;
-                    border-radius:8px;
-                    font-weight:600;
-                    text-decoration:none;">
-                    Sign Up
-                </a>
+                {% if session.get("user_id") %}
+                    <a href="/dashboard" 
+                       style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
+                       Dashboard
+                    </a>
+
+                    <a href="/logout" 
+                       style="padding:10px 22px; background:#6A4CFF; color:white; border-radius:8px;
+                              font-weight:600; text-decoration:none;">
+                        Logout
+                    </a>
+
+                {% else %}
+                    <a href="/login" 
+                       style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
+                        Login
+                    </a>
+
+                    <a href="/signup" 
+                       style="padding:10px 20px; background:#6A4CFF; color:white; border-radius:8px;
+                              font-weight:600; text-decoration:none;">
+                        Sign Up
+                    </a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -87,7 +101,7 @@
     ">
         <h3 style="margin-top:0; color:#6A4CFF;">We Use Cookies</h3>
         <p style="font-size:14px;">
-            We use cookies to improve your experience, show ads, and analyze traffic.
+            We use cookies to improve your experience, personalize ads, and analyze traffic.
             By using this site, you agree to our 
             <a href="/privacy" style="color:#6A4CFF; font-weight:600;">Privacy Policy</a>.
         </p>
@@ -105,7 +119,6 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-
         if (!localStorage.getItem("cookieAccepted")) {
             document.getElementById("cookie-popup").style.display = "block";
         }
@@ -114,7 +127,6 @@
             localStorage.setItem("cookieAccepted", "yes");
             document.getElementById("cookie-popup").style.display = "none";
         };
-
     });
     </script>
 
