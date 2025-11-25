@@ -423,7 +423,7 @@ def export_pdf():
 # ADMIN (VIEW ALL USERS)
 # ==============================================================
 
-@app.route("/admin/users")
+@app.route("/admin/all_users")
 def admin_users():
     users = fetch_all("SELECT id, email, is_pro, scans_used FROM users ORDER BY id DESC")
     return render_template("admin_users.html", users=users)
@@ -442,7 +442,7 @@ def google_login():
 # ==============================================================
 
 @app.route("/admin/users")
-def admin_users():
+def admin_users_page():
     users = fetch_all("SELECT * FROM users ORDER BY id DESC")
     return render_template("admin_users.html", users=users)
 
