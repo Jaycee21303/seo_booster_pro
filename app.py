@@ -132,6 +132,11 @@ def logout():
     session.clear()
     return redirect("/")
 
+# Google Ads File
+@app.route('/ads.txt')
+def ads_txt():
+    return app.send_static_file('ads.txt')
+
 
 # DASHBOARD (USER)
 @app.route("/dashboard")
