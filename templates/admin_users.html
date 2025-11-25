@@ -1,104 +1,60 @@
 {% extends "base.html" %}
 {% block content %}
 
-<style>
-.admin-wrapper {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    font-family: Inter, sans-serif;
-}
+<div style="max-width:1100px; margin:auto; padding:40px;">
+    
+    <h1 style="font-size:32px; font-weight:800; margin-bottom:20px; color:#6A4CFF;">
+        Admin — All Users
+    </h1>
 
-.admin-title {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 25px;
-    color: #6A4CFF;
-}
+    <table style="
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+        border-radius:12px;
+        overflow:hidden;
+        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    ">
+        <thead style="background:#6A4CFF; color:white;">
+            <tr>
+                <th style="padding:14px;">ID</th>
+                <th>Email</th>
+                <th>Pro?</th>
+                <th>Scans Used</th>
+                <th>Subscription Status</th>
+                <th>Period Ends</th>
+            </tr>
+        </thead>
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
+        <tbody>
+            {% for u in users %}
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:12px; text-align:center;">{{ u.id }}</td>
+                <td style="padding:12px;">{{ u.email }}</td>
 
-th, td {
-    padding: 14px;
-    border-bottom: 1px solid #e0e0e0;
-    text-align: left;
-    font-size: 15px;
-}
+                <td style="padding:12px; text-align:center;">
+                    {% if u.is_pro %}
+                        <span style="color:green; font-weight:700;">Yes</span>
+                    {% else %}
+                        <span style="color:#999;">No</span>
+                    {% endif %}
+                </td>
 
-th {
-    background: #f8f8ff;
-    font-weight: 700;
-}
+                <td style="padding:12px; text-align:center;">
+                    {{ u.scans_used }}
+                </td>
 
-.pro-badge {
-    background: #6A4CFF;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-}
+                <td style="padding:12px; text-align:center;">
+                    {{ u.subscription_status or "—" }}
+                </td>
 
-.free-badge {
-    background: #ccc;
-    color: black;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.view-btn {
-    padding: 6px 14px;
-    background: #6A4CFF;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 600;
-}
-</style>
-
-<div class="admin-wrapper">
-
-    <div class="admin-title">User Administration</div>
-
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Plan</th>
-            <th>Scans Used</th>
-            <th>Subscription Status</th>
-            <th>History</th>
-        </tr>
-
-        {% for user in users %}
-        <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.email }}</td>
-
-            <td>
-                {% if user.is_pro %}
-                    <span class="pro-badge">PRO</span>
-                {% else %}
-                    <span class="free-badge">FREE</span>
-                {% endif %}
-            </td>
-
-            <td>{{ user.scans_used }}</td>
-            <td>{{ user.subscription_status or "N/A" }}</td>
-
-            <td>
-                <a href="/admin/user/{{ user.id }}/history" class="view-btn">View</a>
-            </td>
-        </tr>
-        {% endfor %}
+                <td style="padding:12px; text-align:center;">
+                    {{ u.current_period_end or "—" }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-
 </div>
 
 {% endblock %}
