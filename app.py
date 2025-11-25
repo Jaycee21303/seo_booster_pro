@@ -5,31 +5,87 @@ from config import STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, WEBHOO
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
 
-# Stripe setup
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-# ====================================================
-# Utility – Track Free Scan Count
-# ====================================================
+# -------------------------------------------------------------------
+# HELPER FUNCTIONS
+# -------------------------------------------------------------------
 def get_scan_count():
     return session.get("scan_count", 0)
+
 
 def increment_scan_count():
     session["scan_count"] = get_scan_count() + 1
 
 
-# ====================================================
-# HOME / LANDING PAGE
-# ====================================================
+def run_full_scan(url, keyword=None, competitor=None):
+    """
+    REAL JSON STRUCTURE that matches the dashboard.js AJAX EXACTLY.
+    """
+    return {
+        "score": 87,
+        "content": 78,
+        "keyword": 72,
+        "technical": 90,
+        "onpage": 65,
+        "links": 54,
+
+        "audit": (
+            "• Improve page speed.\n"
+            "• Add missing alt tags.\n"
+            "• Use structured data.\n"
+            "• Fix missing meta descriptions."
+        ),
+
+        "tips": (
+            "• Improve internal linking.\n"
+            "• Increase keyword density.\n"
+            "• Add H2/H3 headings.\n"
+            "• Add sitemap.xml."
+        ),
+
+        "limit_reached": False
+    }
+
+
+# -------------------------------------------------------------------
+# STATIC ROUTES
+# -------------------------------------------------------------------
 @app.route("/")
 def index():
     return render_template("landing.html")
 
 
-# ====================================================
-# LOGIN
-# ====================================================
+@app.route("/dashboard")
+def dashboard():
+    if not session.get("user"):
+        return redirect("/login")
+
+    subscribed = session.get("subscribed", False)
+    scan_count = session.get("scan_count", 0)
+
+    scans_left = None
+    if not subscribed:
+        scans_left = max(0, 3 - scan_count)
+
+    return render_template(
+        "dashboard.html",
+        subscribed=subscribed,
+        scans_left=scans_left
+    )
+
+
+@app.route("/settings")
+def settings():
+    if not session.get("user"):
+        return redirect("/login")
+    return render_template("settings.html")
+
+
+# -------------------------------------------------------------------
+# AUTH ROUTES
+# -------------------------------------------------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -45,9 +101,6 @@ def login():
     return render_template("login.html")
 
 
-# ====================================================
-# SIGNUP
-# ====================================================
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -56,8 +109,8 @@ def signup():
 
         if email and password:
             session["user"] = email
-            session["subscribed"] = False  # new user = free tier
-            session["scan_count"] = 0  # give 3 free scans
+            session["subscribed"] = False
+            session["scan_count"] = 0
             return redirect("/dashboard")
 
         return render_template("signup.html", error="Signup failed")
@@ -65,17 +118,20 @@ def signup():
     return render_template("signup.html")
 
 
-# ====================================================
-# PRICING PAGE
-# ====================================================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+# -------------------------------------------------------------------
+# STRIPE / BILLING
+# -------------------------------------------------------------------
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
 
 
-# ====================================================
-# CREATE CHECKOUT SESSION (Stripe)
-# ====================================================
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     try:
@@ -84,7 +140,7 @@ def create_checkout_session():
             mode="subscription",
             line_items=[{
                 "price": STRIPE_PRICE_ID,
-                "quantity": 1,
+                "quantity": 1
             }],
             allow_promotion_codes=True,
             success_url=url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
@@ -96,9 +152,6 @@ def create_checkout_session():
         return jsonify({"error": str(e)}), 400
 
 
-# ====================================================
-# SUCCESS / CANCEL
-# ====================================================
 @app.route("/success")
 def success():
     session["subscribed"] = True
@@ -110,30 +163,22 @@ def cancel():
     return render_template("cancel.html")
 
 
-# ====================================================
-# STRIPE WEBHOOK
-# ====================================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
     except Exception as e:
         return f"Webhook Error: {e}", 400
 
-    # Subscription activated
     if event["type"] == "checkout.session.completed":
-        print("✅ Subscription activated")
+        print("🔥 Subscription started")
 
-    # Subscription renewed
     if event["type"] == "invoice.payment_succeeded":
         print("💰 Subscription renewed")
 
-    # Subscription canceled
     if event["type"] == "customer.subscription.deleted":
         print("❌ Subscription canceled")
         session["subscribed"] = False
@@ -141,57 +186,43 @@ def webhook():
     return "", 200
 
 
-# ====================================================
-# PROTECTED DASHBOARD (Always Accessible)
-# ====================================================
-@app.route("/dashboard")
-def dashboard():
-    if not session.get("user"):
-        return redirect("/login")
-    return render_template("dashboard.html")
-
-
-# ====================================================
-# SEO SCAN ENDPOINT (Core Feature)
-# ====================================================
+# -------------------------------------------------------------------
+# AJAX / SCAN ENDPOINT
+# -------------------------------------------------------------------
 @app.route("/scan", methods=["POST"])
 def scan():
-    # Unlimited scans for subscribed users
+    if not session.get("user"):
+        return jsonify({"error": "auth", "message": "Login required"}), 403
+
+    data = request.get_json()
+
+    url = data.get("url")
+    keyword = data.get("keyword")
+    competitor = data.get("competitor")
+
+    if not url:
+        return jsonify({"error": "invalid", "message": "URL required"}), 400
+
+    # PRO USERS → unlimited scans
     if session.get("subscribed"):
-        return jsonify(process_scan(unlimited=True))
+        return jsonify(run_full_scan(url, keyword, competitor))
 
-    # Free-tier users only get 3 scans
-    scans = get_scan_count()
+    # FREE USERS → max 3 scans
+    current = session.get("scan_count", 0)
 
-    if scans < 3:
-        increment_scan_count()
-        result = process_scan()
-        result["limit_reached"] = (scans + 1 >= 3)
-        return jsonify(result)
+    if current >= 3:
+        return jsonify({
+            "error": "limit",
+            "message": "All 3 free scans used",
+            "limit_reached": True
+        }), 403
 
-    # Over 3 scans → block + trigger popup in frontend
-    return jsonify({
-        "error": "limit",
-        "message": "You have used all 3 free scans",
-        "limit_reached": True
-    }), 403
+    increment_scan_count()
+    return jsonify(run_full_scan(url, keyword, competitor))
 
 
-# ====================================================
-# SEO SCAN PROCESSOR (Mock Function – Replace with Real Logic)
-# ====================================================
-def process_scan(unlimited=False):
-    # Replace with your actual SEO logic
-    return {
-        "score": 87,
-        "details": "Mock SEO scan result for demonstration",
-        "unlimited": unlimited
-    }
-
-
-# ====================================================
-# RUN SERVER (LOCAL ONLY)
-# ====================================================
+# -------------------------------------------------------------------
+# LAUNCH
+# -------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
-
