@@ -2,98 +2,105 @@
 {% block content %}
 
 <style>
-.upgrade-container {
-    max-width: 650px;
+.signup-container {
+    max-width: 420px;
     margin: 80px auto;
-    padding: 45px;
+    padding: 40px;
     background: white;
-    border-radius: 18px;
+    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     font-family: 'Inter', sans-serif;
-    text-align: center;
 }
 
-.upgrade-title {
-    font-size: 36px;
+.signup-title {
+    font-size: 30px;
     font-weight: 800;
+    text-align: center;
     margin-bottom: 10px;
     color: #333;
 }
 
-.upgrade-subtitle {
-    font-size: 16px;
+.signup-subtitle {
+    font-size: 15px;
+    text-align: center;
     color: #666;
-    margin-bottom: 30px;
-}
-
-.upgrade-price {
-    font-size: 48px;
-    font-weight: 900;
-    color: #6A4CFF;
     margin-bottom: 25px;
 }
 
-.feature-list {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 35px;
-}
-
-.feature-list li {
-    font-size: 16px;
-    margin-bottom: 12px;
-    color: #444;
-}
-
-.upgrade-btn {
-    display: inline-block;
-    padding: 16px 28px;
-    background: #6A4CFF;
-    color: white;
-    border-radius: 12px;
-    font-size: 20px;
-    font-weight: 700;
-    text-decoration: none;
+.signup-input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
     transition: 0.2s;
 }
 
-.upgrade-btn:hover {
-    background: #563ae6;
+.signup-input:focus {
+    border-color: #6A4CFF;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(106,76,255,0.15);
 }
 
-.back-link {
-    display: block;
-    margin-top: 20px;
-    text-decoration: none;
+.signup-btn {
+    width: 100%;
+    padding: 16px;
+    background: #6A4CFF;
+    color: white;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.signup-btn:hover {
+    background: #5535e6;
+}
+
+.signup-footer {
+    text-align: center;
+    margin-top: 18px;
     font-size: 15px;
-    color: #666;
 }
 
-.back-link:hover {
-    color: #333;
+.signup-footer a {
+    color: #6A4CFF;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.error-box {
+    background: #ffe0e0;
+    color: #b00000;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    text-align: center;
 }
 </style>
 
+<div class="signup-container">
+    <div class="signup-title">Create Your Account</div>
+    <div class="signup-subtitle">Sign up and get 3 free SEO scans instantly.</div>
 
-<div class="upgrade-container">
+    {% if error %}
+        <div class="error-box">{{ error }}</div>
+    {% endif %}
 
-    <div class="upgrade-title">Upgrade to Pro</div>
-    <div class="upgrade-subtitle">Unlock unlimited scans and all premium features.</div>
+    <form method="POST">
+        <input type="email" name="email" class="signup-input" placeholder="Email address" required>
+        <input type="password" name="password" class="signup-input" placeholder="Password" required>
 
-    <div class="upgrade-price">$4.99 / month</div>
+        <button class="signup-btn" type="submit">Create Account</button>
+    </form>
 
-    <ul class="feature-list">
-        <li>✔ Unlimited SEO scans</li>
-        <li>✔ Unlimited PDF exports</li>
-        <li>✔ Priority processing</li>
-        <li>✔ No ads anywhere</li>
-        <li>✔ Access to all upcoming Pro features</li>
-    </ul>
-
-    <a href="/checkout-pro" class="upgrade-btn">Continue to Payment</a>
-
-    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
-
+    <div class="signup-footer">
+        Already have an account? <a href="/login">Log in</a>
+    </div>
 </div>
 
 {% endblock %}
