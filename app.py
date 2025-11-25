@@ -28,6 +28,25 @@ stripe.api_key = STRIPE_SECRET_KEY
 def index():
     return render_template("landing.html")
 
+@app.route("/debug-users")
+def debug_users():
+    from utils.db import fetch_all
+
+    try:
+        rows = fetch_all("SELECT id, email, password, is_admin, is_pro, scans_used FROM users ORDER BY id ASC;")
+
+        html = "<h2>User Table Debug</h2>"
+        html += "<table border='1' cellpadding='6' cellspacing='0'>"
+        html += "<tr><th>ID</th><th>Email</th><th>Password</th><th>is_admin</th><th>is_pro</th><th>scans_used</th></tr>"
+
+        for r in rows:
+            html += f"<tr><td>{r['id']}</td><td>{r['email']}</td><td>{r['password']}</td><td>{r.get('is_admin')}</td><td>{r.get('is_pro')}</td><td>{r.get('scans_used')}</td></tr>"
+
+        html += "</table>"
+        return html
+
+    except Exception as e:
+        return f"<pre>Error: {e}</pre>"
 
 # ===================================================================
 # AUTO-CREATE ADMIN USER (ID = 1)
