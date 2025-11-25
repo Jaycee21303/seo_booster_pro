@@ -2,205 +2,203 @@
 {% block content %}
 
 <style>
-/* -------------------------
-    GENERAL PAGE STYLE
--------------------------- */
+/* ---------- GLOBAL ---------- */
 body {
-    background: #f7f7fb;
+    background: #f8f9ff;
     font-family: 'Inter', sans-serif;
     color: #222;
 }
 
-/* Ad container styling */
-.ad-container {
-    margin: 40px auto;
-    text-align: center;
+/* ---------- HERO ---------- */
+.hero-section {
+    max-width: 1250px;
+    margin: 40px auto 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    flex-wrap: wrap;
 }
 
-/* -------------------------
-    HERO SECTION
--------------------------- */
-.hero {
-    text-align: center;
-    padding: 80px 20px;
-    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-    color: white;
+.hero-text {
+    max-width: 520px;
 }
 
-.hero h1 {
-    font-size: 48px;
+.hero-title {
+    font-size: 54px;
     font-weight: 800;
-    margin-bottom: 12px;
+    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+    -webkit-background-clip: text;
+    color: transparent;
+    line-height: 1.1;
 }
 
-.hero p {
-    font-size: 18px;
-    opacity: 0.9;
-    max-width: 700px;
-    margin: auto;
-    margin-bottom: 30px;
+.hero-sub {
+    margin-top: 18px;
+    font-size: 20px;
+    color: #555;
 }
 
-.hero .cta-btn {
-    padding: 16px 32px;
-    background: white;
-    color: #6A4CFF;
-    font-size: 18px;
+.hero-cta {
+    margin-top: 28px;
+    padding: 18px 36px;
+    font-size: 20px;
+    background: #6A4CFF;
+    color: white;
     border-radius: 12px;
     font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    display: inline-block;
+    box-shadow: 0 8px 25px rgba(106,76,255,0.25);
     transition: 0.2s;
 }
 
-.hero .cta-btn:hover {
-    transform: scale(1.05);
+.hero-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 32px rgba(106,76,255,0.28);
 }
 
-/* -------------------------
-    FEATURES SECTION
--------------------------- */
-.features {
-    max-width: 1100px;
-    margin: 60px auto;
-    padding: 0 20px;
+.hero-img {
+    width: 520px;
+    border-radius: 20px;
+    box-shadow: 0 14px 35px rgba(0,0,0,0.12);
+    margin-top: 25px;
 }
 
-.features-title {
-    font-size: 32px;
-    font-weight: 700;
+/* ---------- SECTION TITLES ---------- */
+.section-title {
+    font-size: 34px;
+    font-weight: 800;
     text-align: center;
     margin-bottom: 40px;
 }
 
-.feature-grid {
+/* ---------- FEATURES ---------- */
+.features-grid {
+    max-width: 1100px;
+    margin: auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 25px;
+    gap: 30px;
+    padding: 0 20px;
 }
 
-.feature-card {
+.feature-box {
     background: white;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.09);
     text-align: center;
 }
 
-.feature-card h3 {
-    font-size: 20px;
+.feature-box h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6A4CFF;
+    margin-bottom: 12px;
+}
+
+/* ---------- HOW IT WORKS ---------- */
+.how-section {
+    margin: 80px auto;
+    max-width: 900px;
+    padding: 0 20px;
+}
+
+.how-step {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+}
+
+.how-step h4 {
+    font-size: 22px;
     font-weight: 700;
     margin-bottom: 10px;
     color: #6A4CFF;
 }
 
-/* -------------------------
-   PDF PREVIEW SECTION
--------------------------- */
-.pdf-preview-section {
-    margin: 70px auto;
-    max-width: 900px;
-    padding: 0 20px;
+/* ---------- PDF PREVIEW ---------- */
+.pdf-preview {
     text-align: center;
+    margin-top: 90px;
 }
 
-.pdf-preview-section h2 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 12px;
-}
-
-.pdf-preview-section p {
-    color: #555;
-    margin-bottom: 25px;
-}
-
-.pdf-preview-img {
-    width: 100%;
+.pdf-preview img {
+    width: 90%;
     max-width: 650px;
     border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    margin-top: 15px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-/* -------------------------
-    TESTIMONIALS
--------------------------- */
+/* ---------- TESTIMONIALS ---------- */
 .testimonials {
-    background: white;
-    padding: 60px 20px;
-}
-
-.testimonials-title {
-    font-size: 32px;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 40px;
+    background: #fff;
+    padding: 80px 20px;
+    margin-top: 90px;
 }
 
 .testimonial-grid {
     max-width: 1100px;
     margin: auto;
     display: grid;
-    gap: 25px;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
 }
 
 .testimonial-card {
-    background: #f7f7fb;
+    background: #f8f9ff;
     padding: 25px;
     border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.testimonial-card p {
-    font-size: 15px;
-    margin-bottom: 15px;
-    color: #444;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
 }
 
 .testimonial-card .name {
+    margin-top: 14px;
     font-weight: 700;
     color: #6A4CFF;
 }
 
-/* -------------------------
-    FOOTER CTA
--------------------------- */
-.footer-cta {
+/* ---------- FOOTER CTA ---------- */
+.footer-final {
     text-align: center;
-    padding: 70px 20px 100px;
+    margin: 80px 0 120px;
 }
 
-.footer-cta .start-btn {
-    padding: 16px 34px;
+.footer-final a {
     background: #6A4CFF;
+    padding: 18px 40px;
     color: white;
-    border-radius: 12px;
+    font-size: 22px;
+    border-radius: 14px;
     text-decoration: none;
-    font-size: 20px;
-    font-weight: 600;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    font-weight: 700;
+    box-shadow: 0 12px 26px rgba(106,76,255,0.32);
 }
 
-.footer-cta .start-btn:hover {
-    transform: scale(1.05);
+.footer-final a:hover {
+    transform: translateY(-3px);
 }
 
 </style>
 
 
-<!-- HERO -->
-<div class="hero">
-    <h1>Boost Your SEO in Minutes</h1>
-    <p>The fastest, cleanest, AI-powered SEO analyzer for creators, businesses, and marketers.</p>
-    <a href="/signup" class="cta-btn">Get Started — It’s Free</a>
+<!-- HERO SECTION -->
+<div class="hero-section">
+    <div class="hero-text">
+        <h1 class="hero-title">Boost Your SEO in Minutes</h1>
+        <p class="hero-sub">Instant SEO audits, competitor analysis & client-ready PDF reports — all in one place.</p>
+        <a href="/signup" class="hero-cta">Start Free — No Credit Card</a>
+    </div>
+
+    <img class="hero-img" src="https://i.imgur.com/ZjwZDZ0.png" alt="SEO Booster Dashboard">
 </div>
 
-<!-- ⭐ TOP BANNER AD -->
+<!-- TOP AD -->
 <div class="ad-container">
-    <ins class="adsbygoogle"
-         style="display:block"
+    <ins class="adsbygoogle" style="display:block"
          data-ad-client="ca-pub-1967195027765056"
          data-ad-slot="1111111111"
          data-ad-format="auto"></ins>
@@ -208,104 +206,87 @@ body {
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 
 
-<!-- FEATURES -->
-<div class="features">
-    <div class="features-title">Why SEO Booster Pro?</div>
+<!-- FEATURES SECTION -->
+<h2 class="section-title">Why SEO Booster Pro?</h2>
+<div class="features-grid">
 
-    <div class="feature-grid">
-        <div class="feature-card">
-            <h3>⚡ Instant Results</h3>
-            <p>Run a full SEO audit in under 10 seconds with no API keys needed.</p>
-        </div>
+    <div class="feature-box">
+        <h3>⚡ Instant SEO Results</h3>
+        <p>Run a complete SEO audit in seconds — no setup or API keys required.</p>
+    </div>
 
-        <div class="feature-card">
-            <h3>📈 Score + Breakdown</h3>
-            <p>Get a full SEO score, content quality rating, technical health, and more.</p>
-        </div>
+    <div class="feature-box">
+        <h3>📊 Smart SEO Breakdown</h3>
+        <p>Content quality, technical health, keyword usage & link checks in one place.</p>
+    </div>
 
-        <div class="feature-card">
-            <h3>⚔️ Competitor Comparison</h3>
-            <p>Compare your site vs your competitor in a single dashboard.</p>
-        </div>
+    <div class="feature-box">
+        <h3>⚔️ Competitor Comparison</h3>
+        <p>Find opportunities by comparing your site with top competitors.</p>
+    </div>
 
-        <div class="feature-card">
-            <h3>📄 Polished PDF Reports</h3>
-            <p>Download a beautiful one-page SEO report to send to clients.</p>
-        </div>
+    <div class="feature-box">
+        <h3>📄 Polished PDF Reports</h3>
+        <p>Download client-ready PDF SEO reports with one click.</p>
+    </div>
+
+</div>
+
+
+<!-- HOW IT WORKS -->
+<div class="how-section">
+    <h2 class="section-title">How It Works</h2>
+
+    <div class="how-step">
+        <h4>1. Enter Your Website</h4>
+        <p>Just paste your URL — no setup or installation needed.</p>
+    </div>
+
+    <div class="how-step">
+        <h4>2. AI-Powered Scanning</h4>
+        <p>We analyze your structure, content, links, metadata & more.</p>
+    </div>
+
+    <div class="how-step">
+        <h4>3. Download Your Report</h4>
+        <p>Export your SEO audit as a clean, professional PDF.</p>
     </div>
 </div>
 
-<!-- ⭐ MID-PAGE AD -->
-<div class="ad-container">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1967195027765056"
-         data-ad-slot="2222222222"
-         data-ad-format="auto"></ins>
+
+<!-- PDF PREVIEW -->
+<div class="pdf-preview">
+    <img src="https://i.imgur.com/7Gb0V7D.png" alt="PDF Preview">
 </div>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-
-
-
-<!-- PDF PREVIEW SECTION -->
-<div class="pdf-preview-section">
-    <h2>Professional PDF Reports</h2>
-    <p>Clients love clean, easy-to-read one-page reports. Now you can generate them instantly.</p>
-
-    <img class="pdf-preview-img"
-         src="https://i.imgur.com/7Gb0V7D.png"
-         alt="SEO PDF Preview Mockup">
-</div>
-
-<!-- ⭐ INLINE PREVIEW AD -->
-<div class="ad-container">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1967195027765056"
-         data-ad-slot="3333333333"
-         data-ad-format="auto"></ins>
-</div>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-
 
 
 <!-- TESTIMONIALS -->
 <div class="testimonials">
-    <div class="testimonials-title">Loved by Marketers & Creators</div>
+    <h2 class="section-title">Loved by Marketers & Creators</h2>
 
     <div class="testimonial-grid">
         <div class="testimonial-card">
-            <p>"This tool saved me HOURS on SEO audits. I send the PDF to clients and they think I spent all day on it."</p>
+            “This tool saved me HOURS. The PDF looks like a $500 agency deliverable.”
             <div class="name">— Alex R.</div>
         </div>
 
         <div class="testimonial-card">
-            <p>"The competitor radar chart is honestly insane for a free tool. It looks like a $99/mo SaaS."</p>
+            “The competitor comparison alone is worth the price. Insanely good.”
             <div class="name">— Jamie S.</div>
         </div>
 
         <div class="testimonial-card">
-            <p>"The breakdown is accurate, clean, and super actionable. I use it every day for my Shopify clients."</p>
+            “Clean, fast, accurate. I use it for every client project.”
             <div class="name">— Devon M.</div>
         </div>
     </div>
 </div>
 
-<!-- ⭐ FOOTER AD -->
-<div class="ad-container">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1967195027765056"
-         data-ad-slot="4444444444"
-         data-ad-format="auto"></ins>
-</div>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-
-
 
 <!-- FOOTER CTA -->
-<div class="footer-cta">
-    <a href="/signup" class="start-btn">Start Your First Free Scan</a>
+<div class="footer-final">
+    <a href="/signup">Start Your First Free Scan</a>
 </div>
 
 {% endblock %}
+
