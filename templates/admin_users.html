@@ -1,60 +1,204 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div style="max-width:1100px; margin:auto; padding:40px;">
-    
-    <h1 style="font-size:32px; font-weight:800; margin-bottom:20px; color:#6A4CFF;">
-        Admin — All Users
-    </h1>
+<style>
+.admin-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+}
 
-    <table style="
-        width:100%;
-        border-collapse:collapse;
-        background:white;
-        border-radius:12px;
-        overflow:hidden;
-        box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    ">
-        <thead style="background:#6A4CFF; color:white;">
-            <tr>
-                <th style="padding:14px;">ID</th>
-                <th>Email</th>
-                <th>Pro?</th>
-                <th>Scans Used</th>
-                <th>Subscription Status</th>
-                <th>Period Ends</th>
-            </tr>
-        </thead>
+.admin-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
 
-        <tbody>
-            {% for u in users %}
-            <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:12px; text-align:center;">{{ u.id }}</td>
-                <td style="padding:12px;">{{ u.email }}</td>
+.search-sort-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
 
-                <td style="padding:12px; text-align:center;">
-                    {% if u.is_pro %}
-                        <span style="color:green; font-weight:700;">Yes</span>
-                    {% else %}
-                        <span style="color:#999;">No</span>
-                    {% endif %}
-                </td>
+.search-input {
+    width: 55%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 
-                <td style="padding:12px; text-align:center;">
-                    {{ u.scans_used }}
-                </td>
+.sort-select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 
-                <td style="padding:12px; text-align:center;">
-                    {{ u.subscription_status or "—" }}
-                </td>
+.table-wrapper {
+    overflow-x: auto;
+}
 
-                <td style="padding:12px; text-align:center;">
-                    {{ u.current_period_end or "—" }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table th {
+    background: #6A4CFF;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.badge-pro {
+    color: #09c372;
+    font-weight: 700;
+}
+
+.badge-free {
+    color: #999;
+    font-weight: 600;
+}
+
+.action-btn {
+    margin-right: 10px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-del { background: #fa5252; color: white; }
+.btn-scan { background: #f7b731; color: black; }
+.btn-pro { background: #5b8bf7; color: white; }
+
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    padding: 8px 14px;
+    margin: 0 5px;
+    border-radius: 8px;
+    background: #6A4CFF;
+    color: white;
+    text-decoration: none;
+}
+</style>
+
+<div class="admin-container">
+
+    <div class="admin-title">Admin — All Users</div>
+
+    <div class="search-sort-bar">
+        <input id="searchInput" class="search-input" placeholder="Search by email or ID...">
+        <select id="sortSelect" class="sort-select">
+            <option value="new">Newest First</option>
+            <option value="old">Oldest First</option>
+            <option value="email_az">Email A → Z</option>
+            <option value="email_za">Email Z → A</option>
+        </select>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="table" id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Pro?</th>
+                    <th>Scans Used</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="userRows">
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        {% if u.is_pro %}
+                            <span class="badge-pro">Yes</span>
+                        {% else %}
+                            <span class="badge-free">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.scans_used }}</td>
+
+                    <td>
+                        <a href="/admin/reset-scans/{{u.id}}" class="action-btn btn-scan">Reset</a>
+                        <a href="/admin/toggle-pro/{{u.id}}" class="action-btn btn-pro">
+                            {% if u.is_pro %}Remove Pro{% else %}Make Pro{% endif %}
+                        </a>
+                        <a href="/admin/delete/{{u.id}}" class="action-btn btn-del">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="/admin/users?page={{page-1}}">Previous</a>
+        {% endif %}
+        {% if has_more %}
+            <a href="/admin/users?page={{page+1}}">Next</a>
+        {% endif %}
+    </div>
+
 </div>
+
+<script>
+// Live search
+document.getElementById("searchInput").onkeyup = function () {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#userRows tr");
+
+    rows.forEach(r => {
+        let email = r.children[1].innerText.toLowerCase();
+        let id = r.children[0].innerText.toLowerCase();
+
+        if (email.includes(filter) || id.includes(filter)) {
+            r.style.display = "";
+        } else {
+            r.style.display = "none";
+        }
+    });
+};
+
+// Sort
+document.getElementById("sortSelect").onchange = function () {
+    let val = this.value;
+    let table = document.getElementById("userRows");
+    let rows = Array.from(table.rows);
+
+    rows.sort((a, b) => {
+        let A = a.children[1].innerText.toLowerCase();
+        let B = b.children[1].innerText.toLowerCase();
+        let IDA = Number(a.children[0].innerText);
+        let IDB = Number(b.children[0].innerText);
+
+        if (val === "new") return IDB - IDA;
+        if (val === "old") return IDA - IDB;
+        if (val === "email_az") return A.localeCompare(B);
+        if (val === "email_za") return B.localeCompare(A);
+    });
+
+    table.innerHTML = "";
+    rows.forEach(r => table.appendChild(r));
+};
+</script>
 
 {% endblock %}
