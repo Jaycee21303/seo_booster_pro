@@ -50,9 +50,16 @@
             <!-- RIGHT NAV LINKS -->
             <div>
                 {% if session.get("user_id") %}
+
                     <a href="/dashboard" 
                        style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
                        Dashboard
+                    </a>
+
+                    <!-- ⭐ SETTINGS LINK ADDED -->
+                    <a href="/settings" 
+                       style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
+                       Settings
                     </a>
 
                     <a href="/logout" 
@@ -62,6 +69,7 @@
                     </a>
 
                 {% else %}
+
                     <a href="/login" 
                        style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
                         Login
@@ -72,6 +80,7 @@
                               font-weight:600; text-decoration:none;">
                         Sign Up
                     </a>
+
                 {% endif %}
             </div>
         </div>
