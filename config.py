@@ -4,8 +4,8 @@
 STRIPE_PUBLIC_KEY = "pk_test_YOUR_KEY_HERE"
 STRIPE_SECRET_KEY = "sk_test_YOUR_KEY_HERE"
 
-# Your subscription price ID (already provided)
+# Your subscription price ID
 STRIPE_PRICE_ID = "price_1SX0W9AXUq0CrAiVi8fjNm0A"
 
-# Webhook secret (Stripe gives you this)
-WEBHOOK_SECRET = "whsec_YOUR_WEBHOOK_SECRET"
+# Webhook secret (copied from Stripe)
+WEBHOOK_SECRET = "whsec_gVY36maqHOHYp6XYbXpJ2g452FMuSboW"
