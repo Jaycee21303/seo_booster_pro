@@ -127,6 +127,7 @@ def cancel():
 # -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    # Read raw payload and signature
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
@@ -140,52 +141,54 @@ def webhook():
 
     event_type = event["type"]
 
-    # ----------------------------------------------------
-    # EVENT 1: Checkout completed (first payment)
-    # ----------------------------------------------------
+    # ==========================================================
+    # 1. checkout.session.completed
+    # First successful payment → user becomes PRO
+    # ==========================================================
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
 
-        email = data.get("customer_email")              # sent from checkout
-        customer_id = data.get("customer")              # Stripe customer
-        subscription_id = data.get("subscription")      # Stripe subscription ID
+        email = data.get("customer_email")
+        customer_id = data.get("customer")
+        subscription_id = data.get("subscription")
 
-        if email is not None:
-            update_subscription(
+        if email:
+            update_subscription_by_email(
                 email=email,
                 stripe_customer_id=customer_id,
                 stripe_subscription_id=subscription_id,
                 status="active",
-                period_end=None,       # next webhook will fill this
-                is_pro=True
+                is_pro=True,
+                period_end=None
             )
 
-    # ----------------------------------------------------
-    # EVENT 2: Subscription updated (renewals, period changes)
-    # ----------------------------------------------------
+    # ==========================================================
+    # 2. customer.subscription.updated
+    # Stripe sends this whenever subscription renews / changes
+    # ==========================================================
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
 
-        customer_id = data.get("customer")
         subscription_id = data.get("id")
+        customer_id = data.get("customer")
         status = data.get("status")
         period_end = data.get("current_period_end")
 
-        # Find the user linked to this subscription
-        from utils.db import get_user_by_subscription
+        # Find user by subscription ID
         user = get_user_by_subscription(subscription_id)
 
         if user:
-            update_subscription(
+            update_subscription_by_email(
                 email=user["email"],
                 stripe_customer_id=customer_id,
                 stripe_subscription_id=subscription_id,
                 status=status,
-                period_end=period_end,
-                is_pro=(status == "active")
+                is_pro=(status == "active"),
+                period_end=period_end
             )
 
     return jsonify({"status": "success"}), 200
+
 
 
 # -----------------------------
