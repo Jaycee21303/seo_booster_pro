@@ -160,6 +160,12 @@ body {
     display: flex;
     align-items: center;
 }
+.badge-limit {
+    color: red;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 10px;
+}
 
 /* =========================================================
    SCORE CIRCLES
@@ -231,34 +237,11 @@ body {
     .top-score-container { flex-direction: column; }
     .top-score-box { width: 100%; }
 }
-
-/* =========================================================
-   COMPETITOR SECTION
-========================================================= */
-#compSection { display: none; }
-
-.comp-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-.comp-card { width: 48%; }
-.comp-text {
-    background: #fafafa;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 15px;
-    white-space: pre-wrap;
-}
-@media (max-width: 768px) {
-    .comp-container { flex-direction: column; }
-    .comp-card { width: 100%; }
-}
 </style>
 
 
 <!-- =========================================================
-     NAVIGATION
+     NAVBAR
 ========================================================= -->
 <div class="navbar">
     <div class="nav-left">SEO Booster Pro</div>
@@ -277,11 +260,11 @@ body {
 <div class="upgrade-banner">
     <div class="upgrade-banner-inner">
         <div>
-            <h3>Upgrade to SEO Booster Pro ✨</h3>
-            <p>Unlock unlimited scans, export PDF reports, compare competitors, and remove ads.</p>
+            <h3>Upgrade to PRO ✨</h3>
+            <p>Unlimited scans, PDF exports, competitor tools, and no ads.</p>
         </div>
 
-        <a href="/pricing" class="upgrade-btn">Start Free Trial →</a>
+        <a href="/pricing" class="upgrade-btn">Upgrade Now →</a>
     </div>
 </div>
 {% endif %}
@@ -292,7 +275,7 @@ body {
 ========================================================= -->
 <div class="header-banner">
     <h1>SEO Dashboard</h1>
-    <p>Instant AI-powered insights to improve your rankings</p>
+    <p>AI-powered insights to improve your rankings</p>
 </div>
 
 
@@ -311,16 +294,29 @@ body {
         <div class="card">
             <div class="section-title">
                 🔍 SEO Analyzer
+
                 {% if subscribed %}
                     <span class="badge-pro">⭐ PRO – Unlimited Scans</span>
                 {% else %}
-                    <span class="badge-free">Free – {{ scans_left }} / 3 left</span>
+                    <span class="badge-free">
+                        Free – {{ scans_left }} / 2 scans left
+                    </span>
+
+                    {% if scans_left <= 0 %}
+                        <span class="badge-limit">Scan limit reached</span>
+                    {% endif %}
                 {% endif %}
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:12px;">
                 <input id="urlInput" type="url" placeholder="Your website URL…" style="flex:1; padding:12px; border:1px solid #ccc; border-radius:8px;">
-                <button id="analyzeBtn" style="background:#6A4CFF;color:white;padding:12px 18px;border-radius:8px;border:none;">Analyze</button>
+
+                <button id="analyzeBtn"
+                        style="background:#6A4CFF;color:white;padding:12px 18px;border-radius:8px;border:none;"
+                        {% if not subscribed and scans_left <= 0 %}disabled style="opacity:0.4;"{% endif %}
+                >
+                    Analyze
+                </button>
             </div>
 
             <input id="keywordInput" type="text" placeholder="Keyword (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
@@ -498,7 +494,7 @@ body {
 
 
     <!-- =====================================================
-         RIGHT SIDEBAR — GOOGLE ADS (2 STACKED + STICKY)
+         RIGHT SIDEBAR — GOOGLE ADS (FREE USERS ONLY)
     ====================================================== -->
     {% if not subscribed %}
     <div class="sidebar-ads">
@@ -510,7 +506,7 @@ body {
             <ins class="adsbygoogle"
                 style="display:block;height:250px"
                 data-ad-client="ca-pub-1967195027765056"
-                data-ad-slot="PLACEHOLDER_TOP_AD_SLOT"></ins>
+                data-ad-slot="1234567890"></ins>
         </div>
 
         <!-- AD #2 -->
@@ -520,7 +516,7 @@ body {
             <ins class="adsbygoogle"
                 style="display:block;height:250px"
                 data-ad-client="ca-pub-1967195027765056"
-                data-ad-slot="PLACEHOLDER_BOTTOM_AD_SLOT"></ins>
+                data-ad-slot="0987654321"></ins>
         </div>
 
         <script>
@@ -535,7 +531,7 @@ body {
 
 
 <!-- =========================================================
-     JAVASCRIPT
+     JAVASCRIPT — Handles scan, competitor, progress bars
 ========================================================= -->
 <script>
 document.getElementById("analyzeBtn").onclick = async function () {
@@ -564,7 +560,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
     btn.disabled = false;
 
     if (data.error === "limit") {
-        alert("Free limit reached. Upgrade to Pro.");
+        alert("You have used both free scans for this month.\nUpgrade to continue.");
         return;
     }
 
@@ -595,7 +591,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
 
-    /* SIDE-BY-SIDE YOUR SITE BARS */
+    /* SIDE-BY-SIDE BARS */
     document.getElementById("yourContentBar").style.width = data.content + "%";
     document.getElementById("yourKeywordBar").style.width = data.keyword + "%";
     document.getElementById("yourTechnicalBar").style.width = data.technical + "%";
