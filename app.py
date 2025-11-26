@@ -1,82 +1,117 @@
-import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from utils.db import get_user_by_email, update_subscription, create_user
 import stripe
-
-# DB helpers
-from utils.db import (
-    get_user_by_email,
-    create_user_if_not_exists,
-    mark_user_pro,
-    update_stripe_ids
-)
-
-from config import STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, WEBHOOK_SECRET
+import os
+import json
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "fallback-secret")
+app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
 
-# Stripe
-stripe.api_key = STRIPE_SECRET_KEY
-
-
-# ----------------------------------------------------
-# USER SESSION HELPERS
-# ----------------------------------------------------
-def current_user():
-    email = session.get("email")
-    if not email:
-        return None
-    return get_user_by_email(email)
+# Stripe keys from Render environment
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# ----------------------------------------------------
-# PAGES
-# ----------------------------------------------------
+# -----------------------------
+# HOME PAGE / LANDING
+# -----------------------------
 @app.route("/")
 def index():
     return render_template("landing.html")
 
 
-@app.route("/pricing")
-def pricing():
-    return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
+# -----------------------------
+# AUTH — SIGNUP PAGE
+# -----------------------------
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
+        user = get_user_by_email(email)
+        if user:
+            return render_template("signup.html", error="Email already exists.")
 
-@app.route("/dashboard")
-def dashboard():
-    user = current_user()
-    if not user:
+        create_user(email, password)
         return redirect("/login")
-    return render_template("dashboard.html", user=user)
+
+    return render_template("signup.html")
 
 
-# ----------------------------------------------------
-# LOGIN / SIGNUP  (REAL DB)
-# ----------------------------------------------------
+# -----------------------------
+# AUTH — LOGIN PAGE
+# -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form.get("email")
+        password = request.form.get("password")
 
-        # Make sure user exists in DB
-        create_user_if_not_exists(email)
+        user = get_user_by_email(email)
+        if not user or user["password"] != password:
+            return render_template("login.html", error="Invalid login.")
 
-        # Store in session
-        session["email"] = email
+        session["user_email"] = email
         return redirect("/dashboard")
 
     return render_template("login.html")
 
 
-# ----------------------------------------------------
-# SUCCESS / CANCEL
-# ----------------------------------------------------
+# -----------------------------
+# DASHBOARD
+# -----------------------------
+@app.route("/dashboard")
+def dashboard():
+    if "user_email" not in session:
+        return redirect("/login")
+
+    user = get_user_by_email(session["user_email"])
+    return render_template("dashboard.html", user=user)
+
+
+# -----------------------------
+# PRICING PAGE
+# -----------------------------
+@app.route("/pricing")
+def pricing():
+    return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
+
+
+# -----------------------------
+# CREATE CHECKOUT SESSION
+# -----------------------------
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    if "user_email" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    user = get_user_by_email(session["user_email"])
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[{
+                "price": STRIPE_PRICE_ID,
+                "quantity": 1
+            }],
+            customer_email=user["email"],
+            success_url=request.host_url + "success",
+            cancel_url=request.host_url + "cancel",
+        )
+
+        return jsonify({"url": checkout_session.url})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# -----------------------------
+# SUCCESS & CANCEL PAGES
+# -----------------------------
 @app.route("/success")
 def success():
     return render_template("success.html")
@@ -87,79 +122,82 @@ def cancel():
     return render_template("cancel.html")
 
 
-# ----------------------------------------------------
-# 🔥 CREATE CHECKOUT SESSION (REAL DB)
-# ----------------------------------------------------
-@app.route("/create-checkout-session", methods=["POST"])
-def create_checkout_session():
-    user = current_user()
-    if not user:
-        return jsonify({"error": "not_logged_in"}), 401
-
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            mode="subscription",
-            payment_method_types=["card"],
-            customer_email=user["email"],
-            line_items=[{
-                "price": STRIPE_PRICE_ID,
-                "quantity": 1
-            }],
-            success_url=url_for("success", _external=True),
-            cancel_url=url_for("cancel", _external=True)
-        )
-
-        return jsonify({"url": checkout_session.url})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
-# ----------------------------------------------------
-# 🔥 STRIPE WEBHOOK (FULL DB INTEGRATION)
-# ----------------------------------------------------
+# -----------------------------
+# WEBHOOK HANDLER (CRITICAL)
+# -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
+
     payload = request.data
-    sig_header = request.headers.get("Stripe-Signature")
+    sig_header = request.headers.get("stripe-signature")
 
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, WEBHOOK_SECRET
         )
     except Exception as e:
-        return f"Webhook Error: {e}", 400
+        return jsonify({"error": str(e)}), 400
 
-    # ------------------------------------------------
-    # EVENT 1: checkout.session.completed
-    # ------------------------------------------------
+    # -------------------------
+    # EVENT: Payment Completed
+    # -------------------------
     if event["type"] == "checkout.session.completed":
-        session_obj = event["data"]["object"]
+        data = event["data"]["object"]
 
-        email = session_obj.get("customer_email")
-        stripe_customer = session_obj.get("customer")
-        stripe_subscription = session_obj.get("subscription")
+        email = data.get("customer_email")
+        customer_id = data.get("customer")
+        subscription_id = data.get("subscription")
 
-        # Update DB
-        user = get_user_by_email(email)
+        update_subscription(
+            email=email,
+            stripe_customer_id=customer_id,
+            stripe_subscription_id=subscription_id,
+            status="active",
+            period_end=None,   # will be filled in next webhook
+            is_pro=True
+        )
+
+    # -------------------------
+    # EVENT: Subscription Updated (billing periods, renewals)
+    # -------------------------
+    if event["type"] == "customer.subscription.updated":
+        data = event["data"]["object"]
+
+        customer_id = data.get("customer")
+        subscription_id = data.get("id")
+        status = data.get("status")
+        period_end = data["current_period_end"]
+
+        # Get user email by subscription id
+        # We added this helper inside db.py
+        from utils.db import get_user_by_subscription
+        user = get_user_by_subscription(subscription_id)
+
         if user:
-            update_stripe_ids(email, stripe_customer, stripe_subscription)
-            mark_user_pro(email)
+            update_subscription(
+                email=user["email"],
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+                status=status,
+                period_end=period_end,
+                is_pro=(status == "active")
+            )
 
-    # ------------------------------------------------
-    # EVENT 2: customer.subscription.deleted  (optional)
-    # ------------------------------------------------
-    if event["type"] == "customer.subscription.deleted":
-        subscription = event["data"]["object"]
-        stripe_customer = subscription.get("customer")
-
-        # optional: Lookup user by stripe customer id and downgrade
-
-    return "OK", 200
+    return jsonify({"status": "success"}), 200
 
 
-# ----------------------------------------------------
-# START
-# ----------------------------------------------------
+# -----------------------------
+# LOGOUT
+# -----------------------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+
+# -----------------------------
+# RUN (Render will use gunicorn)
+# -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
