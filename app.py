@@ -113,7 +113,84 @@ def settings():
     if not user:
         return redirect("/login")
     return render_template("settings.html", user=user)
-    
+
+@app.route("/scan", methods=["POST"])
+def scan():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "auth"}), 401
+
+    data = request.json
+    url = data.get("url")
+    keyword = data.get("keyword", "")
+    competitor = data.get("competitor", "")
+
+    # --------------------------------------------------------
+    # FREE USER LOGIC
+    # --------------------------------------------------------
+    if not user["is_pro"]:
+        # 1. Enforce monthly 2-scan limit
+        scans_used = user["scans_used"]
+        if scans_used >= 2:
+            return jsonify({"error": "limit"}), 403
+
+        # Count this scan
+        execute("""
+            UPDATE users SET scans_used = scans_used + 1
+            WHERE id = %s
+        """, (user["id"],))
+
+    # --------------------------------------------------------
+    # RUN ANALYSIS (YOUR AI LOGIC GOES HERE)
+    # For now, I generate placeholder values so UI works.
+    # Replace these with your real scan engine later.
+    # --------------------------------------------------------
+    score = 73
+    content = 68
+    keyword_score = 72
+    technical = 70
+    onpage = 81
+    links = 65
+
+    audit = "Your site audit goes here..."
+    tips = "Your optimization tips go here..."
+
+    # Competitor analysis (only if competitor given)
+    competitor_data = None
+    competitor_summary = ""
+    competitor_advantages = ""
+    competitor_disadvantages = ""
+
+    if competitor:
+        competitor_data = {
+            "content": 55,
+            "keyword": 60,
+            "technical": 58,
+            "onpage": 63,
+            "links": 50
+        }
+        competitor_summary = "Competitor summary text..."
+        competitor_advantages = "Competitor advantages..."
+        competitor_disadvantages = "Your advantages over competitor..."
+
+    # --------------------------------------------------------
+    # RETURN JSON BACK TO DASHBOARD
+    # --------------------------------------------------------
+    return jsonify({
+        "score": score,
+        "content": content,
+        "keyword": keyword_score,
+        "technical": technical,
+        "onpage": onpage,
+        "links": links,
+        "audit": audit,
+        "tips": tips,
+        "competitor_data": competitor_data,
+        "competitor_summary": competitor_summary,
+        "competitor_advantages": competitor_advantages,
+        "competitor_disadvantages": competitor_disadvantages
+    })
+
 # ============================================================
 # PUBLIC ROUTE — PRICING PAGE
 # ============================================================
