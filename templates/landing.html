@@ -1,209 +1,52 @@
-{% extends "base.html" %}
-{% block content %}
+<section style="padding: 70px 0; background: #ffffff;">
+    <div style="max-width: 1100px; margin: auto; text-align: center;">
 
-<style>
-/* ---------- GLOBAL ---------- */
-body {
-    background: #f8f9ff;
-    font-family: 'Inter', sans-serif;
-    color: #222;
-}
+        <h2 style="font-size: 36px; font-weight: 800; color: #6A4CFF; margin-bottom: 15px;">
+            Everything You Need to Improve Your SEO
+        </h2>
+        <p style="font-size: 18px; opacity: 0.7; max-width: 700px; margin: auto;">
+            SEO Booster gives you instant audits, competitor analysis, and client-ready PDF reports — all automatically powered by AI.
+        </p>
 
-/* ---------- HERO ---------- */
-.hero-section {
-    max-width: 1250px;
-    margin: 40px auto 90px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    flex-wrap: wrap;
-}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 35px; margin-top: 60px;">
 
-.hero-text {
-    max-width: 520px;
-}
+            <!-- FEATURE 1 -->
+            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="font-size: 40px; margin-bottom: 15px;">⚡</div>
+                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">Instant SEO Scan</h3>
+                <p style="opacity: 0.75; margin-top: 10px;">
+                    Run powerful AI-driven audits in seconds and get a full breakdown of your site’s performance.
+                </p>
+            </div>
 
-.hero-title {
-    font-size: 54px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-    -webkit-background-clip: text;
-    color: transparent;
-    line-height: 1.1;
-}
+            <!-- FEATURE 2 -->
+            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="font-size: 40px; margin-bottom: 15px;">📊</div>
+                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">Competitor Analysis</h3>
+                <p style="opacity: 0.75; margin-top: 10px;">
+                    Compare your site side-by-side with any competitor and uncover ranking advantages instantly.
+                </p>
+            </div>
 
-.hero-sub {
-    margin-top: 18px;
-    font-size: 20px;
-    color: #555;
-}
+            <!-- FEATURE 3 -->
+            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="font-size: 40px; margin-bottom: 15px;">📄</div>
+                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">PDF Reports</h3>
+                <p style="opacity: 0.75; margin-top: 10px;">
+                    Export clean, professional, client-ready PDF reports you can share or sell to clients.
+                </p>
+            </div>
 
-.hero-cta {
-    margin-top: 28px;
-    padding: 18px 36px;
-    font-size: 20px;
-    background: #6A4CFF;
-    color: white;
-    border-radius: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-block;
-    box-shadow: 0 8px 25px rgba(106,76,255,0.25);
-    transition: 0.2s;
-}
+            <!-- FEATURE 4 -->
+            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="font-size: 40px; margin-bottom: 15px;">🤖</div>
+                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">AI Optimization Tips</h3>
+                <p style="opacity: 0.75; margin-top: 10px;">
+                    Personalized AI insights tell you exactly what to fix to rank higher — backed by proven data.
+                </p>
+            </div>
 
-.hero-cta:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 32px rgba(106,76,255,0.28);
-}
+        </div>
 
-.hero-img {
-    width: 520px;
-    border-radius: 20px;
-    box-shadow: 0 14px 35px rgba(0,0,0,0.12);
-    margin-top: 25px;
-}
-
-/* ---------- PDF PREVIEW ---------- */
-.pdf-preview {
-    text-align: center;
-    margin-top: 90px;
-}
-
-.pdf-preview img {
-    width: 90%;
-    max-width: 650px;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-/* ---------- SECTION TITLES ---------- */
-.section-title {
-    font-size: 34px;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-/* ---------- FEATURES ---------- */
-.features-grid {
-    max-width: 1100px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 30px;
-    padding: 0 20px;
-}
-
-.feature-box {
-    background: white;
-    padding: 28px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.09);
-    text-align: center;
-}
-
-.feature-box h3 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #6A4CFF;
-    margin-bottom: 12px;
-}
-
-/* ---------- HOW IT WORKS ---------- */
-.how-section {
-    margin: 80px auto;
-    max-width: 900px;
-    padding: 0 20px;
-}
-
-.how-step {
-    background: #fff;
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    margin-bottom: 25px;
-}
-
-.how-step h4 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #6A4CFF;
-}
-
-/* ---------- TESTIMONIALS ---------- */
-.testimonials {
-    background: #fff;
-    padding: 80px 20px;
-    margin-top: 90px;
-}
-
-.testimonial-grid {
-    max-width: 1100px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-}
-
-.testimonial-card {
-    background: #f8f9ff;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
-}
-
-.testimonial-card .name {
-    margin-top: 14px;
-    font-weight: 700;
-    color: #6A4CFF;
-}
-
-/* ---------- FOOTER CTA ---------- */
-.footer-final {
-    text-align: center;
-    margin: 80px 0 120px;
-}
-
-.footer-final a {
-    background: #6A4CFF;
-    padding: 18px 40px;
-    color: white;
-    font-size: 22px;
-    border-radius: 14px;
-    text-decoration: none;
-    font-weight: 700;
-    box-shadow: 0 12px 26px rgba(106,76,255,0.32);
-}
-
-.footer-final a:hover {
-    transform: translateY(-3px);
-}
-
-</style>
-
-
-<!-- HERO SECTION -->
-<div class="hero-section">
-    <div class="hero-text">
-        <h1 class="hero-title">Boost Your SEO in Minutes</h1>
-        <p class="hero-sub">Instant SEO audits, competitor analysis & client-ready PDF reports — all in one place.</p>
-        <a href="/signup" class="hero-cta">Start Free — No Credit Card</a>
     </div>
-
-    <img class="hero-img" src="https://i.imgur.com/ZjwZDZ0.png" alt="SEO Booster Dashboard">
-</div>
-
-
-<!-- PDF PREVIEW -->
-<div class="pdf-preview">
-    <img src="/static/pdf_preview_mockup.png" alt="PDF Preview">
-</div>
-
-
-<!-- REST OF PAGE (unchanged) ... -->
-{% endblock %}
-
-
+</section>
