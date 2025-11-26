@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from utils.db import get_user_by_email, update_subscription, create_user
+from utils.db import (
+    get_user_by_email,
+    create_user,
+    update_subscription,
+    get_user_by_subscription,
+    update_subscription_by_email
+)
 import stripe
 import os
 import json
@@ -15,7 +21,7 @@ WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 
 # -----------------------------
-# HOME PAGE / LANDING
+# HOME PAGE
 # -----------------------------
 @app.route("/")
 def index():
@@ -23,7 +29,7 @@ def index():
 
 
 # -----------------------------
-# AUTH — SIGNUP PAGE
+# SIGNUP
 # -----------------------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -31,9 +37,8 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        user = get_user_by_email(email)
-        if user:
-            return render_template("signup.html", error="Email already exists.")
+        if get_user_by_email(email):
+            return render_template("signup.html", error="Email already exists")
 
         create_user(email, password)
         return redirect("/login")
@@ -42,7 +47,7 @@ def signup():
 
 
 # -----------------------------
-# AUTH — LOGIN PAGE
+# LOGIN
 # -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -51,6 +56,7 @@ def login():
         password = request.form.get("password")
 
         user = get_user_by_email(email)
+
         if not user or user["password"] != password:
             return render_template("login.html", error="Invalid login.")
 
@@ -110,7 +116,7 @@ def create_checkout_session():
 
 
 # -----------------------------
-# SUCCESS & CANCEL PAGES
+# SUCCESS / CANCEL PAGES
 # -----------------------------
 @app.route("/success")
 def success():
@@ -123,15 +129,14 @@ def cancel():
 
 
 # -----------------------------
-# WEBHOOK HANDLER (CRITICAL)
+# WEBHOOK HANDLER
 # -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    # Read raw payload and signature
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
-    # Verify Stripe signature
+    # Verify event
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, WEBHOOK_SECRET
@@ -142,8 +147,7 @@ def webhook():
     event_type = event["type"]
 
     # ==========================================================
-    # 1. checkout.session.completed
-    # First successful payment → user becomes PRO
+    # checkout.session.completed
     # ==========================================================
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
@@ -163,8 +167,7 @@ def webhook():
             )
 
     # ==========================================================
-    # 2. customer.subscription.updated
-    # Stripe sends this whenever subscription renews / changes
+    # customer.subscription.updated
     # ==========================================================
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
@@ -174,7 +177,6 @@ def webhook():
         status = data.get("status")
         period_end = data.get("current_period_end")
 
-        # Find user by subscription ID
         user = get_user_by_subscription(subscription_id)
 
         if user:
@@ -190,7 +192,6 @@ def webhook():
     return jsonify({"status": "success"}), 200
 
 
-
 # -----------------------------
 # LOGOUT
 # -----------------------------
@@ -200,9 +201,8 @@ def logout():
     return redirect("/")
 
 
-
 # -----------------------------
-# RUN (Render will use gunicorn)
+# RUN (local only — Render uses gunicorn)
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
