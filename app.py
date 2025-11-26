@@ -1,31 +1,59 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from utils.db import fetch_one, fetch_all, execute
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
 
+FREE_SCAN_LIMIT = 2          # free scans per month
+FREE_PDF_LIMIT = 1           # free pdfs per month
+
 
 # ============================================================
-# AUTO-CREATE ADMIN (ID = 1)
+# AUTO-CREATE ADMIN
 # ============================================================
 
 def ensure_admin_exists():
-    """Creates or updates the built-in admin user (ID=1)."""
     execute("""
-        INSERT INTO users (id, email, password, is_pro, is_admin, scans_used)
-        VALUES (1, 'admin@admin.com', %s, TRUE, TRUE, 0)
+        INSERT INTO users (id, email, password, is_pro, is_admin, scans_used, pdf_used, last_reset)
+        VALUES (1, 'admin@admin.com', %s, TRUE, TRUE, 0, 0, CURRENT_DATE)
         ON CONFLICT (id)
         DO UPDATE SET
             email = EXCLUDED.email,
             password = EXCLUDED.password,
             is_admin = TRUE;
     """, (generate_password_hash("M4ry321!"),))
-    print("✓ Admin ensured: admin@admin.com / M4ry321!")
+    print("✓ Admin ensured")
 
 
 ensure_admin_exists()
+
+
+# ============================================================
+# MONTHLY RESET FUNCTION
+# ============================================================
+
+def reset_monthly_if_needed(user_id):
+    """Resets scans_used and pdf_used on 1st of month."""
+    row = fetch_one("SELECT last_reset FROM users WHERE id=%s", (user_id,))
+    if not row:
+        return
+
+    last = row["last_reset"]
+    today = datetime.utcnow().date()
+
+    # If first day of month OR month changed
+    if last is None or (last.month != today.month or last.year != today.year):
+        execute("""
+            UPDATE users
+            SET scans_used = 0,
+                pdf_used = 0,
+                last_reset = %s
+            WHERE id=%s
+        """, (today, user_id))
+        print(f"✓ Monthly reset for user {user_id}")
 
 
 # ============================================================
@@ -37,11 +65,6 @@ def current_user():
     if not uid:
         return None
     return fetch_one("SELECT * FROM users WHERE id=%s", (uid,))
-
-
-def admin_required():
-    user = current_user()
-    return user and user["is_admin"] is True
 
 
 # ============================================================
@@ -58,7 +81,6 @@ def signup():
     if request.method == "POST":
         email = request.form["email"].strip().lower()
         password = request.form["password"]
-
         hashed = generate_password_hash(password)
 
         execute("""
@@ -66,8 +88,9 @@ def signup():
             VALUES (%s, %s)
         """, (email, hashed))
 
-        row = fetch_one("SELECT id FROM users WHERE email=%s", (email,))
-        session["user_id"] = row["id"]
+        user = fetch_one("SELECT * FROM users WHERE email=%s", (email,))
+        session["user_id"] = user["id"]
+
         return redirect("/dashboard")
 
     return render_template("signup.html")
@@ -96,7 +119,7 @@ def logout():
 
 
 # ============================================================
-# USER DASHBOARD
+# DASHBOARD ROUTE
 # ============================================================
 
 @app.route("/dashboard")
@@ -104,15 +127,28 @@ def dashboard():
     user = current_user()
     if not user:
         return redirect("/login")
-    return render_template("dashboard.html", user=user)
+
+    reset_monthly_if_needed(user["id"])
+
+    subscribed = user["is_pro"]
+    scans_used = user["scans_used"]
+    pdf_used = user.get("pdf_used", 0)
+
+    scans_left = max(0, FREE_SCAN_LIMIT - scans_used) if not subscribed else None
+    pdf_left = max(0, FREE_PDF_LIMIT - pdf_used) if not subscribed else None
+
+    return render_template(
+        "dashboard.html",
+        user=user,
+        subscribed=subscribed,
+        scans_left=scans_left,
+        pdf_left=pdf_left
+    )
 
 
-@app.route("/settings")
-def settings():
-    user = current_user()
-    if not user:
-        return redirect("/login")
-    return render_template("settings.html", user=user)
+# ============================================================
+# SCAN ENGINE
+# ============================================================
 
 @app.route("/scan", methods=["POST"])
 def scan():
@@ -120,42 +156,34 @@ def scan():
     if not user:
         return jsonify({"error": "auth"}), 401
 
-    data = request.json
-    url = data.get("url")
-    keyword = data.get("keyword", "")
-    competitor = data.get("competitor", "")
+    reset_monthly_if_needed(user["id"])
 
-    # --------------------------------------------------------
-    # FREE USER LOGIC
-    # --------------------------------------------------------
-    if not user["is_pro"]:
-        # 1. Enforce monthly 2-scan limit
-        scans_used = user["scans_used"]
-        if scans_used >= 2:
+    subscribed = user["is_pro"]
+
+    # FREE PLAN ENFORCEMENT
+    if not subscribed:
+        if user["scans_used"] >= FREE_SCAN_LIMIT:
             return jsonify({"error": "limit"}), 403
 
-        # Count this scan
         execute("""
             UPDATE users SET scans_used = scans_used + 1
             WHERE id = %s
         """, (user["id"],))
 
-    # --------------------------------------------------------
-    # RUN ANALYSIS (YOUR AI LOGIC GOES HERE)
-    # For now, I generate placeholder values so UI works.
-    # Replace these with your real scan engine later.
-    # --------------------------------------------------------
-    score = 73
-    content = 68
-    keyword_score = 72
-    technical = 70
-    onpage = 81
-    links = 65
+    # FAKE PLACEHOLDER ANALYSIS (works with your UI)
+    score = 74
+    content = 66
+    keyword_score = 61
+    technical = 79
+    onpage = 72
+    links = 69
 
     audit = "Your site audit goes here..."
-    tips = "Your optimization tips go here..."
+    tips = "Optimization tips go here..."
 
-    # Competitor analysis (only if competitor given)
+    data = request.json
+    competitor = data.get("competitor", "")
+
     competitor_data = None
     competitor_summary = ""
     competitor_advantages = ""
@@ -163,19 +191,16 @@ def scan():
 
     if competitor:
         competitor_data = {
-            "content": 55,
-            "keyword": 60,
-            "technical": 58,
-            "onpage": 63,
-            "links": 50
+            "content": 52,
+            "keyword": 59,
+            "technical": 55,
+            "onpage": 62,
+            "links": 47
         }
-        competitor_summary = "Competitor summary text..."
-        competitor_advantages = "Competitor advantages..."
-        competitor_disadvantages = "Your advantages over competitor..."
+        competitor_summary = "Competitor summary..."
+        competitor_advantages = "Where the competitor is stronger..."
+        competitor_disadvantages = "Where you outperform competitor..."
 
-    # --------------------------------------------------------
-    # RETURN JSON BACK TO DASHBOARD
-    # --------------------------------------------------------
     return jsonify({
         "score": score,
         "content": content,
@@ -191,65 +216,48 @@ def scan():
         "competitor_disadvantages": competitor_disadvantages
     })
 
+
 # ============================================================
-# PUBLIC ROUTE — PRICING PAGE
+# PRICING (YOUR CUSTOM PAGE, NO CHANGES)
 # ============================================================
+
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html")
 
+
 # ============================================================
-# ADMIN — USERS LIST
+# ADMIN
 # ============================================================
 
 @app.route("/admin/users")
 def admin_users():
-    if not admin_required():
+    user = current_user()
+    if not user or not user["is_admin"]:
         return "Access Denied"
 
-    # Search
-    q = request.args.get("q", "").strip().lower()
-
-    # Sorting
-    sort = request.args.get("sort", "id_desc")
-    order_sql = {
-        "id_asc": "id ASC",
-        "id_desc": "id DESC",
-        "email_asc": "LOWER(email) ASC",
-        "email_desc": "LOWER(email) DESC",
-        "pro_asc": "is_pro ASC",
-        "pro_desc": "is_pro DESC",
-        "scans_asc": "scans_used ASC",
-        "scans_desc": "scans_used DESC",
-    }.get(sort, "id DESC")
-
-    # Query
-    if q:
-        users = fetch_all(f"""
-            SELECT * FROM users
-            WHERE LOWER(email) LIKE %s
-            ORDER BY {order_sql}
-        """, (f"%{q}%",))
-    else:
-        users = fetch_all(f"SELECT * FROM users ORDER BY {order_sql}")
-
-    return render_template("admin_users.html",
-                           users=users,
-                           q=q,
-                           sort=sort)
+    users = fetch_all("SELECT * FROM users ORDER BY id ASC")
+    return render_template("admin_users.html", users=users)
 
 
-# ============================================================
-# ADMIN — EDIT USER
-# ============================================================
-
-@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
-def admin_edit_user(user_id):
-    if not admin_required():
+@app.route("/admin/reset_scans/<int:uid>")
+def admin_reset_scans(uid):
+    user = current_user()
+    if not user or not user["is_admin"]:
         return "Access Denied"
 
-    user = fetch_one("SELECT * FROM users WHERE id=%s", (user_id,))
-    if not user:
+    execute("UPDATE users SET scans_used=0, pdf_used=0 WHERE id=%s", (uid,))
+    return redirect("/admin/users")
+
+
+@app.route("/admin/edit/<int:uid>", methods=["GET", "POST"])
+def admin_edit(uid):
+    user = current_user()
+    if not user or not user["is_admin"]:
+        return "Access Denied"
+
+    row = fetch_one("SELECT * FROM users WHERE id=%s", (uid,))
+    if not row:
         return "User not found"
 
     if request.method == "POST":
@@ -258,40 +266,13 @@ def admin_edit_user(user_id):
         is_admin = request.form.get("is_admin") == "on"
 
         execute("""
-            UPDATE users
-            SET email=%s, is_pro=%s, is_admin=%s
+            UPDATE users SET email=%s, is_pro=%s, is_admin=%s
             WHERE id=%s
-        """, (email, is_pro, is_admin, user_id))
+        """, (email, is_pro, is_admin, uid))
 
         return redirect("/admin/users")
 
-    return render_template("admin_edit_user.html", user=user)
-
-
-# ============================================================
-# ADMIN — DELETE USER
-# ============================================================
-
-@app.route("/admin/delete/<int:user_id>")
-def admin_delete_user(user_id):
-    if not admin_required():
-        return "Access Denied"
-
-    execute("DELETE FROM users WHERE id=%s", (user_id,))
-    return redirect("/admin/users")
-
-
-# ============================================================
-# ADMIN — RESET USER SCAN COUNT
-# ============================================================
-
-@app.route("/admin/reset_scans/<int:user_id>")
-def admin_reset_scans(user_id):
-    if not admin_required():
-        return "Access Denied"
-
-    execute("UPDATE users SET scans_used=0 WHERE id=%s", (user_id,))
-    return redirect("/admin/users")
+    return render_template("admin_edit_user.html", user=row)
 
 
 # ============================================================
@@ -308,14 +289,14 @@ def terms():
     return render_template("terms.html")
 
 
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
 
 
 # ============================================================
