@@ -30,11 +30,33 @@ def get_user_by_id(user_id):
     return user
 
 
+def get_user_by_subscription(subscription_id):
+    """Used when Stripe sends subscription.updated events."""
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT * FROM users
+        WHERE stripe_subscription_id = %s
+    """, (subscription_id,))
+
+    user = cur.fetchone()
+    conn.close()
+    return user
+
+
 # --------------------------
-# USER UPDATE HELPERS
+# UPDATE HELPERS
 # --------------------------
 
-def update_subscription(user_id, customer_id, subscription_id, status):
+def update_subscription_by_email(
+    email,
+    stripe_customer_id,
+    stripe_subscription_id,
+    status,
+    is_pro,
+    period_end
+):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -44,19 +66,58 @@ def update_subscription(user_id, customer_id, subscription_id, status):
             stripe_customer_id = %s,
             stripe_subscription_id = %s,
             subscription_status = %s,
-            is_pro = %s
-        WHERE id = %s
+            is_pro = %s,
+            period_end = %s
+        WHERE email = %s
     """, (
-        customer_id,
-        subscription_id,
+        stripe_customer_id,
+        stripe_subscription_id,
         status,
-        status == "active",
-        user_id,
+        is_pro,
+        period_end,
+        email
     ))
 
     conn.commit()
     conn.close()
 
+
+def update_subscription_by_id(
+    user_id,
+    stripe_customer_id,
+    stripe_subscription_id,
+    status,
+    is_pro,
+    period_end
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE users
+        SET
+            stripe_customer_id = %s,
+            stripe_subscription_id = %s,
+            subscription_status = %s,
+            is_pro = %s,
+            period_end = %s
+        WHERE id = %s
+    """, (
+        stripe_customer_id,
+        stripe_subscription_id,
+        status,
+        is_pro,
+        period_end,
+        user_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+
+# --------------------------
+# CREATE USER
+# --------------------------
 
 def create_user(email, password_hash):
     conn = get_connection()
@@ -69,7 +130,6 @@ def create_user(email, password_hash):
     """, (email, password_hash))
 
     new_id = cur.fetchone()["id"]
-
     conn.commit()
     conn.close()
 
