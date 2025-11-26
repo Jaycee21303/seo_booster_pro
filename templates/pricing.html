@@ -93,7 +93,7 @@
         </div>
 
         <!-- ==========================================
-             SINGLE SCAN PURCHASE
+             SINGLE SCAN
         =========================================== -->
         <div style="
             background:white;
@@ -139,25 +139,44 @@
 
 </div>
 
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
 
 <script>
-function startCheckout() {
-    const btn = document.getElementById("checkout-btn");
-    btn.innerText = "Redirecting...";
-    btn.style.opacity = "0.6";
-    btn.style.pointerEvents = "none";
+    // Initialize Stripe with LIVE key from Flask
+    const stripe = Stripe("{{ stripe_public_key }}");
 
-    fetch("/create-checkout-session", { method: "POST" })
-    .then(r => r.json())
-    .then(data => {
-        if (data.url) window.location = data.url;
-        else alert("Error: " + data.error);
-    });
-}
+    function startCheckout() {
+        const btn = document.getElementById("checkout-btn");
+        btn.innerText = "Redirecting...";
+        btn.style.opacity = "0.6";
+        btn.style.pointerEvents = "none";
 
-function singleScan() {
-    alert("Single Scan checkout not yet wired. We'll add Stripe logic next.");
-}
+        fetch("/create-checkout-session", { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+            if (data.sessionId) {
+                return stripe.redirectToCheckout({ sessionId: data.sessionId });
+            } else if (data.url) {
+                window.location = data.url;
+            } else {
+                alert("Error: " + data.error);
+                btn.innerText = "Upgrade to Pro";
+                btn.style.opacity = "1";
+                btn.style.pointerEvents = "auto";
+            }
+        })
+        .catch(err => {
+            alert("Stripe Error: " + err);
+            btn.innerText = "Upgrade to Pro";
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+        });
+    }
+
+    function singleScan() {
+        alert("Single Scan checkout not yet wired. We'll add Stripe logic next.");
+    }
 </script>
 
 {% endblock %}
