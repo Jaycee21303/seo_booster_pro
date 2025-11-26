@@ -113,7 +113,13 @@ def settings():
     if not user:
         return redirect("/login")
     return render_template("settings.html", user=user)
-
+    
+# ============================================================
+# PUBLIC ROUTE — PRICING PAGE
+# ============================================================
+@app.route("/pricing")
+def pricing():
+    return render_template("pricing.html")
 
 # ============================================================
 # ADMIN — USERS LIST
