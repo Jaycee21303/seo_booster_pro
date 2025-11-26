@@ -6,13 +6,13 @@
 
     <title>SEO Booster</title>
 
-    <!-- ⭐ REQUIRED: AdSense verification -->
+    <!-- Google AdSense Verification -->
     <meta name="google-adsense-account" content="ca-pub-1967195027765056">
 
     <!-- Global CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- ⭐ REQUIRED: Global AdSense Script -->
+    <!-- Global AdSense Script -->
     <script async 
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1967195027765056"
         crossorigin="anonymous"></script>
@@ -47,21 +47,31 @@
                 SEO Booster
             </div>
 
-            <!-- RIGHT NAV LINKS -->
+            <!-- RIGHT NAV -->
             <div>
                 {% if session.get("user_id") %}
 
+                    <!-- Dashboard -->
                     <a href="/dashboard" 
                        style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
                        Dashboard
                     </a>
 
-                    <!-- ⭐ SETTINGS LINK ADDED -->
+                    <!-- Settings -->
                     <a href="/settings" 
                        style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
                        Settings
                     </a>
 
+                    <!-- Admin Panel -->
+                    {% if session.get('is_admin') %}
+                    <a href="/admin/users" 
+                       style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
+                       Admin
+                    </a>
+                    {% endif %}
+
+                    <!-- Logout -->
                     <a href="/logout" 
                        style="padding:10px 22px; background:#6A4CFF; color:white; border-radius:8px;
                               font-weight:600; text-decoration:none;">
@@ -70,11 +80,13 @@
 
                 {% else %}
 
+                    <!-- Login -->
                     <a href="/login" 
                        style="margin-right:20px; color:#6A4CFF; font-weight:600; text-decoration:none;">
                         Login
                     </a>
 
+                    <!-- Signup -->
                     <a href="/signup" 
                        style="padding:10px 20px; background:#6A4CFF; color:white; border-radius:8px;
                               font-weight:600; text-decoration:none;">
@@ -94,7 +106,7 @@
     </main>
 
 
-    <!-- ⭐ COOKIE CONSENT POPUP -->
+    <!-- COOKIE CONSENT -->
     <div id="cookie-popup" style="
         position: fixed;
         bottom: 20px;
@@ -123,7 +135,9 @@
             border-radius:8px;
             cursor:pointer;
             font-weight:600;
-        ">Accept</button>
+        ">
+            Accept
+        </button>
     </div>
 
     <script>
