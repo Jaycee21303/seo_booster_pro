@@ -1,11 +1,7 @@
-# config.py
-# FILL THESE IN WITH YOUR STRIPE TEST KEYS
+import os
 
-STRIPE_PUBLIC_KEY = "pk_test_YOUR_KEY_HERE"
-STRIPE_SECRET_KEY = "sk_test_YOUR_KEY_HERE"
-
-# Your subscription price ID
-STRIPE_PRICE_ID = "price_1SX0W9AXUq0CrAiVi8fjNm0A"
-
-# Webhook secret (copied from Stripe)
-WEBHOOK_SECRET = "whsec_gVY36maqHOHYp6XYbXpJ2g452FMuSboW"
+# Stripe configuration using environment variables only
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
