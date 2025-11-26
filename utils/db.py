@@ -1,88 +1,76 @@
-import os
 import psycopg2
-import psycopg2.extras
+from psycopg2.extras import RealDictCursor
+import os
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-
 def get_connection():
-    return psycopg2.connect(DATABASE_URL, sslmode="require")
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 
-def init_db():
+# --------------------------
+# USER LOOKUP HELPERS
+# --------------------------
+
+def get_user_by_email(email):
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cur.fetchone()
+    conn.close()
+    return user
 
-    # ---------------------------------------
-    # Base table structure (never removes data)
-    # ---------------------------------------
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        );
-    """)
 
-    # ---------------------------------------
-    # Columns required by the latest app.py
-    # ---------------------------------------
-    required_columns = {
-        "is_admin": "BOOLEAN DEFAULT FALSE",
-        "is_pro": "BOOLEAN DEFAULT FALSE",
-        "scans_used": "INTEGER DEFAULT 0",
-        "pdf_used": "INTEGER DEFAULT 0",
-        "stripe_customer_id": "TEXT",
-        "stripe_subscription_id": "TEXT",
-        "subscription_status": "TEXT",
-        "current_period_end": "TIMESTAMP"
-    }
+def get_user_by_id(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    conn.close()
+    return user
 
-    for column, definition in required_columns.items():
-        cursor.execute("""
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name='users' AND column_name=%s;
-        """, (column,))
-        exists = cursor.fetchone()
 
-        if not exists:
-            cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {definition};")
-            print(f"[DB] Added missing column: {column}")
+# --------------------------
+# USER UPDATE HELPERS
+# --------------------------
+
+def update_subscription(user_id, customer_id, subscription_id, status):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE users
+        SET
+            stripe_customer_id = %s,
+            stripe_subscription_id = %s,
+            subscription_status = %s,
+            is_pro = %s
+        WHERE id = %s
+    """, (
+        customer_id,
+        subscription_id,
+        status,
+        status == "active",
+        user_id,
+    ))
 
     conn.commit()
-    cursor.close()
     conn.close()
 
 
-def fetch_one(query, params=None):
+def create_user(email, password_hash):
     conn = get_connection()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(query, params or ())
-    row = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return row
+    cur = conn.cursor()
 
+    cur.execute("""
+        INSERT INTO users (email, password, is_pro, subscription_status)
+        VALUES (%s, %s, FALSE, 'none')
+        RETURNING id
+    """, (email, password_hash))
 
-def fetch_all(query, params=None):
-    conn = get_connection()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(query, params or ())
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return rows
+    new_id = cur.fetchone()["id"]
 
-
-def execute(query, params=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(query, params or ())
     conn.commit()
-    cursor.close()
     conn.close()
 
-
-# Auto-run migration
-init_db()
+    return new_id
