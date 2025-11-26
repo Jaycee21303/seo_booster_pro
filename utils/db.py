@@ -13,38 +13,42 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Create table if missing
+    # ---------------------------------------
+    # Base table structure (never removes data)
+    # ---------------------------------------
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            api_key TEXT
+            password TEXT NOT NULL
         );
     """)
 
-    # Missing columns that MUST be added
-    required_user_columns = {
+    # ---------------------------------------
+    # Columns required by the latest app.py
+    # ---------------------------------------
+    required_columns = {
         "is_admin": "BOOLEAN DEFAULT FALSE",
         "is_pro": "BOOLEAN DEFAULT FALSE",
         "scans_used": "INTEGER DEFAULT 0",
+        "pdf_used": "INTEGER DEFAULT 0",
         "stripe_customer_id": "TEXT",
         "stripe_subscription_id": "TEXT",
         "subscription_status": "TEXT",
         "current_period_end": "TIMESTAMP"
     }
 
-    for column, definition in required_user_columns.items():
+    for column, definition in required_columns.items():
         cursor.execute("""
-            SELECT column_name 
-            FROM information_schema.columns 
+            SELECT column_name
+            FROM information_schema.columns
             WHERE table_name='users' AND column_name=%s;
         """, (column,))
         exists = cursor.fetchone()
 
         if not exists:
             cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {definition};")
-            print(f"[DB] Added missing user column: {column}")
+            print(f"[DB] Added missing column: {column}")
 
     conn.commit()
     cursor.close()
@@ -80,5 +84,5 @@ def execute(query, params=None):
     conn.close()
 
 
-# Auto-run migrations
+# Auto-run migration
 init_db()
