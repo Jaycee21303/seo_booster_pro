@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from utils.db import (
     get_user_by_email,
     create_user,
-    update_subscription,
     get_user_by_subscription,
     update_subscription_by_email
 )
