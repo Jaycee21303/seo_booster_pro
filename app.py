@@ -4,6 +4,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from utils.db import fetch_one, fetch_all, execute
 
+# ======================
+# STRIPE SETUP
+# ======================
+import stripe
+from config import STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, WEBHOOK_SECRET
+
+stripe.api_key = STRIPE_SECRET_KEY
+
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
 
@@ -211,7 +220,75 @@ def export_pdf():
 
 @app.route("/pricing")
 def pricing():
-    return render_template("pricing.html")
+    return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
+
+
+# ============================================================
+# STRIPE CHECKOUT
+# ============================================================
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "auth"}), 401
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="subscription",
+            customer_email=user["email"],
+            line_items=[{
+                "price": STRIPE_PRICE_ID,
+                "quantity": 1
+            }],
+            success_url=url_for('success', _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=url_for('cancel', _external=True)
+        )
+        return jsonify({"id": checkout_session.id})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/success")
+def success():
+    return render_template("success.html")
+
+
+@app.route("/cancel")
+def cancel():
+    return render_template("cancel.html")
+
+
+# ============================================================
+# STRIPE WEBHOOK — UPGRADE USER TO PRO
+# ============================================================
+
+@app.route("/webhook", methods=["POST"])
+def stripe_webhook():
+    payload = request.data
+    sig = request.headers.get("stripe-signature")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig, WEBHOOK_SECRET
+        )
+    except Exception as e:
+        return str(e), 400
+
+    # When a checkout completes → upgrade user
+    if event["type"] == "checkout.session.completed":
+        session_data = event["data"]["object"]
+        email = session_data.get("customer_details", {}).get("email")
+
+        if email:
+            execute("""
+                UPDATE users
+                SET is_pro = TRUE
+                WHERE email = %s
+            """, (email,))
+
+    return "success", 200
 
 
 # ============================================================
