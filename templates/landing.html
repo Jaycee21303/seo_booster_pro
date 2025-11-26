@@ -1,52 +1,236 @@
-<section style="padding: 70px 0; background: #ffffff;">
-    <div style="max-width: 1100px; margin: auto; text-align: center;">
+{% extends "base.html" %}
+{% block content %}
 
-        <h2 style="font-size: 36px; font-weight: 800; color: #6A4CFF; margin-bottom: 15px;">
-            Everything You Need to Improve Your SEO
-        </h2>
-        <p style="font-size: 18px; opacity: 0.7; max-width: 700px; margin: auto;">
-            SEO Booster gives you instant audits, competitor analysis, and client-ready PDF reports — all automatically powered by AI.
-        </p>
+<style>
+    /* GLOBAL */
+    .section { padding: 80px 0; }
+    .center { text-align: center; }
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 35px; margin-top: 60px;">
+    /* HERO */
+    .hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        color: #6A4CFF;
+        max-width: 650px;
+        margin: auto;
+        line-height: 1.15;
+    }
+    .hero-sub {
+        font-size: 20px;
+        opacity: 0.75;
+        max-width: 600px;
+        margin: 20px auto 40px;
+    }
+    .cta-btn {
+        background: #6A4CFF;
+        color: white;
+        padding: 16px 32px;
+        border-radius: 14px;
+        font-size: 18px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+    }
+    .cta-btn:hover { opacity: 0.9; }
 
-            <!-- FEATURE 1 -->
-            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 40px; margin-bottom: 15px;">⚡</div>
-                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">Instant SEO Scan</h3>
-                <p style="opacity: 0.75; margin-top: 10px;">
-                    Run powerful AI-driven audits in seconds and get a full breakdown of your site’s performance.
-                </p>
-            </div>
+    /* HERO MOCKUP */
+    .mockup-wrapper {
+        max-width: 900px;
+        margin: 60px auto 0;
+        background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
+        border-radius: 24px;
+        padding: 40px 20px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .mockup-text {
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    .mockup-img {
+        width: 100%;
+        max-width: 420px;
+        margin: auto;
+        display: block;
+    }
 
-            <!-- FEATURE 2 -->
-            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 40px; margin-bottom: 15px;">📊</div>
-                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">Competitor Analysis</h3>
-                <p style="opacity: 0.75; margin-top: 10px;">
-                    Compare your site side-by-side with any competitor and uncover ranking advantages instantly.
-                </p>
-            </div>
+    /* FEATURES */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 32px;
+        margin-top: 50px;
+    }
+    .feature-box {
+        background: #f7f4ff;
+        padding: 32px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .feature-emoji {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+    .feature-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #6A4CFF;
+        margin-bottom: 10px;
+    }
+    .feature-text {
+        opacity: 0.75;
+        font-size: 16px;
+    }
 
-            <!-- FEATURE 3 -->
-            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 40px; margin-bottom: 15px;">📄</div>
-                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">PDF Reports</h3>
-                <p style="opacity: 0.75; margin-top: 10px;">
-                    Export clean, professional, client-ready PDF reports you can share or sell to clients.
-                </p>
-            </div>
+    /* TESTIMONIALS */
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+        margin-top: 50px;
+    }
+    .testimonial-box {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .stars { color: #f2c94c; font-size: 20px; margin-bottom: 10px; }
+    .testimonial-text { opacity: 0.8; font-size: 16px; margin-bottom: 14px; }
+    .testimonial-name { font-weight: 700; color: #6A4CFF; font-size: 17px; }
 
-            <!-- FEATURE 4 -->
-            <div style="background: #f7f4ff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 40px; margin-bottom: 15px;">🤖</div>
-                <h3 style="font-size: 22px; font-weight: 700; color: #6A4CFF;">AI Optimization Tips</h3>
-                <p style="opacity: 0.75; margin-top: 10px;">
-                    Personalized AI insights tell you exactly what to fix to rank higher — backed by proven data.
-                </p>
-            </div>
+    /* FINAL CTA */
+    .cta-final {
+        background: #6A4CFF;
+        color: white;
+        padding: 60px 20px;
+        border-radius: 24px;
+        text-align: center;
+        max-width: 900px;
+        margin: 70px auto;
+    }
+    .cta-final h2 { font-size: 36px; font-weight: 800; }
+    .cta-final p { opacity: 0.95; font-size: 19px; margin: 20px auto; }
 
+    /* MOBILE FIXES */
+    @media(max-width: 768px) {
+        .hero-title { font-size: 36px; }
+        .hero-sub { font-size: 18px; }
+    }
+</style>
+
+<!-- ================================
+     HERO SECTION
+================================ -->
+<section class="section center">
+    <h1 class="hero-title">Boost Your SEO in Minutes</h1>
+    <p class="hero-sub">Instant SEO audits, competitor insights & client-ready PDF reports — all from one simple dashboard.</p>
+    <a href="/signup" class="cta-btn">Start Free — No Credit Card</a>
+</section>
+
+
+<!-- ================================
+     MOCKUP FEATURE BLOCK
+================================ -->
+<section>
+    <div class="mockup-wrapper">
+        <div class="mockup-text">Your First PDF Report Is Just a Click Away</div>
+        <img class="mockup-img" src="/static/seo_report_mockup.png" alt="SEO Report Preview">
+    </div>
+</section>
+
+
+<!-- ================================
+     FEATURES GRID
+================================ -->
+<section class="section center">
+    <h2 style="font-size:36px;font-weight:800;color:#6A4CFF;">Everything You Need to Improve Rankings</h2>
+    <p style="font-size:18px;opacity:0.75;max-width:680px;margin:auto;">
+        Designed for creators, businesses, and agencies that need fast insights — without the complexity.
+    </p>
+
+    <div class="feature-grid">
+
+        <div class="feature-box">
+            <div class="feature-emoji">⚡</div>
+            <div class="feature-title">Instant SEO Scan</div>
+            <div class="feature-text">AI-powered analysis reveals your biggest opportunities fast.</div>
+        </div>
+
+        <div class="feature-box">
+            <div class="feature-emoji">📊</div>
+            <div class="feature-title">Competitor Breakdown</div>
+            <div class="feature-text">Side-by-side comparison helps you outrank any competitor.</div>
+        </div>
+
+        <div class="feature-box">
+            <div class="feature-emoji">📄</div>
+            <div class="feature-title">PDF Reports</div>
+            <div class="feature-text">Professional, client-ready PDF exports included.</div>
+        </div>
+
+        <div class="feature-box">
+            <div class="feature-emoji">🤖</div>
+            <div class="feature-title">AI Optimization Tips</div>
+            <div class="feature-text">Get actionable recommendations based on real ranking signals.</div>
         </div>
 
     </div>
 </section>
+
+
+<!-- ================================
+     TESTIMONIALS
+================================ -->
+<section class="section center" style="background:#faf8ff;">
+    <h2 style="font-size:36px;font-weight:800;color:#6A4CFF;">Loved by Marketers & Creators</h2>
+
+    <div class="testimonial-grid">
+
+        <div class="testimonial-box">
+            <div class="stars">★★★★★</div>
+            <div class="testimonial-text">
+                “Finally an SEO tool I actually understand. The competitor scan is ridiculously useful.”
+            </div>
+            <div class="testimonial-name">— Sarah T.</div>
+        </div>
+
+        <div class="testimonial-box">
+            <div class="stars">★★★★★</div>
+            <div class="testimonial-text">
+                “I use the PDF reports to send monthly updates to clients. Saves me hours!”
+            </div>
+            <div class="testimonial-name">— Jordan M.</div>
+        </div>
+
+        <div class="testimonial-box">
+            <div class="stars">★★★★★</div>
+            <div class="testimonial-text">
+                “The AI tips gave me real improvements in a single weekend. Amazing tool.”
+            </div>
+            <div class="testimonial-name">— Alex R.</div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ================================
+     FINAL CTA
+================================ -->
+<section>
+    <div class="cta-final">
+        <h2>Ready to Start Ranking Higher?</h2>
+        <p>Get your first 2 scans free — no risk, no credit card.</p>
+        <a href="/signup" class="cta-btn" style="background:white;color:#6A4CFF;">
+            Create Free Account
+        </a>
+    </div>
+</section>
+
+{% endblock %}
+
