@@ -73,17 +73,34 @@ body {
 }
 
 /* =========================================================
-   HEADER
+   ✨ PREMIUM DASHBOARD HERO (NEW)
 ========================================================= */
-.header-banner {
-    width: 100%;
-    padding: 45px 0;
+.dashboard-hero {
+    background: linear-gradient(135deg, #7A5BFF, #6A4CFF);
+    padding: 60px 30px;
+    border-radius: 18px;
     text-align: center;
-    background: linear-gradient(135deg, #6A4CFF, #9C6BFF);
-    color: white;
     margin-bottom: 35px;
+    color: white;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
-.header-banner h1 { font-size: 38px; font-weight: 800; }
+
+.dash-title {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+}
+
+.dash-subtitle {
+    font-size: 20px;
+    opacity: 0.95;
+}
+
+@media (max-width: 600px) {
+    .dash-title { font-size: 38px; }
+    .dash-subtitle { font-size: 16px; }
+}
 
 /* =========================================================
    PAGE WRAPPER WITH SIDEBAR ADS
@@ -288,11 +305,11 @@ body {
 
 
 <!-- =========================================================
-     HEADER
+     ✨ NEW PREMIUM HERO BANNER
 ========================================================= -->
-<div class="header-banner">
-    <h1>SEO Dashboard</h1>
-    <p>Instant AI-powered insights to improve your rankings</p>
+<div class="dashboard-hero">
+    <h1 class="dash-title">SEO Dashboard</h1>
+    <p class="dash-subtitle">Instant AI-powered insights to improve your rankings</p>
 </div>
 
 
@@ -307,7 +324,6 @@ body {
     ====================================================== -->
     <div class="dashboard-container">
 
-        <!-- USER LIMIT DISPLAY -->
         {% if not subscribed %}
         <div class="card">
             <div class="section-title">⚠ Free Plan Limits</div>
@@ -317,8 +333,7 @@ body {
         </div>
         {% endif %}
 
-
-        <!-- ANALYZER INPUT CARD -->
+        <!-- ANALYZER -->
         <div class="card">
             <div class="section-title">
                 🔍 SEO Analyzer
@@ -339,15 +354,12 @@ body {
         </div>
 
 
-
-        <!-- RESULTS AREA -->
+        <!-- RESULTS -->
         <div id="resultsArea" style="display:none;">
 
-
-            <!-- YOUR SCORE + COMP SCORE -->
             <div class="top-score-container">
 
-                <!-- YOUR SCORE -->
+                <!-- Your Score -->
                 <div class="top-score-box">
                     <div class="card">
                         <div class="section-title">📈 Your Site Score</div>
@@ -359,7 +371,7 @@ body {
                     </div>
                 </div>
 
-                <!-- COMPETITOR SCORE -->
+                <!-- Competitor Score -->
                 <div class="top-score-box">
                     <div id="compScoreCard" class="card" style="display:none;">
                         <div class="section-title">🏆 Competitor Score</div>
@@ -374,7 +386,7 @@ body {
             </div>
 
 
-            <!-- BREAKDOWN -->
+            <!-- Breakdown -->
             <div class="card">
                 <div class="section-title">📊 Detailed Breakdown</div>
 
@@ -405,15 +417,14 @@ body {
             </div>
 
 
-
-            <!-- COMPETITOR COMPARISON SECTION -->
+            <!-- Competitor Breakdown Section -->
             <div id="compSection" class="card">
 
                 <div class="section-title">🏁 Your Site vs Competitor</div>
 
                 <div class="comp-container">
 
-                    <!-- YOUR BREAKDOWN -->
+                    <!-- YOUR -->
                     <div class="comp-card">
                         <h3>Your Site</h3>
 
@@ -444,7 +455,7 @@ body {
                     </div>
 
 
-                    <!-- COMPETITOR BREAKDOWN -->
+                    <!-- COMP -->
                     <div class="comp-card">
                         <h3>Competitor</h3>
 
@@ -507,9 +518,8 @@ body {
     </div>
 
 
-
     <!-- =====================================================
-         RIGHT SIDEBAR — GOOGLE ADS (FREE USERS ONLY)
+         RIGHT SIDEBAR — ADS
     ====================================================== -->
     {% if not subscribed %}
     <div class="sidebar-ads">
@@ -534,15 +544,16 @@ body {
             (adsbygoogle = window.adsbygoogle || []).push({});
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
+
     </div>
     {% endif %}
 
-</div> <!-- end page-wrapper -->
+</div> <!-- end wrapper -->
 
 
 
 <!-- =========================================================
-     JAVASCRIPT
+     JAVASCRIPT — ANALYZER LOGIC
 ========================================================= -->
 <script>
 document.getElementById("analyzeBtn").onclick = async function () {
@@ -550,7 +561,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
     let url = document.getElementById("urlInput").value.trim();
     if (!url) return alert("Enter a valid URL.");
 
-    let keyword = document.getElementById("keywordInput").value;
+    let keyword = document.getElementByvalue("keywordInput").value;
     let competitor = document.getElementById("compInput").value;
 
     const btn = document.getElementById("analyzeBtn");
@@ -595,17 +606,12 @@ document.getElementById("analyzeBtn").onclick = async function () {
         if (current >= finalScore) clearInterval(interval);
     }, 15);
 
+
     document.getElementById("pb-content").style.width = data.content + "%";
     document.getElementById("pb-keyword").style.width = data.keyword + "%";
     document.getElementById("pb-tech").style.width = data.technical + "%";
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
-
-    document.getElementById("yourContentBar").style.width = data.content + "%";
-    document.getElementById("yourKeywordBar").style.width = data.keyword + "%";
-    document.getElementById("yourTechnicalBar").style.width = data.technical + "%";
-    document.getElementById("yourOnpageBar").style.width = data.onpage + "%";
-    document.getElementById("yourLinksBar").style.width = data.links + "%";
 
     document.getElementById("auditBox").innerText = data.audit;
     document.getElementById("tipsBox").innerText = data.tips;
@@ -616,10 +622,10 @@ document.getElementById("analyzeBtn").onclick = async function () {
         return;
     }
 
+    let c = data.competitor_data;
+
     document.getElementById("compSection").style.display = "block";
     document.getElementById("compScoreCard").style.display = "block";
-
-    let c = data.competitor_data;
 
     let compScore = Math.round(
         (c.content + c.keyword + c.technical + c.onpage + c.links) / 5
@@ -650,4 +656,5 @@ document.getElementById("analyzeBtn").onclick = async function () {
 </script>
 
 {% endblock %}
+
 
