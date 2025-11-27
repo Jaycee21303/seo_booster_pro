@@ -319,3 +319,39 @@ body {
     text-decoration: none;
 }
 
+/* --------------------------------------------------
+   DASHBOARD HERO (Updated – Premium SaaS Style)
+-------------------------------------------------- */
+
+.dashboard-hero {
+    background: linear-gradient(135deg, #7A5BFF, #6A4CFF);
+    padding: 60px 30px;
+    border-radius: 18px;
+    text-align: center;
+    margin-bottom: 35px;
+    color: white;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.dash-title {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+}
+
+.dash-subtitle {
+    font-size: 20px;
+    font-weight: 400;
+    opacity: 0.95;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+    .dash-title {
+        font-size: 38px;
+    }
+    .dash-subtitle {
+        font-size: 16px;
+    }
+}
