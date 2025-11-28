@@ -133,7 +133,7 @@ body {
 }
 
 /* =========================================================
-   MODERNIZED AUDIT + OPTIMIZATION BOXES
+   MODERN AUDIT + TIPS
 ========================================================= */
 
 .audit-box-modern {
@@ -143,11 +143,6 @@ body {
     border-radius: 12px;
     font-size: 15px;
     line-height: 1.55;
-}
-
-.audit-box-modern b {
-    color: #6A4CFF;
-    font-size: 16px;
 }
 
 .audit-entry {
@@ -165,13 +160,11 @@ body {
     padding-left: 20px;
     margin: 0;
 }
-
 .tips-modern li {
     margin-bottom: 10px;
     font-size: 15px;
     line-height: 1.55;
 }
-
 .tips-modern li::marker {
     color: #6A4CFF;
 }
@@ -355,53 +348,23 @@ body {
                 <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
             </div>
 
-            <!-- ============================================================
-                 MODERNIZED AUDIT SECTION
-            ============================================================ -->
+            <!-- AUDIT -->
             <div class="card">
                 <div class="section-title">🧹 Site Audit</div>
-
-                <div class="audit-box-modern" id="auditBox">
-                    <!-- JS fills this -->
-                </div>
+                <div class="audit-box-modern" id="auditBox"></div>
             </div>
 
-            <!-- ============================================================
-                 MODERNIZED TIPS SECTION
-            ============================================================ -->
+            <!-- TIPS -->
             <div class="card">
                 <div class="section-title">💡 Optimization Tips</div>
-
                 <div class="tips-modern">
-                    <ul id="tipsBox">
-                        <!-- JS fills this -->
-                    </ul>
+                    <ul id="tipsBox"></ul>
                 </div>
             </div>
 
             <!-- Competitor Section -->
             <div id="compSection" class="card">
                 <div class="section-title">🏁 Your Site vs Competitor</div>
-
-                <div class="comp-container">
-                    <div class="comp-card">
-                        <h3>Your Site</h3>
-                        <div class="progress-label">Content</div><div class="progress-bar"><div id="yourContentBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Keyword</div><div class="progress-bar"><div id="yourKeywordBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Technical</div><div class="progress-bar"><div id="yourTechnicalBar" class="progress-fill"></div></div>
-                        <div class="progress-label">On-Page</div><div class="progress-bar"><div id="yourOnpageBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Links</div><div class="progress-bar"><div id="yourLinksBar" class="progress-fill"></div></div>
-                    </div>
-
-                    <div class="comp-card">
-                        <h3>Competitor</h3>
-                        <div class="progress-label">Content</div><div class="progress-bar"><div id="compContentBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Keyword</div><div class="progress-bar"><div id="compKeywordBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Technical</div><div class="progress-bar"><div id="compTechnicalBar" class="progress-fill"></div></div>
-                        <div class="progress-label">On-Page</div><div class="progress-bar"><div id="compOnpageBar" class="progress-fill"></div></div>
-                        <div class="progress-label">Links</div><div class="progress-bar"><div id="compLinksBar" class="progress-fill"></div></div>
-                    </div>
-                </div>
 
                 <h3>📘 Summary</h3>
                 <div id="compSummary" class="comp-text"></div>
@@ -416,10 +379,8 @@ body {
         </div>
     </div>
 
-    <!-- Ads -->
     {% if not subscribed %}
     <div class="sidebar-ads">
-
         <div class="ad-box">
             <div class="ad-label">Advertisement</div>
             <ins class="adsbygoogle"
@@ -440,12 +401,11 @@ body {
             (adsbygoogle = window.adsbygoogle || []).push({});
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-
     </div>
     {% endif %}
 </div>
 
-<!-- ANALYZER JS -->
+<!-- JS -->
 <script>
 document.getElementById("analyzeBtn").onclick = async function () {
 
@@ -479,7 +439,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
 
     document.getElementById("resultsArea").style.display = "block";
 
-    // SCORE CIRCLE
+    /* SCORE */
     let finalScore = data.score;
     let inner = document.getElementById("scoreInner");
     let circle = document.getElementById("scoreCircle");
@@ -493,20 +453,18 @@ document.getElementById("analyzeBtn").onclick = async function () {
     let interval = setInterval(() => {
         current++;
         inner.innerText = current;
-        circle.style.background =
+        circle.style.background = 
             `conic-gradient(${color} ${current * 3.6}deg, #ddd 0deg)`;
         if (current >= finalScore) clearInterval(interval);
     }, 15);
 
-    // PROGRESS BARS
     document.getElementById("pb-content").style.width = data.content + "%";
     document.getElementById("pb-keyword").style.width = data.keyword + "%";
     document.getElementById("pb-tech").style.width = data.technical + "%";
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
 
-    /* --------------- MODERNIZED AUDIT FORMAT ---------------- */
-
+    /* AUDIT */
     let auditHTML = "";
     data.audit.split("\n").forEach(line => {
         if (line.trim() !== "") {
@@ -515,7 +473,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
     });
     document.getElementById("auditBox").innerHTML = auditHTML;
 
-    /* --------------- MODERNIZED TIPS FORMAT ---------------- */
+    /* TIPS */
     let tipsHTML = "";
     data.tips.split("\n").forEach(tip => {
         if (tip.trim() !== "") {
@@ -524,56 +482,30 @@ document.getElementById("analyzeBtn").onclick = async function () {
     });
     document.getElementById("tipsBox").innerHTML = tipsHTML;
 
-    // COMPETITOR SECTION
+    /* COMPETITOR */
     if (!competitor || !data.competitor_data) {
         document.getElementById("compSection").style.display = "none";
-        document.getElementById("compScoreCard").style.display = "none";
         return;
     }
 
     let c = data.competitor_data;
 
     document.getElementById("compSection").style.display = "block";
-    document.getElementById("compScoreCard").style.display = "block";
-
-    let compScore = Math.round(
-        (c.content + c.keyword + c.technical + c.onpage + c.links) / 5
-    );
-
-    let compInner = document.getElementById("compScoreInner");
-    let compCircle = document.getElementById("compScoreCircle");
-    let compCurrent = 0;
-
-    let compInterval = setInterval(() => {
-        compCurrent++;
-        compInner.innerText = compCurrent;
-        compCircle.style.background =
-            `conic-gradient(#2D8CFF ${compCurrent * 3.6}deg, #ddd 0deg)`;
-        if (compCurrent >= compScore) clearInterval(compInterval);
-    }, 15);
-
-    document.getElementById("compContentBar").style.width = c.content + "%";
-    document.getElementById("compKeywordBar").style.width = c.keyword + "%";
-    document.getElementById("compTechnicalBar").style.width = c.technical + "%";
-    document.getElementById("compOnpageBar").style.width = c.onpage + "%";
-    document.getElementById("compLinksBar").style.width = c.links + "%";
-
     document.getElementById("compSummary").innerText = data.competitor_summary;
     document.getElementById("compAdv").innerText = data.competitor_advantages;
     document.getElementById("compDisadv").innerText = data.competitor_disadvantages;
 
-    // PDF BUTTON
+    /* PDF */
     document.getElementById("pdfBtn").style.display = "block";
     document.getElementById("pdfBtn").onclick = function () {
-        window.location.href =
-            `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
+        window.location.href = `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
     };
 
-}; // end analyzeBtn
-
+}; 
 </script>
 
 {% endblock %}
+
 
 
 
