@@ -1,307 +1,345 @@
-import requests
-from bs4 import BeautifulSoup
-from collections import Counter
-import re
-import math
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
+import stripe
+import os
+import json
+
+from utils.db import (
+    get_user_by_email,
+    create_user,
+    get_user_by_subscription,
+    update_subscription_by_email,
+    list_users,
+    delete_user_by_id,
+    reset_scans,
+    make_admin,
+)
+
+from utils.analyzer import run_local_seo_analysis
+from utils.pdf_builder import build_pdf
+
+import psycopg2
+import io
 
 
-# ---------------------------------------------------
-# BASIC TEXT CLEANING
-# ---------------------------------------------------
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
+
+# Stripe
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 
-# ---------------------------------------------------
-# FETCH + PARSE PAGE
-# ---------------------------------------------------
-def fetch_page(url):
+# ===============================================================
+# HOME PAGE
+# ===============================================================
+@app.route("/")
+def index():
+    return render_template("landing.html")
+
+
+# ===============================================================
+# SIGNUP
+# ===============================================================
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if get_user_by_email(email):
+            return render_template("signup.html", error="Email already exists.")
+
+        create_user(email, password)
+        return redirect("/login")
+
+    return render_template("signup.html")
+
+
+# ===============================================================
+# LOGIN
+# ===============================================================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        user = get_user_by_email(email)
+        if not user or user["password"] != password:
+            return render_template("login.html", error="Invalid login.")
+
+        session["user_email"] = email
+        return redirect("/dashboard")
+
+    return render_template("login.html")
+
+
+# ===============================================================
+# DASHBOARD
+# ===============================================================
+@app.route("/dashboard")
+def dashboard():
+    if "user_email" not in session:
+        return redirect("/login")
+
+    user = get_user_by_email(session["user_email"])
+
+    subscribed = user["is_pro"]
+    scans_left = max(0, 2 - user["scans_used"]) if not subscribed else None
+    pdf_left = 1 if not subscribed else None
+
+    return render_template(
+        "dashboard.html",
+        user=user,
+        subscribed=subscribed,
+        scans_left=scans_left,
+        pdf_left=pdf_left
+    )
+
+
+# ===============================================================
+# STRIPE CHECKOUT
+# ===============================================================
+@app.route("/pricing")
+def pricing():
+    return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
+
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    if "user_email" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
     try:
-        response = requests.get(url, timeout=10, headers={
-            "User-Agent": "Mozilla/5.0"
-        })
-        if response.status_code != 200:
-            return None, None
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        return response.text, soup
-
-    except:
-        return None, None
-
-
-# ---------------------------------------------------
-# TF-IDF SEMANTIC KEYWORD MODELING
-# ---------------------------------------------------
-def extract_semantic_phrases(text, top_n=15):
-    words = clean_text(text).split()
-    if len(words) < 20:
-        return []
-
-    freq = Counter(words)
-    total = len(words)
-
-    scores = {}
-    for w, c in freq.items():
-        if len(w) < 4:
-            continue
-        tf = c / total
-        idf = math.log(1 + (total / (c + 1)))
-        scores[w] = tf * idf
-
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    return [x[0] for x in ranked[:top_n]]
-
-
-# ---------------------------------------------------
-# READABILITY SCORE (Flesch-like heuristic)
-# ---------------------------------------------------
-def readability_score(text):
-    words = text.split()
-    if len(words) == 0:
-        return 30
-
-    sentences = max(1, text.count('.') + text.count('!') + text.count('?'))
-    syllables = sum(len(re.findall(r"[aeiouy]+", w)) for w in words)
-
-    wps = len(words) / sentences
-    spw = syllables / len(words)
-
-    # Simplified readability scoring (0–100)
-    score = 100 - (wps * 5) - (spw * 20)
-    return max(5, min(95, int(score)))
-
-
-# ---------------------------------------------------
-# HEADING STRUCTURE SCORE
-# ---------------------------------------------------
-def heading_structure_score(soup):
-    h1 = soup.find_all("h1")
-    h2 = soup.find_all("h2")
-    h3 = soup.find_all("h3")
-
-    score = 0
-
-    # H1 rules
-    if len(h1) == 1:
-        score += 30
-    elif len(h1) > 1:
-        score += 5
-    else:
-        score += 0
-
-    # H2 presence
-    if len(h2) >= 2:
-        score += 30
-    elif len(h2) == 1:
-        score += 15
-
-    # H3 depth
-    if len(h3) >= 2:
-        score += 20
-    elif len(h3) == 1:
-        score += 10
-
-    # Max = 80 → scale to 100
-    return min(100, int(score * 1.25))
-
-
-# ---------------------------------------------------
-# BROKEN LINK CHECK (up to 20)
-# ---------------------------------------------------
-def link_health_score(url, soup):
-    links = soup.find_all("a")
-    broken = 0
-    checked = 0
-
-    for link in links:
-        href = link.get("href")
-        if not href or href.startswith("#") or href.startswith("mailto"):
-            continue
-
-        if href.startswith("/"):
-            href = url.rstrip("/") + href
-
-        try:
-            r = requests.get(href, timeout=5)
-            if r.status_code >= 400:
-                broken += 1
-        except:
-            broken += 1
-
-        checked += 1
-        if checked >= 20:
-            break
-
-    if checked == 0:
-        return 70  # neutral
-
-    good_ratio = (checked - broken) / checked
-    return int(good_ratio * 100)
-
-
-# ---------------------------------------------------
-# TECHNICAL HEALTH SCORE
-# ---------------------------------------------------
-def technical_score(soup):
-    score = 0
-
-    # Meta description
-    meta = soup.find("meta", attrs={"name": "description"})
-    if meta:
-        md = meta.get("content", "")
-        if 50 <= len(md) <= 160:
-            score += 20
-        else:
-            score += 10
-
-    # Viewport tag (mobile)
-    if soup.find("meta", attrs={"name": "viewport"}):
-        score += 20
-
-    # Schema / JSON-LD
-    if soup.find("script", type="application/ld+json"):
-        score += 20
-
-    # Title rules
-    title = soup.find("title")
-    if title:
-        t = title.text.strip()
-        if 20 <= len(t) <= 70:
-            score += 20
-        else:
-            score += 10
-
-    # Image alt text ratio
-    imgs = soup.find_all("img")
-    if imgs:
-        with_alt = sum(1 for img in imgs if img.get("alt"))
-        ratio = with_alt / len(imgs)
-        score += int(ratio * 20)
-    else:
-        score += 10
-
-    return min(100, score)
-
-
-# ---------------------------------------------------
-# KEYWORD RELEVANCE SCORE
-# ---------------------------------------------------
-def keyword_relevance(keyword, text):
-    if not keyword:
-        return 60  # neutral
-
-    words = clean_text(text).split()
-    if len(words) == 0:
-        return 30
-
-    density = words.count(keyword.lower()) / len(words)
-    score = min(100, int(density * 30000))
-    return max(5, score)
-
-
-# ---------------------------------------------------
-# AI-STYLE OPTIMIZATION TIPS
-# ---------------------------------------------------
-def generate_tips(soup, keyword):
-    tips = []
-
-    if keyword:
-        tips.append(f"• Use your target keyword “{keyword}” in the title, H1, and early in the content.")
-    tips.append("• Improve your meta description to better capture search intent.")
-    tips.append("• Add more H2/H3 subheadings to improve structure and readability.")
-    tips.append("• Expand your content with semantically related terms and supporting concepts.")
-    tips.append("• Improve internal linking to help search engines understand your content.")
-    tips.append("• Add descriptive alt text to all images.")
-    tips.append("• Implement structured data (JSON-LD) for better SERP features.")
-    tips.append("• Optimize page load speed by compressing images and minimizing scripts.")
-    tips.append("• Ensure your page is mobile-friendly with responsive elements.")
-
-    return "\n".join(tips)
-
-
-# ---------------------------------------------------
-# MAIN HYBRID-AI ANALYZER ENTRY POINT
-# ---------------------------------------------------
-def run_local_seo_analysis(url, keyword=None):
-    html, soup = fetch_page(url)
-    if not soup:
-        return (
-            0, "Error fetching page.", "Unable to analyze page.",
-            0, 0, 0, 0, 0
+        checkout_session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer_email=session["user_email"],
+            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+            success_url=request.host_url + "success",
+            cancel_url=request.host_url + "cancel",
         )
 
-    text = soup.get_text(separator=" ")
-    text_clean = clean_text(text)
+        return jsonify({"url": checkout_session.url})
 
-    # CONTENT SCORE (C3: combined)
-    wc = len(text_clean.split())
-    wc_score = min(100, int((wc / 800) * 100))  # word count target ~800
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-    sem_terms = extract_semantic_phrases(text_clean)
-    sem_score = min(100, len(sem_terms) * 5)  # up to ~15 terms → 75
 
-    read_score = readability_score(text)
+@app.route("/success")
+def success():
+    return render_template("success.html")
 
-    heading_score = heading_structure_score(soup)
 
-    content_score = int((wc_score * 0.35) + (sem_score * 0.35) + (read_score * 0.15) + (heading_score * 0.15))
+@app.route("/cancel")
+def cancel():
+    return render_template("cancel.html")
 
-    # KEYWORD SCORE
-    keyword_score_value = keyword_relevance(keyword, text_clean)
 
-    # TECHNICAL SCORE
-    technical_score_value = technical_score(soup)
+# ===============================================================
+# STRIPE WEBHOOK
+# ===============================================================
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    payload = request.data
+    sig_header = request.headers.get("stripe-signature")
 
-    # ON-PAGE SCORE (headings + meta balance)
-    onpage_score = int((heading_score * 0.6) + ((100 if soup.find('meta', attrs={'name': 'description'}) else 50) * 0.4))
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-    # LINK SCORE
-    link_score = link_health_score(url, soup)
+    event_type = event["type"]
 
-    # MAIN SCORE (S2 content-heavy model)
-    main_score = int(
-        content_score * 0.40 +
-        keyword_score_value * 0.25 +
-        technical_score_value * 0.20 +
-        onpage_score * 0.10 +
-        link_score * 0.05
-    )
+    # Payment completed
+    if event_type == "checkout.session.completed":
+        data = event["data"]["object"]
+        email = data.get("customer_email")
+        customer_id = data.get("customer")
+        subscription_id = data.get("subscription")
 
-    main_score = max(5, min(100, main_score))
+        if email:
+            update_subscription_by_email(
+                email=email,
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+                status="active",
+                is_pro=True,
+                period_end=None,
+            )
 
-    audit_text = (
-        "CONTENT ANALYSIS:\n"
-        f"- Word count score: {wc_score}\n"
-        f"- Readability score: {read_score}\n"
-        f"- Semantic richness score: {sem_score}\n"
-        f"- Heading structure: {heading_score}\n\n"
+    # Subscription updates
+    elif event_type == "customer.subscription.updated":
+        data = event["data"]["object"]
+        sub_id = data.get("id")
+        customer_id = data.get("customer")
+        status = data.get("status")
+        period_end = data.get("current_period_end")
 
-        "KEYWORD ANALYSIS:\n"
-        f"- Keyword relevance score: {keyword_score_value}\n\n"
+        user = get_user_by_subscription(sub_id)
+        if user:
+            update_subscription_by_email(
+                email=user["email"],
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=sub_id,
+                status=status,
+                is_pro=(status == "active"),
+                period_end=period_end,
+            )
 
-        "TECHNICAL HEALTH:\n"
-        f"- Technical score: {technical_score_value}\n\n"
+    return jsonify({"status": "success"}), 200
 
-        "ON-PAGE STRUCTURE:\n"
-        f"- On-page score: {onpage_score}\n\n"
 
-        "LINK HEALTH:\n"
-        f"- Link score: {link_score}\n"
-    )
+# ===============================================================
+# LOGOUT
+# ===============================================================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
 
-    tips = generate_tips(soup, keyword)
 
-    return (
+# ===============================================================
+# ANALYZER /scan
+# ===============================================================
+@app.route("/scan", methods=["POST"])
+def scan():
+    if "user_email" not in session:
+        return jsonify({"error": "not_logged_in"})
+
+    data = request.get_json()
+    url = data.get("url")
+    keyword = data.get("keyword")
+    competitor_url = data.get("competitor")
+
+    user = get_user_by_email(session["user_email"])
+
+    # FREE LIMITS
+    if not user["is_pro"]:
+        if user["scans_used"] >= 2:
+            return jsonify({"error": "limit"})
+        
+        # increment free scans
+        conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET scans_used = scans_used + 1 WHERE email = %s", (user["email"],))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    # MAIN ANALYSIS
+    (
         main_score,
-        audit_text,
+        audit,
         tips,
-        content_score,
-        technical_score_value,
-        keyword_score_value,
-        onpage_score,
-        link_score
+        content,
+        tech,
+        keyword_score,
+        onpage,
+        links
+    ) = run_local_seo_analysis(url, keyword)
+
+    result = {
+        "score": main_score,
+        "audit": audit,
+        "tips": tips,
+        "content": content,
+        "technical": tech,
+        "keyword": keyword_score,
+        "onpage": onpage,
+        "links": links
+    }
+
+    # COMPETITOR (PRO ONLY)
+    if competitor_url and user["is_pro"]:
+        (
+            c_score,
+            c_audit,
+            c_tips,
+            c_content,
+            c_tech,
+            c_keyword,
+            c_onpage,
+            c_links
+        ) = run_local_seo_analysis(competitor_url, keyword)
+
+        result["competitor_data"] = {
+            "content": c_content,
+            "technical": c_tech,
+            "keyword": c_keyword,
+            "onpage": c_onpage,
+            "links": c_links,
+            "score": c_score
+        }
+    else:
+        result["competitor_data"] = None
+
+    return jsonify(result)
+
+
+# ===============================================================
+# PDF EXPORT (PRO ONLY)
+# ===============================================================
+@app.route("/export-pdf", methods=["POST"])
+def export_pdf():
+    if "user_email" not in session:
+        return "Not logged in", 403
+
+    user = get_user_by_email(session["user_email"])
+    if not user["is_pro"]:
+        return "Upgrade required", 403
+
+    data = request.get_json()
+
+    # Build PDF in memory
+    pdf_bytes = build_pdf(
+        user_data=user,
+        analysis_data=data,
+        competitor_data=data.get("competitor_data"),
     )
+
+    buffer = io.BytesIO(pdf_bytes)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="seo_report.pdf"
+    )
+
+
+# ===============================================================
+# ADMIN ROUTES
+# ===============================================================
+@app.route("/admin/users")
+def admin_users():
+    users = list_users()
+    return render_template("admin_users.html", users=users)
+
+
+@app.route("/admin/delete/<int:user_id>")
+def admin_delete_user(user_id):
+    delete_user_by_id(user_id)
+    return redirect("/admin/users")
+
+
+@app.route("/admin/reset_scans/<int:user_id>")
+def admin_reset_scans(user_id):
+    reset_scans(user_id)
+    return redirect("/admin/users")
+
+
+@app.route("/admin/make_admin/<int:user_id>")
+def admin_make_admin_route(user_id):
+    make_admin(user_id)
+    return redirect("/admin/users")
+
+
+# ===============================================================
+# RUN LOCAL
+# ===============================================================
+if __name__ == "__main__":
+    app.run(debug=True)
+
