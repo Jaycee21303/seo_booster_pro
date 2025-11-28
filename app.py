@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import stripe
 import os
 import json
+import psycopg2
+import io
 
 from utils.db import (
     get_user_by_email,
@@ -16,10 +18,6 @@ from utils.db import (
 
 from utils.analyzer import run_local_seo_analysis
 from utils.pdf_builder import build_pdf
-
-import psycopg2
-import io
-
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
@@ -220,7 +218,6 @@ def scan():
         if user["scans_used"] >= 2:
             return jsonify({"error": "limit"})
         
-        # increment free scans
         conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
         cur = conn.cursor()
         cur.execute("UPDATE users SET scans_used = scans_used + 1 WHERE email = %s", (user["email"],))
@@ -228,7 +225,6 @@ def scan():
         cur.close()
         conn.close()
 
-    # MAIN ANALYSIS
     (
         main_score,
         audit,
@@ -279,24 +275,89 @@ def scan():
 
 
 # ===============================================================
-# PDF EXPORT (PRO ONLY)
+# PDF DOWNLOAD (NEW WORKING ROUTE)
 # ===============================================================
-@app.route("/export-pdf", methods=["POST"])
-def export_pdf():
+@app.route("/pdf")
+def pdf_download():
     if "user_email" not in session:
         return "Not logged in", 403
 
     user = get_user_by_email(session["user_email"])
+
+    url = request.args.get("url")
+    keyword = request.args.get("keyword")
+    competitor = request.args.get("competitor")
+
+    if not url:
+        return "Missing URL", 400
+
+    # ---- FREE PLAN LIMIT ----
     if not user["is_pro"]:
-        return "Upgrade required", 403
+        if user.get("pdf_used", 0) >= 1:
+            return "PDF limit reached. Upgrade to Pro.", 403
 
-    data = request.get_json()
+        conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET pdf_used = COALESCE(pdf_used,0) + 1 WHERE email = %s",
+            (user["email"],)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
 
-    # Build PDF in memory
+    # ---- SEO ANALYSIS ----
+    (
+        score,
+        audit,
+        tips,
+        content,
+        tech,
+        keyword_score,
+        onpage,
+        links
+    ) = run_local_seo_analysis(url, keyword)
+
+    analysis_data = {
+        "score": score,
+        "audit": audit,
+        "tips": tips,
+        "content": content,
+        "technical": tech,
+        "keyword": keyword_score,
+        "onpage": onpage,
+        "links": links
+    }
+
+    competitor_data = None
+    if competitor and user["is_pro"]:
+        (
+            c_score,
+            c_audit,
+            c_tips,
+            c_content,
+            c_tech,
+            c_keyword,
+            c_onpage,
+            c_links
+        ) = run_local_seo_analysis(competitor, keyword)
+
+        competitor_data = {
+            "score": c_score,
+            "audit": c_audit,
+            "tips": c_tips,
+            "content": c_content,
+            "technical": c_tech,
+            "keyword": c_keyword,
+            "onpage": c_onpage,
+            "links": c_links
+        }
+
+    # ---- BUILD PDF ----
     pdf_bytes = build_pdf(
         user_data=user,
-        analysis_data=data,
-        competitor_data=data.get("competitor_data"),
+        analysis_data=analysis_data,
+        competitor_data=competitor_data
     )
 
     buffer = io.BytesIO(pdf_bytes)
@@ -342,4 +403,3 @@ def admin_make_admin_route(user_id):
 # ===============================================================
 if __name__ == "__main__":
     app.run(debug=True)
-
