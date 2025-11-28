@@ -11,7 +11,6 @@ body {
     color: #222;
 }
 
-/* NAVBAR */
 .navbar {
     width: 100%;
     padding: 18px 40px;
@@ -34,45 +33,6 @@ body {
 .nav-links a:hover { color: #6A4CFF; }
 
 /* =========================================================
-   UPGRADE BANNER
-========================================================= */
-.upgrade-banner {
-    width: 100%;
-    background: #fff7e6;
-    border-bottom: 2px solid #ffd27f;
-    padding: 18px 0;
-    margin-bottom: 20px;
-}
-.upgrade-banner-inner {
-    max-width: 900px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.upgrade-banner h3 {
-    margin: 0;
-    font-size: 20px;
-    color: #6A4CFF;
-    font-weight: 700;
-}
-.upgrade-banner p {
-    margin: 3px 0 0 0;
-    font-size: 14px;
-    opacity: 0.8;
-}
-.upgrade-btn {
-    background: #6A4CFF;
-    color: white;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 15px;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-/* =========================================================
    HERO
 ========================================================= */
 .dashboard-hero {
@@ -82,17 +42,9 @@ body {
     text-align: center;
     margin-bottom: 35px;
     color: white;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
-.dash-title {
-    font-size: 52px;
-    font-weight: 800;
-    letter-spacing: -1px;
-}
-.dash-subtitle {
-    font-size: 20px;
-    opacity: 0.95;
-}
+.dash-title { font-size: 52px; font-weight: 800; }
+.dash-subtitle { font-size: 20px; opacity: 0.95; }
 
 /* =========================================================
    PAGE WRAPPER
@@ -107,15 +59,6 @@ body {
     width: 100%;
     max-width: 900px;
 }
-.sidebar-ads {
-    width: 320px;
-    position: sticky;
-    top: 110px;
-}
-
-/* =========================================================
-   CARDS
-========================================================= */
 .card {
     background: white;
     border-radius: 14px;
@@ -132,10 +75,77 @@ body {
     gap: 10px;
 }
 
-/* =========================================================
-   MODERN AUDIT + TIPS
-========================================================= */
+/* INFO ICONS */
+.info-icon {
+    font-size: 18px;
+    color: #6A4CFF;
+    cursor: pointer;
+    margin-left: 6px;
+}
+.info-icon:hover { opacity: 0.7; }
 
+/* TOOLTIP */
+.tooltip-box {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: opacity 0.2s ease;
+    transform: translateY(-5px);
+    z-index: 30;
+}
+.info-wrap:hover .tooltip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* MODAL */
+.info-modal-bg {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.55);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+.info-modal {
+    background: white;
+    width: 90%;
+    max-width: 420px;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.2);
+}
+.info-modal h3 {
+    font-size: 20px;
+    margin-top: 0;
+    color: #6A4CFF;
+}
+.info-modal p {
+    font-size: 14px;
+    line-height: 1.55;
+}
+.modal-close {
+    margin-top: 18px;
+    background: #6A4CFF;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+}
+
+/* Modern Audit + Tips Boxes */
 .audit-box-modern {
     background: #fafaff;
     border: 1px solid #e5e2ff;
@@ -144,10 +154,7 @@ body {
     font-size: 15px;
     line-height: 1.55;
 }
-
-.audit-entry {
-    margin-bottom: 12px;
-}
+.audit-entry { margin-bottom: 8px; }
 
 .tips-modern {
     background: #fdfcff;
@@ -155,55 +162,17 @@ body {
     padding: 20px;
     border-radius: 12px;
 }
-
-.tips-modern ul {
-    padding-left: 20px;
-    margin: 0;
-}
 .tips-modern li {
-    margin-bottom: 10px;
-    font-size: 15px;
-    line-height: 1.55;
-}
-.tips-modern li::marker {
-    color: #6A4CFF;
+    margin-bottom: 8px;
 }
 
-/* =========================================================
-   SCORE CIRCLES
-========================================================= */
-.score-wrapper {
+/* Progress Bars */
+.progress-label {
+    font-weight: 600;
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 6px;
 }
-.score-circle,
-.comp-score-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: conic-gradient(#ddd 0deg, #ddd 360deg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.score-circle-inner,
-.comp-score-inner {
-    width: 120px;
-    height: 120px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 36px;
-    font-weight: 700;
-}
-
-/* =========================================================
-   PROGRESS BARS
-========================================================= */
-.progress-label { font-weight: 600; }
 .progress-bar {
     width: 100%;
     height: 16px;
@@ -219,19 +188,32 @@ body {
     transition: width 1.2s ease;
 }
 
-/* =========================================================
-   COMPETITOR SECTION
-========================================================= */
-#compSection { display: none; }
-
-.comp-text {
-    background: #fafafa;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 15px;
-    white-space: pre-wrap;
+/* Score Circles */
+.score-circle {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(#ddd 0deg, #ddd 360deg);
+    display: flex; justify-content: center; align-items: center;
+}
+.score-circle-inner {
+    width: 120px; height: 120px;
+    background: white;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 36px; font-weight: 700;
 }
 </style>
+
+<!-- =========================================================
+   INFO MODAL CONTAINER (GLOBAL)
+========================================================= -->
+<div id="modalBG" class="info-modal-bg">
+    <div class="info-modal">
+        <h3 id="modalTitle"></h3>
+        <p id="modalText"></p>
+        <button class="modal-close" onclick="closeModal()">Got it</button>
+    </div>
+</div>
 
 <!-- NAV -->
 <div class="navbar">
@@ -243,18 +225,6 @@ body {
     </div>
 </div>
 
-{% if not subscribed %}
-<div class="upgrade-banner">
-    <div class="upgrade-banner-inner">
-        <div>
-            <h3>Upgrade to SEO Booster Pro ✨</h3>
-            <p>Unlimited scans, unlimited PDF exports, no ads, full competitor analytics.</p>
-        </div>
-        <a href="/pricing" class="upgrade-btn">Upgrade to Pro</a>
-    </div>
-</div>
-{% endif %}
-
 <div class="dashboard-hero">
     <h1 class="dash-title">SEO Dashboard</h1>
     <p class="dash-subtitle">Instant AI-powered insights to improve your rankings</p>
@@ -263,23 +233,14 @@ body {
 <div class="page-wrapper">
     <div class="dashboard-container">
 
-        {% if not subscribed %}
-        <div class="card">
-            <div class="section-title">⚠ Free Plan Limits</div>
-            <p><strong>Scans:</strong> {{ 2 - user.scans_used if 2 - user.scans_used > 0 else 0 }} / 2</p>
-            <p><strong>PDF Export:</strong> {{ pdf_left }} / 1</p>
-        </div>
-        {% endif %}
-
         <!-- Analyzer -->
         <div class="card">
             <div class="section-title">
                 🔍 SEO Analyzer
-                {% if subscribed %}
-                    <span class="badge-pro">⭐ PRO – Unlimited Scans</span>
-                {% else %}
-                    <span class="badge-free">Free – {{ scans_left }} / 2 left</span>
-                {% endif %}
+                <span class="info-wrap">
+                    <span class="info-icon" onclick="openInfo('Analyzer','Enter a page URL. We scan the content, structure, and technical setup to find easy improvements.')">ⓘ</span>
+                    <div class="tooltip-box">What this tool does</div>
+                </span>
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:12px;">
@@ -291,124 +252,128 @@ body {
             <input id="compInput" type="url" placeholder="Competitor URL (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;">
         </div>
 
-        <button id="pdfBtn"
-            style="margin-top:12px;background:#2D8CFF;color:white;padding:12px 18px;border-radius:8px;border:none;display:none;">
-            Download PDF Report
-        </button>
+        <button id="pdfBtn" style="margin-top:12px;background:#2D8CFF;color:white;padding:12px 18px;border-radius:8px;border:none;display:none;">Download PDF Report</button>
 
         <!-- RESULTS -->
         <div id="resultsArea" style="display:none;">
 
             <!-- SCORES -->
-            <div class="top-score-container">
-
-                <!-- Your Score -->
-                <div class="top-score-box">
-                    <div class="card">
-                        <div class="section-title">📈 Your Site Score</div>
-                        <div class="score-wrapper">
-                            <div id="scoreCircle" class="score-circle">
-                                <div id="scoreInner" class="score-circle-inner">0</div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card">
+                <div class="section-title">
+                    📈 Your Site Score
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Your Score','This is your overall SEO score. A higher number means your page is easier for Google to understand and rank.')">ⓘ</span>
+                        <div class="tooltip-box">What this means</div>
+                    </span>
                 </div>
 
-                <!-- Competitor Score -->
-                <div class="top-score-box">
-                    <div id="compScoreCard" class="card" style="display:none;">
-                        <div class="section-title">🏆 Competitor Score</div>
-                        <div class="score-wrapper">
-                            <div id="compScoreCircle" class="comp-score-circle">
-                                <div id="compScoreInner" class="comp-score-inner">0</div>
-                            </div>
-                        </div>
+                <div class="score-wrapper">
+                    <div id="scoreCircle" class="score-circle">
+                        <div id="scoreInner" class="score-circle-inner">0</div>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Breakdown -->
+            <!-- BREAKDOWN -->
             <div class="card">
                 <div class="section-title">📊 Detailed Breakdown</div>
 
-                <div class="progress-label">Content Quality</div>
+                <!-- Content Quality -->
+                <div class="progress-label">
+                    Content Quality
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Content Quality','This checks if your page has enough helpful text. More useful writing usually means a higher score.')">ⓘ</span>
+                        <div class="tooltip-box">Based on your writing</div>
+                    </span>
+                </div>
                 <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
 
-                <div class="progress-label">Keyword Relevance</div>
+                <!-- Keyword -->
+                <div class="progress-label">
+                    Keyword Relevance
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Keyword Relevance','Shows how well your page matches the keyword you entered. Try adding the word naturally in the title and first paragraph.')">ⓘ</span>
+                        <div class="tooltip-box">Keyword match</div>
+                    </span>
+                </div>
                 <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
 
-                <div class="progress-label">Technical Health</div>
+                <!-- Technical -->
+                <div class="progress-label">
+                    Technical Health
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Technical Health','Checks page structure like titles, meta tags, mobile setup, and image alt text. Easy fixes boost this fast.')">ⓘ</span>
+                        <div class="tooltip-box">Technical items</div>
+                    </span>
+                </div>
                 <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
 
-                <div class="progress-label">On-Page Structure</div>
+                <!-- On Page -->
+                <div class="progress-label">
+                    On-Page Structure
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('On-Page Structure','Looks at headings (H1, H2, H3). Clear structure helps both users and Google understand your content.')">ⓘ</span>
+                        <div class="tooltip-box">Headings & layout</div>
+                    </span>
+                </div>
                 <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
 
-                <div class="progress-label">Link Health</div>
+                <!-- Links -->
+                <div class="progress-label">
+                    Link Health
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Link Health','Checks if your page has broken links. Fixing these gives quick SEO improvement.')">ⓘ</span>
+                        <div class="tooltip-box">Broken links</div>
+                    </span>
+                </div>
                 <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
             </div>
 
-            <!-- AUDIT -->
+            <!-- MODERN AUDIT -->
             <div class="card">
-                <div class="section-title">🧹 Site Audit</div>
+                <div class="section-title">
+                    🧹 Site Audit
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Site Audit','Shows all the simple findings we picked up from your page. Fixing these improves SEO over time.')">ⓘ</span>
+                        <div class="tooltip-box">Full findings</div>
+                    </span>
+                </div>
                 <div class="audit-box-modern" id="auditBox"></div>
             </div>
 
-            <!-- TIPS -->
+            <!-- MODERN TIPS -->
             <div class="card">
-                <div class="section-title">💡 Optimization Tips</div>
+                <div class="section-title">
+                    💡 Optimization Tips
+                    <span class="info-wrap">
+                        <span class="info-icon" onclick="openInfo('Optimization Tips','Easy, beginner-friendly ideas to improve your score. These are the fastest changes you can make.')">ⓘ</span>
+                        <div class="tooltip-box">Helpful ideas</div>
+                    </span>
+                </div>
                 <div class="tips-modern">
                     <ul id="tipsBox"></ul>
                 </div>
             </div>
 
-            <!-- Competitor Section -->
-            <div id="compSection" class="card">
-                <div class="section-title">🏁 Your Site vs Competitor</div>
+        </div> <!-- end results -->
 
-                <h3>📘 Summary</h3>
-                <div id="compSummary" class="comp-text"></div>
-
-                <h3>📈 Competitor Advantages</h3>
-                <div id="compAdv" class="comp-text"></div>
-
-                <h3>🛠 Your Advantages</h3>
-                <div id="compDisadv" class="comp-text"></div>
-            </div>
-
-        </div>
-    </div>
-
-    {% if not subscribed %}
-    <div class="sidebar-ads">
-        <div class="ad-box">
-            <div class="ad-label">Advertisement</div>
-            <ins class="adsbygoogle"
-                 style="display:block;height:250px"
-                 data-ad-client="ca-pub-1967195027765056"
-                 data-ad-slot="TOP_AD_SLOT"></ins>
-        </div>
-
-        <div class="ad-box">
-            <div class="ad-label">Advertisement</div>
-            <ins class="adsbygoogle"
-                 style="display:block;height:250px"
-                 data-ad-client="ca-pub-1967195027765056"
-                 data-ad-slot="BOTTOM_AD_SLOT"></ins>
-        </div>
-
-        <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-            (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-    </div>
-    {% endif %}
+    </div> <!-- dashboard container -->
 </div>
 
-<!-- JS -->
+<!-- =========================================================
+   JAVASCRIPT
+========================================================= -->
 <script>
-document.getElementById("analyzeBtn").onclick = async function () {
+function openInfo(title, text) {
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalText").innerText = text;
+    document.getElementById("modalBG").style.display = "flex";
+}
+function closeModal() {
+    document.getElementById("modalBG").style.display = "none";
+}
 
+document.getElementById("analyzeBtn").onclick = async function () {
     let url = document.getElementById("urlInput").value.trim();
     if (!url) return alert("Enter a valid URL.");
 
@@ -433,13 +398,12 @@ document.getElementById("analyzeBtn").onclick = async function () {
     btn.disabled = false;
 
     if (data.error === "limit") {
-        alert("You’ve reached your free scan limit. Upgrade to Pro.");
+        alert("You've reached your free scan limit. Upgrade to Pro.");
         return;
     }
 
     document.getElementById("resultsArea").style.display = "block";
 
-    /* SCORE */
     let finalScore = data.score;
     let inner = document.getElementById("scoreInner");
     let circle = document.getElementById("scoreCircle");
@@ -453,7 +417,7 @@ document.getElementById("analyzeBtn").onclick = async function () {
     let interval = setInterval(() => {
         current++;
         inner.innerText = current;
-        circle.style.background = 
+        circle.style.background =
             `conic-gradient(${color} ${current * 3.6}deg, #ddd 0deg)`;
         if (current >= finalScore) clearInterval(interval);
     }, 15);
@@ -464,7 +428,6 @@ document.getElementById("analyzeBtn").onclick = async function () {
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
 
-    /* AUDIT */
     let auditHTML = "";
     data.audit.split("\n").forEach(line => {
         if (line.trim() !== "") {
@@ -473,7 +436,6 @@ document.getElementById("analyzeBtn").onclick = async function () {
     });
     document.getElementById("auditBox").innerHTML = auditHTML;
 
-    /* TIPS */
     let tipsHTML = "";
     data.tips.split("\n").forEach(tip => {
         if (tip.trim() !== "") {
@@ -482,29 +444,16 @@ document.getElementById("analyzeBtn").onclick = async function () {
     });
     document.getElementById("tipsBox").innerHTML = tipsHTML;
 
-    /* COMPETITOR */
-    if (!competitor || !data.competitor_data) {
-        document.getElementById("compSection").style.display = "none";
-        return;
-    }
-
-    let c = data.competitor_data;
-
-    document.getElementById("compSection").style.display = "block";
-    document.getElementById("compSummary").innerText = data.competitor_summary;
-    document.getElementById("compAdv").innerText = data.competitor_advantages;
-    document.getElementById("compDisadv").innerText = data.competitor_disadvantages;
-
-    /* PDF */
     document.getElementById("pdfBtn").style.display = "block";
     document.getElementById("pdfBtn").onclick = function () {
-        window.location.href = `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
+        window.location.href =
+            `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
     };
-
-}; 
+};
 </script>
 
 {% endblock %}
+
 
 
 
