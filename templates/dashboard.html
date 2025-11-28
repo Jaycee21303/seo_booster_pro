@@ -34,7 +34,7 @@ body {
 .nav-links a:hover { color: #6A4CFF; }
 
 /* =========================================================
-   UPGRADE BANNER (FREE USERS ONLY)
+   UPGRADE BANNER
 ========================================================= */
 .upgrade-banner {
     width: 100%;
@@ -73,7 +73,7 @@ body {
 }
 
 /* =========================================================
-   ✨ PREMIUM DASHBOARD HERO (NEW)
+   HERO
 ========================================================= */
 .dashboard-hero {
     background: linear-gradient(135deg, #7A5BFF, #6A4CFF);
@@ -84,26 +84,18 @@ body {
     color: white;
     box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
-
 .dash-title {
     font-size: 52px;
     font-weight: 800;
     letter-spacing: -1px;
-    margin-bottom: 10px;
 }
-
 .dash-subtitle {
     font-size: 20px;
     opacity: 0.95;
 }
 
-@media (max-width: 600px) {
-    .dash-title { font-size: 38px; }
-    .dash-subtitle { font-size: 16px; }
-}
-
 /* =========================================================
-   PAGE WRAPPER WITH SIDEBAR ADS
+   PAGE WRAPPER
 ========================================================= */
 .page-wrapper {
     max-width: 1300px;
@@ -111,34 +103,14 @@ body {
     display: flex;
     gap: 25px;
 }
-
-/* MAIN CONTENT */
 .dashboard-container {
     width: 100%;
     max-width: 900px;
-    padding: 20px;
 }
-
-/* RIGHT SIDEBAR ADS */
 .sidebar-ads {
     width: 320px;
     position: sticky;
     top: 110px;
-    height: fit-content;
-}
-.ad-box {
-    background: white;
-    padding: 12px;
-    border-radius: 14px;
-    margin-bottom: 20px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    text-align: center;
-}
-.ad-label {
-    font-size: 13px;
-    font-weight: 600;
-    opacity: 0.6;
-    margin-bottom: 8px;
 }
 
 /* =========================================================
@@ -160,22 +132,48 @@ body {
     gap: 10px;
 }
 
-/* FREE & PRO BADGES */
-.badge-free {
-    padding: 4px 10px;
-    border: 2px solid #6A4CFF;
-    border-radius: 20px;
-    font-size: 13px;
-    color: #6A4CFF;
+/* =========================================================
+   MODERNIZED AUDIT + OPTIMIZATION BOXES
+========================================================= */
+
+.audit-box-modern {
+    background: #fafaff;
+    border: 1px solid #e5e2ff;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.55;
 }
-.badge-pro {
-    padding: 4px 10px;
-    background: #6A4CFF;
-    border-radius: 20px;
-    font-size: 13px;
-    color: white;
-    display: flex;
-    align-items: center;
+
+.audit-box-modern b {
+    color: #6A4CFF;
+    font-size: 16px;
+}
+
+.audit-entry {
+    margin-bottom: 12px;
+}
+
+.tips-modern {
+    background: #fdfcff;
+    border: 1px solid #ebe7ff;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.tips-modern ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.tips-modern li {
+    margin-bottom: 10px;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+.tips-modern li::marker {
+    color: #6A4CFF;
 }
 
 /* =========================================================
@@ -212,41 +210,20 @@ body {
 /* =========================================================
    PROGRESS BARS
 ========================================================= */
-.progress-block { margin: 12px 0; }
-.progress-label { font-weight: 600; margin-bottom: 6px; }
+.progress-label { font-weight: 600; }
 .progress-bar {
     width: 100%;
     height: 16px;
     background: #eee;
     border-radius: 10px;
     overflow: hidden;
+    margin-bottom: 12px;
 }
 .progress-fill {
     height: 100%;
     width: 0%;
     background: #6A4CFF;
     transition: width 1.2s ease;
-    border-radius: 10px;
-}
-
-/* =========================================================
-   SIDE-BY-SIDE SCORE CARDS
-========================================================= */
-.top-score-container {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-}
-.top-score-box { width: 48%; }
-
-@media (max-width: 1000px) {
-    .page-wrapper { flex-direction: column; }
-    .sidebar-ads { width: 100%; position: relative; top: 0; }
-    .dashboard-container { width: 100%; }
-}
-@media (max-width: 768px) {
-    .top-score-container { flex-direction: column; }
-    .top-score-box { width: 100%; }
 }
 
 /* =========================================================
@@ -254,12 +231,6 @@ body {
 ========================================================= */
 #compSection { display: none; }
 
-.comp-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-.comp-card { width: 48%; }
 .comp-text {
     background: #fafafa;
     padding: 12px;
@@ -267,16 +238,9 @@ body {
     font-size: 15px;
     white-space: pre-wrap;
 }
-@media (max-width: 768px) {
-    .comp-container { flex-direction: column; }
-    .comp-card { width: 100%; }
-}
 </style>
 
-
-<!-- =========================================================
-     NAVIGATION
-========================================================= -->
+<!-- NAV -->
 <div class="navbar">
     <div class="nav-left">SEO Booster Pro</div>
     <div class="nav-links">
@@ -286,10 +250,6 @@ body {
     </div>
 </div>
 
-
-<!-- =========================================================
-     FREE USER — UPGRADE BANNER
-========================================================= -->
 {% if not subscribed %}
 <div class="upgrade-banner">
     <div class="upgrade-banner-inner">
@@ -297,43 +257,28 @@ body {
             <h3>Upgrade to SEO Booster Pro ✨</h3>
             <p>Unlimited scans, unlimited PDF exports, no ads, full competitor analytics.</p>
         </div>
-
         <a href="/pricing" class="upgrade-btn">Upgrade to Pro</a>
     </div>
 </div>
 {% endif %}
 
-
-<!-- =========================================================
-     ✨ NEW PREMIUM HERO BANNER
-========================================================= -->
 <div class="dashboard-hero">
     <h1 class="dash-title">SEO Dashboard</h1>
     <p class="dash-subtitle">Instant AI-powered insights to improve your rankings</p>
 </div>
 
-
-<!-- =========================================================
-     PAGE WRAPPER — MAIN + SIDEBAR ADS
-========================================================= -->
 <div class="page-wrapper">
-
-
-    <!-- =====================================================
-         MAIN DASHBOARD LEFT SIDE
-    ====================================================== -->
     <div class="dashboard-container">
 
         {% if not subscribed %}
         <div class="card">
             <div class="section-title">⚠ Free Plan Limits</div>
-
-            <p><strong>Scans:</strong> {{ 2 - user.scans_used if 2 - user.scans_used > 0 else 0 }} / 2 left</p>
-            <p><strong>PDF Exports:</strong> {{ pdf_left }} / 1 left</p>
+            <p><strong>Scans:</strong> {{ 2 - user.scans_used if 2 - user.scans_used > 0 else 0 }} / 2</p>
+            <p><strong>PDF Export:</strong> {{ pdf_left }} / 1</p>
         </div>
         {% endif %}
 
-        <!-- ANALYZER -->
+        <!-- Analyzer -->
         <div class="card">
             <div class="section-title">
                 🔍 SEO Analyzer
@@ -352,22 +297,16 @@ body {
             <input id="keywordInput" type="text" placeholder="Keyword (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
             <input id="compInput" type="url" placeholder="Competitor URL (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;">
         </div>
-        <button id="pdfBtn" style="
-             margin-top:12px;
-             background:#2D8CFF;
-             color:white;
-             padding:12px 18px;
-             border-radius:8px;
-             border:none;
-             display:none;
-         ">
-             Download PDF Report
-         </button>
 
+        <button id="pdfBtn"
+            style="margin-top:12px;background:#2D8CFF;color:white;padding:12px 18px;border-radius:8px;border:none;display:none;">
+            Download PDF Report
+        </button>
 
         <!-- RESULTS -->
         <div id="resultsArea" style="display:none;">
 
+            <!-- SCORES -->
             <div class="top-score-container">
 
                 <!-- Your Score -->
@@ -396,109 +335,73 @@ body {
 
             </div>
 
-
             <!-- Breakdown -->
             <div class="card">
                 <div class="section-title">📊 Detailed Breakdown</div>
 
-                <div class="progress-block">
-                    <div class="progress-label">Content Quality</div>
-                    <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
-                </div>
+                <div class="progress-label">Content Quality</div>
+                <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
 
-                <div class="progress-block">
-                    <div class="progress-label">Keyword Relevance</div>
-                    <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
-                </div>
+                <div class="progress-label">Keyword Relevance</div>
+                <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
 
-                <div class="progress-block">
-                    <div class="progress-label">Technical Health</div>
-                    <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
-                </div>
+                <div class="progress-label">Technical Health</div>
+                <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
 
-                <div class="progress-block">
-                    <div class="progress-label">On-Page Structure</div>
-                    <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
-                </div>
+                <div class="progress-label">On-Page Structure</div>
+                <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
 
-                <div class="progress-block">
-                    <div class="progress-label">Link Health</div>
-                    <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
+                <div class="progress-label">Link Health</div>
+                <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
+            </div>
+
+            <!-- ============================================================
+                 MODERNIZED AUDIT SECTION
+            ============================================================ -->
+            <div class="card">
+                <div class="section-title">🧹 Site Audit</div>
+
+                <div class="audit-box-modern" id="auditBox">
+                    <!-- JS fills this -->
                 </div>
             </div>
 
+            <!-- ============================================================
+                 MODERNIZED TIPS SECTION
+            ============================================================ -->
+            <div class="card">
+                <div class="section-title">💡 Optimization Tips</div>
 
-            <!-- Competitor Breakdown Section -->
+                <div class="tips-modern">
+                    <ul id="tipsBox">
+                        <!-- JS fills this -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Competitor Section -->
             <div id="compSection" class="card">
-
                 <div class="section-title">🏁 Your Site vs Competitor</div>
 
                 <div class="comp-container">
-
-                    <!-- YOUR -->
                     <div class="comp-card">
                         <h3>Your Site</h3>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Content</div>
-                            <div class="progress-bar"><div id="yourContentBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Keyword</div>
-                            <div class="progress-bar"><div id="yourKeywordBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Technical</div>
-                            <div class="progress-bar"><div id="yourTechnicalBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">On-Page</div>
-                            <div class="progress-bar"><div id="yourOnpageBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Links</div>
-                            <div class="progress-bar"><div id="yourLinksBar" class="progress-fill"></div></div>
-                        </div>
+                        <div class="progress-label">Content</div><div class="progress-bar"><div id="yourContentBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Keyword</div><div class="progress-bar"><div id="yourKeywordBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Technical</div><div class="progress-bar"><div id="yourTechnicalBar" class="progress-fill"></div></div>
+                        <div class="progress-label">On-Page</div><div class="progress-bar"><div id="yourOnpageBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Links</div><div class="progress-bar"><div id="yourLinksBar" class="progress-fill"></div></div>
                     </div>
 
-
-                    <!-- COMP -->
                     <div class="comp-card">
                         <h3>Competitor</h3>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Content</div>
-                            <div class="progress-bar"><div id="compContentBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Keyword</div>
-                            <div class="progress-bar"><div id="compKeywordBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Technical</div>
-                            <div class="progress-bar"><div id="compTechnicalBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">On-Page</div>
-                            <div class="progress-bar"><div id="compOnpageBar" class="progress-fill"></div></div>
-                        </div>
-
-                        <div class="progress-block">
-                            <div class="progress-label">Links</div>
-                            <div class="progress-bar"><div id="compLinksBar" class="progress-fill"></div></div>
-                        </div>
+                        <div class="progress-label">Content</div><div class="progress-bar"><div id="compContentBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Keyword</div><div class="progress-bar"><div id="compKeywordBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Technical</div><div class="progress-bar"><div id="compTechnicalBar" class="progress-fill"></div></div>
+                        <div class="progress-label">On-Page</div><div class="progress-bar"><div id="compOnpageBar" class="progress-fill"></div></div>
+                        <div class="progress-label">Links</div><div class="progress-bar"><div id="compLinksBar" class="progress-fill"></div></div>
                     </div>
-
                 </div>
-
-                <br>
 
                 <h3>📘 Summary</h3>
                 <div id="compSummary" class="comp-text"></div>
@@ -508,30 +411,12 @@ body {
 
                 <h3>🛠 Your Advantages</h3>
                 <div id="compDisadv" class="comp-text"></div>
-
-            </div>
-
-
-            <!-- AUDIT -->
-            <div class="card">
-                <div class="section-title">🧹 Site Audit</div>
-                <pre id="auditBox" style="white-space:pre-wrap;font-size:15px;"></pre>
-            </div>
-
-
-            <!-- TIPS -->
-            <div class="card">
-                <div class="section-title">💡 Optimization Tips</div>
-                <pre id="tipsBox" style="white-space:pre-wrap;font-size:15px;"></pre>
             </div>
 
         </div>
     </div>
 
-
-    <!-- =====================================================
-         RIGHT SIDEBAR — ADS
-    ====================================================== -->
+    <!-- Ads -->
     {% if not subscribed %}
     <div class="sidebar-ads">
 
@@ -558,22 +443,17 @@ body {
 
     </div>
     {% endif %}
+</div>
 
-</div> <!-- end wrapper -->
-
-
-
-<!-- =========================================================
-     JAVASCRIPT — ANALYZER LOGIC
-========================================================= -->
+<!-- ANALYZER JS -->
 <script>
 document.getElementById("analyzeBtn").onclick = async function () {
 
     let url = document.getElementById("urlInput").value.trim();
     if (!url) return alert("Enter a valid URL.");
 
-   let keyword = document.getElementById("keywordInput").value;
-   let competitor = document.getElementById("compInput").value;
+    let keyword = document.getElementById("keywordInput").value;
+    let competitor = document.getElementById("compInput").value;
 
     const btn = document.getElementById("analyzeBtn");
     btn.disabled = true;
@@ -593,13 +473,13 @@ document.getElementById("analyzeBtn").onclick = async function () {
     btn.disabled = false;
 
     if (data.error === "limit") {
-        alert("You’ve reached your 2 free scans for the month. Upgrade to Pro for unlimited scans.");
+        alert("You’ve reached your free scan limit. Upgrade to Pro.");
         return;
     }
 
     document.getElementById("resultsArea").style.display = "block";
 
-    /* MAIN SCORE */
+    // SCORE CIRCLE
     let finalScore = data.score;
     let inner = document.getElementById("scoreInner");
     let circle = document.getElementById("scoreCircle");
@@ -613,20 +493,38 @@ document.getElementById("analyzeBtn").onclick = async function () {
     let interval = setInterval(() => {
         current++;
         inner.innerText = current;
-        circle.style.background = `conic-gradient(${color} ${current * 3.6}deg, #ddd 0deg)`;
+        circle.style.background =
+            `conic-gradient(${color} ${current * 3.6}deg, #ddd 0deg)`;
         if (current >= finalScore) clearInterval(interval);
     }, 15);
 
-
+    // PROGRESS BARS
     document.getElementById("pb-content").style.width = data.content + "%";
     document.getElementById("pb-keyword").style.width = data.keyword + "%";
     document.getElementById("pb-tech").style.width = data.technical + "%";
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
 
-    document.getElementById("auditBox").innerText = data.audit;
-    document.getElementById("tipsBox").innerText = data.tips;
+    /* --------------- MODERNIZED AUDIT FORMAT ---------------- */
 
+    let auditHTML = "";
+    data.audit.split("\n").forEach(line => {
+        if (line.trim() !== "") {
+            auditHTML += `<div class="audit-entry">${line}</div>`;
+        }
+    });
+    document.getElementById("auditBox").innerHTML = auditHTML;
+
+    /* --------------- MODERNIZED TIPS FORMAT ---------------- */
+    let tipsHTML = "";
+    data.tips.split("\n").forEach(tip => {
+        if (tip.trim() !== "") {
+            tipsHTML += `<li>${tip.replace("• ", "")}</li>`;
+        }
+    });
+    document.getElementById("tipsBox").innerHTML = tipsHTML;
+
+    // COMPETITOR SECTION
     if (!competitor || !data.competitor_data) {
         document.getElementById("compSection").style.display = "none";
         document.getElementById("compScoreCard").style.display = "none";
@@ -649,7 +547,8 @@ document.getElementById("analyzeBtn").onclick = async function () {
     let compInterval = setInterval(() => {
         compCurrent++;
         compInner.innerText = compCurrent;
-        compCircle.style.background = `conic-gradient(#2D8CFF ${compCurrent * 3.6}deg, #ddd 0deg)`;
+        compCircle.style.background =
+            `conic-gradient(#2D8CFF ${compCurrent * 3.6}deg, #ddd 0deg)`;
         if (compCurrent >= compScore) clearInterval(compInterval);
     }, 15);
 
@@ -662,19 +561,19 @@ document.getElementById("analyzeBtn").onclick = async function () {
     document.getElementById("compSummary").innerText = data.competitor_summary;
     document.getElementById("compAdv").innerText = data.competitor_advantages;
     document.getElementById("compDisadv").innerText = data.competitor_disadvantages;
+
+    // PDF BUTTON
     document.getElementById("pdfBtn").style.display = "block";
-
-       document.getElementById("pdfBtn").style.display = "block";
-
     document.getElementById("pdfBtn").onclick = function () {
         window.location.href =
             `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
     };
 
-};  // <-- closes analyzeBtn onclick properly
+}; // end analyzeBtn
+
 </script>
 
-    
 {% endblock %}
+
 
 
