@@ -52,7 +52,7 @@ def create_admin():
 
 
 # -------------------------------------------------------------
-# LIST USERS (for admin_users.html)
+# LIST USERS (admin panel)
 # -------------------------------------------------------------
 def list_users():
     conn = get_connection()
@@ -124,6 +124,37 @@ def reset_password(email, new_password):
         "UPDATE users SET password = %s WHERE email = %s",
         (new_password, email)
     )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# UPDATE USER (EMAIL / PRO / ADMIN / PASSWORD)
+# -------------------------------------------------------------
+def update_user(user_id, email, is_pro, is_admin, password=None):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    if password:
+        cur.execute(
+            """
+            UPDATE users
+            SET email=%s, is_pro=%s, is_admin=%s, password=%s
+            WHERE id=%s
+            """,
+            (email, is_pro, is_admin, password, user_id)
+        )
+    else:
+        cur.execute(
+            """
+            UPDATE users
+            SET email=%s, is_pro=%s, is_admin=%s
+            WHERE id=%s
+            """,
+            (email, is_pro, is_admin, user_id)
+        )
+
     conn.commit()
     cur.close()
     conn.close()
