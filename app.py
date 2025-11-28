@@ -36,24 +36,22 @@ def require_admin():
 
 
 # ============================================================
-# FORCE ADMIN RESET (ALWAYS WORKING)
+# FORCE ADMIN RESET
 # ============================================================
 @app.route("/force-reset-admin")
 def force_reset_admin():
     conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
     cur = conn.cursor()
 
-    # Delete ANY admin user or old admin email
     cur.execute("DELETE FROM users WHERE email='admin@admin.com' OR is_admin=True")
     conn.commit()
 
     cur.close()
     conn.close()
 
-    # Recreate guaranteed working admin
     create_admin()
 
-    return "Admin force reset. Login with admin@admin.com / admin123"
+    return "Admin reset. Login with admin@admin.com / admin123"
 
 
 # ============================================================
@@ -96,14 +94,28 @@ def login():
     return render_template("login.html")
 
 
+# ============================================================
+# DASHBOARD — FIXED & PRO-AWARE
+# ============================================================
 @app.route("/dashboard")
 def dashboard():
     if "user_email" not in session:
         return redirect("/login")
 
-    # FIXED: this was incorrectly indented before
     user = get_user_by_email(session["user_email"])
-    return render_template("dashboard.html", user=user)
+
+    # NEW — This makes PRO logic finally work
+    subscribed = bool(user["is_pro"])
+    scans_left = max(0, 2 - user["scans_used"]) if not subscribed else "∞"
+    pdf_left = 1 if not subscribed else "∞"
+
+    return render_template(
+        "dashboard.html",
+        user=user,
+        subscribed=subscribed,
+        scans_left=scans_left,
+        pdf_left=pdf_left
+    )
 
 
 # ============================================================
@@ -125,11 +137,15 @@ def create_checkout_session():
         checkout_session = stripe.checkout.Session.create(
             mode="subscription",
             payment_method_types=["card"],
-            line_items=[{ "price": STRIPE_PRICE_ID, "quantity": 1 }],
+            line_items=[{
+                "price": STRIPE_PRICE_ID,
+                "quantity": 1
+            }],
             customer_email=user["email"],
             success_url=request.host_url + "success",
             cancel_url=request.host_url + "cancel",
         )
+
         return jsonify({"url": checkout_session.url})
 
     except Exception as e:
@@ -146,13 +162,18 @@ def cancel():
     return render_template("cancel.html")
 
 
+# ============================================================
+# STRIPE WEBHOOK
+# ============================================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, WEBHOOK_SECRET
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -160,6 +181,7 @@ def webhook():
 
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
+
         email = data.get("customer_email")
         customer_id = data.get("customer")
         subscription_id = data.get("subscription")
@@ -171,11 +193,12 @@ def webhook():
                 stripe_subscription_id=subscription_id,
                 status="active",
                 is_pro=True,
-                period_end=None,
+                period_end=None
             )
 
-    if event_type == "customer.subscription.updated":
+    elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
+
         subscription_id = data.get("id")
         customer_id = data.get("customer")
         status = data.get("status")
@@ -190,7 +213,7 @@ def webhook():
                 stripe_subscription_id=subscription_id,
                 status=status,
                 is_pro=(status == "active"),
-                period_end=period_end,
+                period_end=period_end
             )
 
     return jsonify({"status": "success"}), 200
@@ -206,7 +229,7 @@ def logout():
 
 
 # ============================================================
-# ADMIN ROUTES (PROTECTED)
+# ADMIN ROUTES
 # ============================================================
 @app.route("/admin/users")
 def admin_users_page():
@@ -269,7 +292,7 @@ def admin_update_user(user_id):
 
 
 # ============================================================
-# DB FIX ROUTE
+# DB FIX
 # ============================================================
 @app.route("/admin-fix-db")
 def admin_fix_db():
