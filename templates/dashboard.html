@@ -352,6 +352,17 @@ body {
             <input id="keywordInput" type="text" placeholder="Keyword (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
             <input id="compInput" type="url" placeholder="Competitor URL (optional)" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;">
         </div>
+        <button id="pdfBtn" style="
+             margin-top:12px;
+             background:#2D8CFF;
+             color:white;
+             padding:12px 18px;
+             border-radius:8px;
+             border:none;
+             display:none;
+         ">
+             Download PDF Report
+         </button>
 
 
         <!-- RESULTS -->
@@ -651,6 +662,11 @@ document.getElementById("analyzeBtn").onclick = async function () {
     document.getElementById("compSummary").innerText = data.competitor_summary;
     document.getElementById("compAdv").innerText = data.competitor_advantages;
     document.getElementById("compDisadv").innerText = data.competitor_disadvantages;
+    document.getElementById("pdfBtn").style.display = "block";
+
+    document.getElementById("pdfBtn").onclick = function () {
+       window.location.href = `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
+
 
 };
 </script>
