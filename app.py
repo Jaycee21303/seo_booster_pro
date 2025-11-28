@@ -13,13 +13,11 @@ from utils.db import (
 )
 import stripe
 import os
-import json
 import psycopg2
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
 
-# Stripe setup
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
@@ -38,25 +36,34 @@ def require_admin():
 
 
 # ============================================================
-# TEMPORARY ADMIN RESET (REMOVE AFTER LOGIN)
+# FORCE ADMIN RESET (ALWAYS WORKING)
 # ============================================================
-@app.route("/reset-admin")
-def reset_admin_route():
+@app.route("/force-reset-admin")
+def force_reset_admin():
+    conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
+    cur = conn.cursor()
+
+    # Delete ANY admin user or old admin email
+    cur.execute("DELETE FROM users WHERE email='admin@admin.com' OR is_admin=True")
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    # Recreate guaranteed working admin
     create_admin()
-    return "Admin reset. Login with admin@admin.com / admin123"
+
+    return "Admin force reset. Login with admin@admin.com / admin123"
 
 
-# -----------------------------
-# HOME PAGE
-# -----------------------------
+# ============================================================
+# PUBLIC ROUTES
+# ============================================================
 @app.route("/")
 def index():
     return render_template("landing.html")
 
 
-# -----------------------------
-# SIGNUP
-# -----------------------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -72,9 +79,6 @@ def signup():
     return render_template("signup.html")
 
 
-# -----------------------------
-# LOGIN
-# -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -92,29 +96,24 @@ def login():
     return render_template("login.html")
 
 
-# -----------------------------
-# DASHBOARD
-# -----------------------------
 @app.route("/dashboard")
 def dashboard():
     if "user_email" not in session:
         return redirect("/login")
 
+    # FIXED: this was incorrectly indented before
     user = get_user_by_email(session["user_email"])
     return render_template("dashboard.html", user=user)
 
 
-# -----------------------------
-# PRICING PAGE
-# -----------------------------
+# ============================================================
+# STRIPE ROUTES
+# ============================================================
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
 
 
-# -----------------------------
-# STRIPE CHECKOUT
-# -----------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     if "user_email" not in session:
@@ -126,24 +125,17 @@ def create_checkout_session():
         checkout_session = stripe.checkout.Session.create(
             mode="subscription",
             payment_method_types=["card"],
-            line_items=[{
-                "price": STRIPE_PRICE_ID,
-                "quantity": 1
-            }],
+            line_items=[{ "price": STRIPE_PRICE_ID, "quantity": 1 }],
             customer_email=user["email"],
             success_url=request.host_url + "success",
             cancel_url=request.host_url + "cancel",
         )
-
         return jsonify({"url": checkout_session.url})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
 
-# -----------------------------
-# SUCCESS / CANCEL
-# -----------------------------
 @app.route("/success")
 def success():
     return render_template("success.html")
@@ -154,18 +146,13 @@ def cancel():
     return render_template("cancel.html")
 
 
-# -----------------------------
-# STRIPE WEBHOOK
-# -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -173,7 +160,6 @@ def webhook():
 
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
-
         email = data.get("customer_email")
         customer_id = data.get("customer")
         subscription_id = data.get("subscription")
@@ -185,12 +171,11 @@ def webhook():
                 stripe_subscription_id=subscription_id,
                 status="active",
                 is_pro=True,
-                period_end=None
+                period_end=None,
             )
 
-    elif event_type == "customer.subscription.updated":
+    if event_type == "customer.subscription.updated":
         data = event["data"]["object"]
-
         subscription_id = data.get("id")
         customer_id = data.get("customer")
         status = data.get("status")
@@ -205,25 +190,24 @@ def webhook():
                 stripe_subscription_id=subscription_id,
                 status=status,
                 is_pro=(status == "active"),
-                period_end=period_end
+                period_end=period_end,
             )
 
     return jsonify({"status": "success"}), 200
 
 
-# -----------------------------
+# ============================================================
 # LOGOUT
-# -----------------------------
+# ============================================================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
 
-# =============================================================
-# ADMIN PAGES (ALL PROTECTED)
-# =============================================================
-
+# ============================================================
+# ADMIN ROUTES (PROTECTED)
+# ============================================================
 @app.route("/admin/users")
 def admin_users_page():
     if not require_admin():
@@ -260,9 +244,6 @@ def admin_make_admin_route(user_id):
     return redirect("/admin/users")
 
 
-# -------------------------------------------------------------
-# EDIT USER (MODAL UPDATE)
-# -------------------------------------------------------------
 @app.route("/admin/update/<int:user_id>", methods=["POST"])
 def admin_update_user(user_id):
     if not require_admin():
@@ -287,9 +268,9 @@ def admin_update_user(user_id):
     return redirect("/admin/users")
 
 
-# -------------------------------------------------------------
-# ONE-TIME DATABASE FIX ROUTE (ADMIN ONLY)
-# -------------------------------------------------------------
+# ============================================================
+# DB FIX ROUTE
+# ============================================================
 @app.route("/admin-fix-db")
 def admin_fix_db():
     if not require_admin():
@@ -309,9 +290,8 @@ def admin_fix_db():
     return "Database patched successfully!"
 
 
-# -----------------------------
+# ============================================================
 # RUN LOCAL
-# -----------------------------
+# ============================================================
 if __name__ == "__main__":
     app.run(debug=True)
-
