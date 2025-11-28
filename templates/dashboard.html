@@ -664,13 +664,17 @@ document.getElementById("analyzeBtn").onclick = async function () {
     document.getElementById("compDisadv").innerText = data.competitor_disadvantages;
     document.getElementById("pdfBtn").style.display = "block";
 
+       document.getElementById("pdfBtn").style.display = "block";
+
     document.getElementById("pdfBtn").onclick = function () {
-       window.location.href = `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
+        window.location.href =
+            `/pdf?url=${encodeURIComponent(url)}&keyword=${encodeURIComponent(keyword)}&competitor=${encodeURIComponent(competitor)}`;
+    };
 
-
-};
+};  // <-- closes analyzeBtn onclick properly
 </script>
 
+    
 {% endblock %}
 
 
