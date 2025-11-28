@@ -1,49 +1,47 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
 import stripe
 import os
-import psycopg2
-import psycopg2.extras
+import json
 
-# Local modules
 from utils.db import (
     get_user_by_email,
     create_user,
+    get_user_by_subscription,
+    update_subscription_by_email,
     list_users,
     delete_user_by_id,
     reset_scans,
     make_admin,
-    get_user_by_subscription,
-    update_subscription_by_email,
 )
-from utils.analyzer import run_full_analysis
+
+from utils.analyzer import run_local_seo_analysis
 from utils.pdf_builder import build_pdf
 
+import psycopg2
+import io
 
-# ------------------------------------------------------------
-# FLASK + STRIPE SETUP
-# ------------------------------------------------------------
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
 
+# Stripe
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
-DB_URL = os.environ.get("DB_URL")
 
-
-# ------------------------------------------------------------
-# HOME
-# ------------------------------------------------------------
+# ===============================================================
+# HOME PAGE
+# ===============================================================
 @app.route("/")
 def index():
     return render_template("landing.html")
 
 
-# ------------------------------------------------------------
+# ===============================================================
 # SIGNUP
-# ------------------------------------------------------------
+# ===============================================================
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -51,7 +49,7 @@ def signup():
         password = request.form.get("password")
 
         if get_user_by_email(email):
-            return render_template("signup.html", error="Email already exists")
+            return render_template("signup.html", error="Email already exists.")
 
         create_user(email, password)
         return redirect("/login")
@@ -59,9 +57,9 @@ def signup():
     return render_template("signup.html")
 
 
-# ------------------------------------------------------------
+# ===============================================================
 # LOGIN
-# ------------------------------------------------------------
+# ===============================================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -69,9 +67,8 @@ def login():
         password = request.form.get("password")
 
         user = get_user_by_email(email)
-
         if not user or user["password"] != password:
-            return render_template("login.html", error="Invalid login")
+            return render_template("login.html", error="Invalid login.")
 
         session["user_email"] = email
         return redirect("/dashboard")
@@ -79,9 +76,9 @@ def login():
     return render_template("login.html")
 
 
-# ------------------------------------------------------------
+# ===============================================================
 # DASHBOARD
-# ------------------------------------------------------------
+# ===============================================================
 @app.route("/dashboard")
 def dashboard():
     if "user_email" not in session:
@@ -90,110 +87,44 @@ def dashboard():
     user = get_user_by_email(session["user_email"])
 
     subscribed = user["is_pro"]
-
-    scans_left = max(0, 2 - user["scans_used"])
-    pdf_left = 1 if not subscribed else "∞"
+    scans_left = max(0, 2 - user["scans_used"]) if not subscribed else None
+    pdf_left = 1 if not subscribed else None
 
     return render_template(
         "dashboard.html",
         user=user,
         subscribed=subscribed,
         scans_left=scans_left,
-        pdf_left=pdf_left,
+        pdf_left=pdf_left
     )
 
 
-# ------------------------------------------------------------
-# SCAN ROUTE
-# ------------------------------------------------------------
-@app.route("/scan", methods=["POST"])
-def scan():
-    if "user_email" not in session:
-        return jsonify({"error": "not_logged_in"})
-
-    user = get_user_by_email(session["user_email"])
-    subscribed = user["is_pro"]
-
-    # FREE LIMITS
-    if not subscribed and user["scans_used"] >= 2:
-        return jsonify({"error": "limit"})
-
-    # Parse incoming JSON
-    data = request.json
-    url = data.get("url")
-    keyword = data.get("keyword")
-    competitor = data.get("competitor")
-
-    # Run analyzer
-    results = run_full_analysis(url, keyword, competitor)
-
-    # Increment free scans
-    if not subscribed:
-        conn = psycopg2.connect(DB_URL, sslmode="require")
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE users SET scans_used = scans_used + 1 WHERE email=%s",
-            (user["email"],)
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
-
-    return jsonify(results)
-
-
-# ------------------------------------------------------------
-# PDF EXPORT (PRO ONLY)
-# ------------------------------------------------------------
-@app.route("/export-pdf", methods=["POST"])
-def export_pdf():
-    if "user_email" not in session:
-        return jsonify({"error": "not_logged_in"}), 401
-
-    user = get_user_by_email(session["user_email"])
-
-    if not user["is_pro"]:
-        return jsonify({"error": "not_pro"}), 403
-
-    analysis_data = request.json
-
-    competitor_data = analysis_data.get("competitor_data")
-    filename = build_pdf(user, analysis_data, competitor_data)
-
-    return send_file(filename, as_attachment=True)
-
-
-# ------------------------------------------------------------
-# PRICING PAGE
-# ------------------------------------------------------------
+# ===============================================================
+# STRIPE CHECKOUT
+# ===============================================================
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html", stripe_public_key=STRIPE_PUBLIC_KEY)
 
 
-# ------------------------------------------------------------
-# STRIPE CHECKOUT
-# ------------------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     if "user_email" not in session:
-        return jsonify({"error": "not_logged_in"}), 401
+        return jsonify({"error": "Not logged in"}), 401
 
-    user = get_user_by_email(session["user_email"])
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer_email=session["user_email"],
+            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+            success_url=request.host_url + "success",
+            cancel_url=request.host_url + "cancel",
+        )
 
-    session_obj = stripe.checkout.Session.create(
-        mode="subscription",
-        payment_method_types=["card"],
-        line_items=[{
-            "price": STRIPE_PRICE_ID,
-            "quantity": 1
-        }],
-        customer_email=user["email"],
-        success_url=request.host_url + "success",
-        cancel_url=request.host_url + "cancel",
-    )
+        return jsonify({"url": checkout_session.url})
 
-    return jsonify({"url": session_obj.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @app.route("/success")
@@ -206,67 +137,182 @@ def cancel():
     return render_template("cancel.html")
 
 
-# ------------------------------------------------------------
+# ===============================================================
 # STRIPE WEBHOOK
-# ------------------------------------------------------------
+# ===============================================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
     event_type = event["type"]
 
-    # SUBSCRIPTION COMPLETED
+    # Payment completed
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
-
         email = data.get("customer_email")
         customer_id = data.get("customer")
         subscription_id = data.get("subscription")
 
-        update_subscription_by_email(
-            email=email,
-            stripe_customer_id=customer_id,
-            stripe_subscription_id=subscription_id,
-            status="active",
-            is_pro=True,
-            period_end=None
-        )
+        if email:
+            update_subscription_by_email(
+                email=email,
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+                status="active",
+                is_pro=True,
+                period_end=None,
+            )
 
-    # RENEWAL / CANCEL
+    # Subscription updates
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
+        sub_id = data.get("id")
+        customer_id = data.get("customer")
+        status = data.get("status")
+        period_end = data.get("current_period_end")
 
-        subscription_id = data["id"]
-        customer_id = data["customer"]
-        status = data["status"]
-        period_end = data["current_period_end"]
-
-        user = get_user_by_subscription(subscription_id)
-
+        user = get_user_by_subscription(sub_id)
         if user:
             update_subscription_by_email(
                 email=user["email"],
                 stripe_customer_id=customer_id,
-                stripe_subscription_id=subscription_id,
+                stripe_subscription_id=sub_id,
                 status=status,
                 is_pro=(status == "active"),
-                period_end=period_end
+                period_end=period_end,
             )
 
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "success"}), 200
 
 
-# ------------------------------------------------------------
-# ADMIN PAGES
-# ------------------------------------------------------------
+# ===============================================================
+# LOGOUT
+# ===============================================================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+# ===============================================================
+# ANALYZER /scan
+# ===============================================================
+@app.route("/scan", methods=["POST"])
+def scan():
+    if "user_email" not in session:
+        return jsonify({"error": "not_logged_in"})
+
+    data = request.get_json()
+    url = data.get("url")
+    keyword = data.get("keyword")
+    competitor_url = data.get("competitor")
+
+    user = get_user_by_email(session["user_email"])
+
+    # FREE LIMITS
+    if not user["is_pro"]:
+        if user["scans_used"] >= 2:
+            return jsonify({"error": "limit"})
+        
+        # increment free scans
+        conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET scans_used = scans_used + 1 WHERE email = %s", (user["email"],))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    # MAIN ANALYSIS
+    (
+        main_score,
+        audit,
+        tips,
+        content,
+        tech,
+        keyword_score,
+        onpage,
+        links
+    ) = run_local_seo_analysis(url, keyword)
+
+    result = {
+        "score": main_score,
+        "audit": audit,
+        "tips": tips,
+        "content": content,
+        "technical": tech,
+        "keyword": keyword_score,
+        "onpage": onpage,
+        "links": links
+    }
+
+    # COMPETITOR (PRO ONLY)
+    if competitor_url and user["is_pro"]:
+        (
+            c_score,
+            c_audit,
+            c_tips,
+            c_content,
+            c_tech,
+            c_keyword,
+            c_onpage,
+            c_links
+        ) = run_local_seo_analysis(competitor_url, keyword)
+
+        result["competitor_data"] = {
+            "content": c_content,
+            "technical": c_tech,
+            "keyword": c_keyword,
+            "onpage": c_onpage,
+            "links": c_links,
+            "score": c_score
+        }
+    else:
+        result["competitor_data"] = None
+
+    return jsonify(result)
+
+
+# ===============================================================
+# PDF EXPORT (PRO ONLY)
+# ===============================================================
+@app.route("/export-pdf", methods=["POST"])
+def export_pdf():
+    if "user_email" not in session:
+        return "Not logged in", 403
+
+    user = get_user_by_email(session["user_email"])
+    if not user["is_pro"]:
+        return "Upgrade required", 403
+
+    data = request.get_json()
+
+    # Build PDF in memory
+    pdf_bytes = build_pdf(
+        user_data=user,
+        analysis_data=data,
+        competitor_data=data.get("competitor_data"),
+    )
+
+    buffer = io.BytesIO(pdf_bytes)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="seo_report.pdf"
+    )
+
+
+# ===============================================================
+# ADMIN ROUTES
+# ===============================================================
 @app.route("/admin/users")
 def admin_users():
     users = list_users()
@@ -280,7 +326,7 @@ def admin_delete_user(user_id):
 
 
 @app.route("/admin/reset_scans/<int:user_id>")
-def admin_reset_scans_route(user_id):
+def admin_reset_scans(user_id):
     reset_scans(user_id)
     return redirect("/admin/users")
 
@@ -291,17 +337,9 @@ def admin_make_admin_route(user_id):
     return redirect("/admin/users")
 
 
-# ------------------------------------------------------------
-# LOGOUT
-# ------------------------------------------------------------
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# ------------------------------------------------------------
+# ===============================================================
 # RUN LOCAL
-# ------------------------------------------------------------
+# ===============================================================
 if __name__ == "__main__":
     app.run(debug=True)
+
