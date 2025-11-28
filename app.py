@@ -3,11 +3,17 @@ from utils.db import (
     get_user_by_email,
     create_user,
     get_user_by_subscription,
-    update_subscription_by_email
+    update_subscription_by_email,
+    list_users,
+    delete_user_by_id,
+    reset_scans,
+    make_admin,
+    create_admin
 )
 import stripe
 import os
 import json
+import psycopg2
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
@@ -73,7 +79,7 @@ def dashboard():
     if "user_email" not in session:
         return redirect("/login")
 
-    user = get_user_by_email(session["user_email"])
+        user = get_user_by_email(session["user_email"])
     return render_template("dashboard.html", user=user)
 
 
@@ -86,7 +92,7 @@ def pricing():
 
 
 # -----------------------------
-# CREATE CHECKOUT SESSION
+# STRIPE CHECKOUT
 # -----------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -115,7 +121,7 @@ def create_checkout_session():
 
 
 # -----------------------------
-# SUCCESS / CANCEL PAGES
+# SUCCESS / CANCEL
 # -----------------------------
 @app.route("/success")
 def success():
@@ -128,14 +134,13 @@ def cancel():
 
 
 # -----------------------------
-# WEBHOOK HANDLER
+# STRIPE WEBHOOK
 # -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
     payload = request.data
     sig_header = request.headers.get("stripe-signature")
 
-    # Verify event
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, WEBHOOK_SECRET
@@ -145,9 +150,6 @@ def webhook():
 
     event_type = event["type"]
 
-    # ==========================================================
-    # checkout.session.completed
-    # ==========================================================
     if event_type == "checkout.session.completed":
         data = event["data"]["object"]
 
@@ -165,9 +167,6 @@ def webhook():
                 period_end=None
             )
 
-    # ==========================================================
-    # customer.subscription.updated
-    # ==========================================================
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
 
@@ -200,8 +199,55 @@ def logout():
     return redirect("/")
 
 
+# =============================================================
+# ADMIN PAGE ROUTES
+# =============================================================
+@app.route("/admin/users")
+def admin_users():
+    users = list_users()
+    return render_template("admin_users.html", users=users)
+
+
+@app.route("/admin/delete/<int:user_id>")
+def admin_delete_user(user_id):
+    delete_user_by_id(user_id)
+    return redirect("/admin/users")
+
+
+@app.route("/admin/reset_scans/<int:user_id>")
+def admin_reset_scans(user_id):
+    reset_scans(user_id)
+    return redirect("/admin/users")
+
+
+@app.route("/admin/make_admin/<int:user_id>")
+def admin_make_admin(user_id):
+    make_admin(user_id)
+    return redirect("/admin/users")
+
+
+# =============================================================
+# ONE-TIME DATABASE FIX ROUTE
+# =============================================================
+@app.route("/admin-fix-db")
+def admin_fix_db():
+    conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
+    cur = conn.cursor()
+
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS id SERIAL PRIMARY KEY;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS scans_used INTEGER DEFAULT 0;")
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return "Database patched successfully!"
+
+
 # -----------------------------
-# RUN (local only — Render uses gunicorn)
+# RUN LOCAL
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
