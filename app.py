@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import stripe
 import os
 import json
-import psycopg2
-import io
 
 from utils.db import (
     get_user_by_email,
@@ -19,10 +17,14 @@ from utils.db import (
 from utils.analyzer import run_local_seo_analysis
 from utils.pdf_builder import build_pdf
 
+import psycopg2
+import io
+
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
 
-# Stripe
+# Stripe keys
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
@@ -30,7 +32,7 @@ WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 
 # ===============================================================
-# HOME PAGE
+# HOME
 # ===============================================================
 @app.route("/")
 def index():
@@ -167,7 +169,7 @@ def webhook():
                 period_end=None,
             )
 
-    # Subscription updates
+    # Subscription updated (renewals, failed, canceled)
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
         sub_id = data.get("id")
@@ -213,11 +215,10 @@ def scan():
 
     user = get_user_by_email(session["user_email"])
 
-    # FREE LIMITS
+    # Free limit enforcement
     if not user["is_pro"]:
         if user["scans_used"] >= 2:
             return jsonify({"error": "limit"})
-        
         conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
         cur = conn.cursor()
         cur.execute("UPDATE users SET scans_used = scans_used + 1 WHERE email = %s", (user["email"],))
@@ -225,6 +226,7 @@ def scan():
         cur.close()
         conn.close()
 
+    # Main scan
     (
         main_score,
         audit,
@@ -247,7 +249,7 @@ def scan():
         "links": links
     }
 
-    # COMPETITOR (PRO ONLY)
+    # Competitor scan (Pro only)
     if competitor_url and user["is_pro"]:
         (
             c_score,
@@ -275,7 +277,7 @@ def scan():
 
 
 # ===============================================================
-# PDF DOWNLOAD (NEW WORKING ROUTE)
+# PDF DOWNLOAD (PRO ONLY)
 # ===============================================================
 @app.route("/pdf")
 def pdf_download():
@@ -283,6 +285,8 @@ def pdf_download():
         return "Not logged in", 403
 
     user = get_user_by_email(session["user_email"])
+    if not user["is_pro"]:
+        return "Upgrade required", 403
 
     url = request.args.get("url")
     keyword = request.args.get("keyword")
@@ -290,21 +294,6 @@ def pdf_download():
 
     if not url:
         return "Missing URL", 400
-
-    # ---- FREE PLAN LIMIT ----
-    if not user["is_pro"]:
-        if user.get("pdf_used", 0) >= 1:
-            return "PDF limit reached. Upgrade to Pro.", 403
-
-        conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE users SET pdf_used = COALESCE(pdf_used,0) + 1 WHERE email = %s",
-            (user["email"],)
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
 
     # ---- SEO ANALYSIS ----
     (
@@ -330,7 +319,7 @@ def pdf_download():
     }
 
     competitor_data = None
-    if competitor and user["is_pro"]:
+    if competitor:
         (
             c_score,
             c_audit,
@@ -353,7 +342,6 @@ def pdf_download():
             "links": c_links
         }
 
-    # ---- BUILD PDF ----
     pdf_bytes = build_pdf(
         user_data=user,
         analysis_data=analysis_data,
