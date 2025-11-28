@@ -169,7 +169,7 @@ def webhook():
                 period_end=None,
             )
 
-    # Subscription updated (renewals, failed, canceled)
+    # Subscription updated
     elif event_type == "customer.subscription.updated":
         data = event["data"]["object"]
         sub_id = data.get("id")
@@ -277,7 +277,55 @@ def scan():
 
 
 # ===============================================================
-# PDF DOWNLOAD (PRO ONLY)
+# NEW → WORKING /export-pdf POST ROUTE
+# ===============================================================
+@app.route("/export-pdf", methods=["POST"])
+def export_pdf():
+    if "user_email" not in session:
+        return "Not logged in", 403
+
+    user = get_user_by_email(session["user_email"])
+    if not user["is_pro"]:
+        return "Upgrade Required", 403
+
+    data = request.get_json()
+
+    analysis_data = {
+        "score": data.get("score", 0),
+        "audit": data.get("audit", ""),
+        "tips": data.get("tips", ""),
+        "content": data.get("content", 0),
+        "technical": data.get("technical", 0),
+        "keyword": data.get("keyword", 0),
+        "onpage": data.get("onpage", 0),
+        "links": data.get("links", 0),
+    }
+
+    competitor_data = data.get("competitor_data")
+
+    try:
+        pdf_bytes = build_pdf(
+            user_data=user,
+            analysis_data=analysis_data,
+            competitor_data=competitor_data
+        )
+    except Exception as e:
+        print("PDF ERROR:", e)
+        return "PDF generation error", 500
+
+    buffer = io.BytesIO(pdf_bytes)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="seo_report.pdf"
+    )
+
+
+# ===============================================================
+# OLD GET /pdf (still here – untouched)
 # ===============================================================
 @app.route("/pdf")
 def pdf_download():
@@ -295,7 +343,6 @@ def pdf_download():
     if not url:
         return "Missing URL", 400
 
-    # ---- SEO ANALYSIS ----
     (
         score,
         audit,
