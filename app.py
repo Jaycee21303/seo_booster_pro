@@ -25,6 +25,7 @@ STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
+
 # ============================================================
 # ADMIN SECURITY CHECK
 # ============================================================
@@ -34,6 +35,15 @@ def require_admin():
 
     user = get_user_by_email(session["user_email"])
     return user and user.get("is_admin") == True
+
+
+# ============================================================
+# TEMPORARY ADMIN RESET (REMOVE AFTER LOGIN)
+# ============================================================
+@app.route("/reset-admin")
+def reset_admin_route():
+    create_admin()
+    return "Admin reset. Login with admin@admin.com / admin123"
 
 
 # -----------------------------
@@ -261,7 +271,7 @@ def admin_update_user(user_id):
     email = request.form.get("email")
     password = request.form.get("password")
     is_pro = request.form.get("is_pro") == "on"
-    is_admin = request.form.get("is_admin") == "on"
+    is_admin_flag = request.form.get("is_admin") == "on"
 
     if password.strip() == "":
         password = None
@@ -270,7 +280,7 @@ def admin_update_user(user_id):
         user_id=user_id,
         email=email,
         is_pro=is_pro,
-        is_admin=is_admin,
+        is_admin=is_admin_flag,
         password=password
     )
 
@@ -278,7 +288,7 @@ def admin_update_user(user_id):
 
 
 # -------------------------------------------------------------
-# ONE-TIME DATABASE FIX ROUTE (ALSO ADMIN-ONLY)
+# ONE-TIME DATABASE FIX ROUTE (ADMIN ONLY)
 # -------------------------------------------------------------
 @app.route("/admin-fix-db")
 def admin_fix_db():
@@ -304,3 +314,4 @@ def admin_fix_db():
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
