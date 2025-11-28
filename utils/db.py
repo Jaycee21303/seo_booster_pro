@@ -4,7 +4,6 @@ import psycopg2.extras
 
 DATABASE_URL = os.environ.get("DB_URL")
 
-
 def get_connection():
     return psycopg2.connect(DATABASE_URL, sslmode="require")
 
@@ -24,6 +23,107 @@ def create_user(email, password):
         (email, password)
     )
 
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# CREATE ADMIN USER (AUTO)
+# -------------------------------------------------------------
+def create_admin():
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("SELECT * FROM users WHERE email = 'admin@admin.com'")
+    exists = cur.fetchone()
+
+    if not exists:
+        cur.execute(
+            """
+            INSERT INTO users (email, password, is_pro, subscription_status, is_admin, scans_used)
+            VALUES ('admin@admin.com', 'admin123', TRUE, 'active', TRUE, 0)
+            """
+        )
+        conn.commit()
+
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# LIST USERS (for admin_users.html)
+# -------------------------------------------------------------
+def list_users():
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute(
+        """
+        SELECT 
+            id,
+            email,
+            is_pro,
+            is_admin,
+            scans_used
+        FROM users
+        ORDER BY id ASC
+        """
+    )
+
+    users = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return users
+
+
+# -------------------------------------------------------------
+# DELETE USER BY ID
+# -------------------------------------------------------------
+def delete_user_by_id(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# RESET SCANS
+# -------------------------------------------------------------
+def reset_scans(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET scans_used = 0 WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# MAKE ADMIN
+# -------------------------------------------------------------
+def make_admin(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET is_admin = TRUE WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# -------------------------------------------------------------
+# RESET PASSWORD
+# -------------------------------------------------------------
+def reset_password(email, new_password):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE users SET password = %s WHERE email = %s",
+        (new_password, email)
+    )
     conn.commit()
     cur.close()
     conn.close()
@@ -74,7 +174,7 @@ def get_user_by_subscription(subscription_id):
 
 
 # -------------------------------------------------------------
-# UPDATE SUBSCRIPTION BY EMAIL
+# UPDATE SUBSCRIPTION
 # -------------------------------------------------------------
 def update_subscription_by_email(email, stripe_customer_id, stripe_subscription_id,
                                  status, is_pro, period_end):
