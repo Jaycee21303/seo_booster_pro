@@ -25,6 +25,16 @@ STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
+# ============================================================
+# ADMIN SECURITY CHECK
+# ============================================================
+def require_admin():
+    if "user_email" not in session:
+        return False
+
+    user = get_user_by_email(session["user_email"])
+    return user and user.get("is_admin") == True
+
 
 # -----------------------------
 # HOME PAGE
@@ -201,44 +211,58 @@ def logout():
 
 
 # =============================================================
-# ADMIN PAGE ROUTES
+# ADMIN PAGES (ALL PROTECTED)
 # =============================================================
 
 @app.route("/admin/users")
 def admin_users_page():
+    if not require_admin():
+        return redirect("/login")
+
     users = list_users()
     return render_template("admin_users.html", users=users)
 
 
 @app.route("/admin/delete/<int:user_id>")
 def admin_delete_user(user_id):
+    if not require_admin():
+        return redirect("/login")
+
     delete_user_by_id(user_id)
     return redirect("/admin/users")
 
 
 @app.route("/admin/reset_scans/<int:user_id>")
 def admin_reset_scans_route(user_id):
+    if not require_admin():
+        return redirect("/login")
+
     reset_scans(user_id)
     return redirect("/admin/users")
 
 
 @app.route("/admin/make_admin/<int:user_id>")
 def admin_make_admin_route(user_id):
+    if not require_admin():
+        return redirect("/login")
+
     make_admin(user_id)
     return redirect("/admin/users")
 
 
 # -------------------------------------------------------------
-# EDIT USER (UPDATE)
+# EDIT USER (MODAL UPDATE)
 # -------------------------------------------------------------
 @app.route("/admin/update/<int:user_id>", methods=["POST"])
 def admin_update_user(user_id):
+    if not require_admin():
+        return redirect("/login")
+
     email = request.form.get("email")
     password = request.form.get("password")
     is_pro = request.form.get("is_pro") == "on"
     is_admin = request.form.get("is_admin") == "on"
 
-    # Blank password should NOT overwrite current one
     if password.strip() == "":
         password = None
 
@@ -253,11 +277,14 @@ def admin_update_user(user_id):
     return redirect("/admin/users")
 
 
-# =============================================================
-# ONE-TIME DATABASE FIX ROUTE
-# =============================================================
+# -------------------------------------------------------------
+# ONE-TIME DATABASE FIX ROUTE (ALSO ADMIN-ONLY)
+# -------------------------------------------------------------
 @app.route("/admin-fix-db")
 def admin_fix_db():
+    if not require_admin():
+        return redirect("/login")
+
     conn = psycopg2.connect(os.environ["DB_URL"], sslmode="require")
     cur = conn.cursor()
 
