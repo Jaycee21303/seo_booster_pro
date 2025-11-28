@@ -8,7 +8,8 @@ from utils.db import (
     delete_user_by_id,
     reset_scans,
     make_admin,
-    create_admin
+    create_admin,
+    update_user
 )
 import stripe
 import os
@@ -18,7 +19,7 @@ import psycopg2
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "super-secret-key")
 
-# Stripe keys from Render environment
+# Stripe setup
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
@@ -79,7 +80,7 @@ def dashboard():
     if "user_email" not in session:
         return redirect("/login")
 
-        user = get_user_by_email(session["user_email"])
+    user = get_user_by_email(session["user_email"])
     return render_template("dashboard.html", user=user)
 
 
@@ -202,8 +203,9 @@ def logout():
 # =============================================================
 # ADMIN PAGE ROUTES
 # =============================================================
+
 @app.route("/admin/users")
-def admin_users():
+def admin_users_page():
     users = list_users()
     return render_template("admin_users.html", users=users)
 
@@ -215,14 +217,39 @@ def admin_delete_user(user_id):
 
 
 @app.route("/admin/reset_scans/<int:user_id>")
-def admin_reset_scans(user_id):
+def admin_reset_scans_route(user_id):
     reset_scans(user_id)
     return redirect("/admin/users")
 
 
 @app.route("/admin/make_admin/<int:user_id>")
-def admin_make_admin(user_id):
+def admin_make_admin_route(user_id):
     make_admin(user_id)
+    return redirect("/admin/users")
+
+
+# -------------------------------------------------------------
+# EDIT USER (UPDATE)
+# -------------------------------------------------------------
+@app.route("/admin/update/<int:user_id>", methods=["POST"])
+def admin_update_user(user_id):
+    email = request.form.get("email")
+    password = request.form.get("password")
+    is_pro = request.form.get("is_pro") == "on"
+    is_admin = request.form.get("is_admin") == "on"
+
+    # Blank password should NOT overwrite current one
+    if password.strip() == "":
+        password = None
+
+    update_user(
+        user_id=user_id,
+        email=email,
+        is_pro=is_pro,
+        is_admin=is_admin,
+        password=password
+    )
+
     return redirect("/admin/users")
 
 
@@ -250,4 +277,3 @@ def admin_fix_db():
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
-
