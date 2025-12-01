@@ -338,3 +338,58 @@ body {
         width: 100%;
     }
 }
+/* --------------------------------------------------
+   FREE PLAN – Free Scan Card (Premium SaaS Style)
+-------------------------------------------------- */
+
+.free-scan-card {
+    background: linear-gradient(135deg, #7A5BFF, #6A4CFF);
+    color: white;
+    padding: 22px 25px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.free-scan-left h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.free-scan-left p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Status indicator */
+.free-scan-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.status-dot.available {
+    background: #4ade80;   /* modern green success */
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.status-dot.used {
+    background: #f87171;   /* modern red warning */
+    box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+.status-text {
+    font-size: 15px;
+    font-weight: 600;
+}
