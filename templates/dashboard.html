@@ -363,12 +363,24 @@ body {
     <div class="dashboard-container">
 
         {% if not subscribed %}
-        <div class="card">
-            <div class="section-title">⚠ Free Plan Limits</div>
-            <p><b>Scans:</b> {{ scans_left }} / 2</p>
-            <p><b>PDF Export:</b> {{ pdf_left }} / 1</p>
-        </div>
+<div class="free-scan-card">
+    <div class="free-scan-left">
+        <h2>🎁 Free Scan Available</h2>
+        <p>You get one free SEO scan before upgrading to Pro.</p>
+    </div>
+
+    <div class="free-scan-status">
+        {% if scans_left == 2 or scans_left == 1 %}
+            <div class="status-dot available"></div>
+            <span class="status-text">Not Used</span>
+        {% else %}
+            <div class="status-dot used"></div>
+            <span class="status-text">Used</span>
         {% endif %}
+    </div>
+</div>
+{% endif %}
+
 
         <!-- =========================================================
              ANALYZER
