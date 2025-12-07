@@ -231,7 +231,7 @@ def run_local_seo_analysis(url, keyword=None):
     if not soup:
         return (
             0, "Error fetching page.", "Unable to analyze page.",
-            0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, {}
         )
 
     text = soup.get_text(separator=" ")
@@ -254,6 +254,17 @@ def run_local_seo_analysis(url, keyword=None):
     keyword_score_value = keyword_relevance(keyword, text_clean)
 
     # TECHNICAL SCORE
+    meta_desc_tag = soup.find("meta", attrs={"name": "description"})
+    canonical_link = soup.find("link", rel="canonical") or soup.find("link", attrs={"rel": "canonical"})
+    schema_present = bool(soup.find("script", type="application/ld+json"))
+    viewport_present = bool(soup.find("meta", attrs={"name": "viewport"}))
+    imgs = soup.find_all("img")
+    if imgs:
+        with_alt = sum(1 for img in imgs if img.get("alt"))
+        alt_coverage = int((with_alt / len(imgs)) * 100)
+    else:
+        alt_coverage = None
+
     technical_score_value = technical_score(soup)
 
     # ON-PAGE SCORE (headings + meta balance)
@@ -295,6 +306,24 @@ def run_local_seo_analysis(url, keyword=None):
 
     tips = generate_tips(soup, keyword)
 
+    page_meta = {
+        "title": soup.title.string.strip() if soup.title else "No title detected",
+        "description": (
+            meta_desc_tag.get("content", "") if meta_desc_tag else "No meta description detected"
+        ),
+        "word_count": wc,
+        "top_terms": sem_terms[:6],
+        "h1": [h.get_text(strip=True) for h in soup.find_all("h1")][:3],
+        "readability_score": read_score,
+        "schema_present": schema_present,
+        "alt_coverage": alt_coverage,
+        "canonical_url": canonical_link.get("href") if canonical_link else None,
+        "title_length": len(soup.title.string.strip()) if soup.title and soup.title.string else 0,
+        "description_length": len(meta_desc_tag.get("content", "")) if meta_desc_tag else 0,
+        "h1_count": len(soup.find_all("h1")),
+        "viewport_present": viewport_present,
+    }
+
     return (
         main_score,
         audit_text,
@@ -303,5 +332,6 @@ def run_local_seo_analysis(url, keyword=None):
         technical_score_value,
         keyword_score_value,
         onpage_score,
-        link_score
+        link_score,
+        page_meta,
     )
