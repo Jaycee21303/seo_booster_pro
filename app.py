@@ -235,7 +235,8 @@ def scan():
         tech,
         keyword_score,
         onpage,
-        links
+        links,
+        page_meta,
     ) = run_local_seo_analysis(url, keyword)
 
     result = {
@@ -246,7 +247,8 @@ def scan():
         "technical": tech,
         "keyword": keyword_score,
         "onpage": onpage,
-        "links": links
+        "links": links,
+        "page_meta": page_meta,
     }
 
     # Competitor scan (Pro only)
@@ -259,7 +261,8 @@ def scan():
             c_tech,
             c_keyword,
             c_onpage,
-            c_links
+            c_links,
+            _
         ) = run_local_seo_analysis(competitor_url, keyword)
 
         result["competitor_data"] = {
@@ -351,7 +354,8 @@ def pdf_download():
         tech,
         keyword_score,
         onpage,
-        links
+        links,
+        _
     ) = run_local_seo_analysis(url, keyword)
 
     analysis_data = {
@@ -375,7 +379,8 @@ def pdf_download():
             c_tech,
             c_keyword,
             c_onpage,
-            c_links
+            c_links,
+            _
         ) = run_local_seo_analysis(competitor, keyword)
 
         competitor_data = {

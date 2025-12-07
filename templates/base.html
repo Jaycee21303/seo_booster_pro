@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SEO Booster</title>
+    <title>{% block title %}SEO Booster Pro | SEO Dashboard & Analyzer{% endblock %}</title>
+
+    <meta name="description" content="Elite SEO Booster Pro dashboard that audits pages, narrates improvements, and automates on-page fixes.">
+    <meta name="keywords" content="SEO dashboard, SEO analyzer, on-page SEO, website audit, SEO booster, SEO reports">
+    <link rel="canonical" href="{{ request.base_url }}">
+    <meta property="og:title" content="SEO Booster Pro Dashboard">
+    <meta property="og:description" content="Enterprise-grade SEO intelligence with AI narration and live previews.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.base_url }}">
+    <meta name="twitter:card" content="summary_large_image">
+    {% block meta_extra %}{% endblock %}
 
     <!-- Google AdSense Verification -->
     <meta name="google-adsense-account" content="ca-pub-1967195027765056">

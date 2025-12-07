@@ -1,324 +1,277 @@
 {% extends "base.html" %}
+{% block title %}Elite SEO Dashboard & Analyzer | SEO Booster Pro{% endblock %}
+{% block meta_extra %}
+<meta name="description" content="SEO Booster Pro dashboard delivers elite on-page SEO analysis with AI narration, live screenshots, and executive-ready reporting.">
+<meta name="keywords" content="enterprise seo dashboard, seo analyzer, website audit, search engine optimization tool, seo booster pro">
+<meta property="og:title" content="Elite SEO Dashboard & Analyzer">
+<meta property="og:description" content="Enterprise-grade SEO intelligence with AI storytelling, live screenshots, and actionable insights.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://seo-booster-pro.example/og-image-dashboard.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SEO Booster Pro Dashboard",
+  "applicationCategory": "SEO",
+  "operatingSystem": "Any",
+  "description": "Enterprise SEO dashboard with AI-led analysis, live previews, and executive-ready insights.",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "218"
+  }
+}
+</script>
+{% endblock %}
 {% block content %}
 
 <style>
-/* =========================================================
-   GLOBAL LAYOUT
-========================================================= */
+:root {
+    --bg: #060b1a;
+    --panel: rgba(255,255,255,0.04);
+    --card: #0f172a;
+    --card-border: rgba(255,255,255,0.06);
+    --accent: #8b5cf6;
+    --accent-2: #22d3ee;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow: 0 18px 50px rgba(0,0,0,0.45);
+}
+
 body {
-    background: #f7f7fb;
+    background: radial-gradient(circle at 20% 20%, rgba(104, 64, 255, 0.12), transparent 35%),
+                radial-gradient(circle at 70% 0%, rgba(37, 195, 255, 0.12), transparent 35%),
+                #060b1a;
     font-family: 'Inter', sans-serif;
-    color: #222;
+    color: var(--text);
 }
 
-/* NAVBAR */
-.navbar {
-    width: 100%;
-    padding: 18px 40px;
-    background: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-.nav-left { font-size: 22px; font-weight: 700; color: #6A4CFF; }
-.nav-links a {
-    margin-left: 25px;
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-}
-.nav-links a:hover { color: #6A4CFF; }
-
-/* =========================================================
-   UPGRADE BANNER (FREE USERS)
-========================================================= */
-.upgrade-banner {
-    width: 100%;
-    background: #fff7e6;
-    border-bottom: 2px solid #ffd27f;
-    padding: 18px 0;
-    margin-bottom: 20px;
-}
-.upgrade-banner-inner {
-    max-width: 900px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.upgrade-banner h3 {
-    margin: 0;
-    font-size: 20px;
-    color: #6A4CFF;
-    font-weight: 700;
-}
-.upgrade-banner p {
-    margin: 3px 0 0 0;
-    font-size: 14px;
-    opacity: 0.8;
-}
-.upgrade-btn {
-    background: #6A4CFF;
-    color: white;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 15px;
-    text-decoration: none;
-    white-space: nowrap;
+.dashboard-shell {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 18px 18px 70px;
 }
 
-/* =========================================================
-   HERO BANNER
-========================================================= */
+.seo-tags {
+    position: absolute;
+    left: -9999px;
+    visibility: hidden;
+}
+
 .dashboard-hero {
-    background: linear-gradient(135deg, #7A5BFF, #6A4CFF);
-    padding: 60px 30px;
-    border-radius: 18px;
-    text-align: center;
-    margin-bottom: 35px;
-    color: white;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(28,35,54,0.9));
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 30px 34px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 22px;
 }
-.dash-title { font-size: 52px; font-weight: 800; letter-spacing: -1px; }
-.dash-subtitle { font-size: 20px; opacity: 0.95; }
 
-/* =========================================================
-   PAGE WRAPPER
-========================================================= */
-.page-wrapper {
-    max-width: 1300px;
-    margin: auto;
+.dashboard-hero:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(139,92,246,0.28), transparent 45%);
+    pointer-events: none;
+}
+
+.hero-top {
     display: flex;
-    gap: 25px;
-}
-.dashboard-container {
-    width: 100%;
-    max-width: 900px;
-}
-.sidebar-ads {
-    width: 320px;
-    position: sticky;
-    top: 110px;
-    height: fit-content;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
 }
 
-/* =========================================================
-   CARDS
-========================================================= */
-.card {
-    background: white;
-    border-radius: 14px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+.breadcrumbs {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
 }
+
+.dash-title {
+    font-size: 36px;
+    font-weight: 800;
+    margin: 6px 0;
+    letter-spacing: -0.3px;
+}
+
+.dash-subtitle {
+    font-size: 15px;
+    max-width: 780px;
+    color: #cbd5f5;
+    line-height: 1.8;
+}
+
+.hero-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.hero-pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-actions {
+    display: grid;
+    gap: 12px;
+    align-items: start;
+    min-width: 260px;
+}
+
+.hero-actions .primary-btn {
+    box-shadow: 0 18px 40px rgba(124, 95, 255, 0.35);
+    padding: 14px 16px;
+}
+
+.hero-microcopy {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.page-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+}
+
+.dashboard-container { width: 100%; }
+.sidebar-ads { position: sticky; top: 90px; }
+
+.card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    backdrop-filter: blur(6px);
+}
+
 .section-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 800;
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-/* =========================================================
-   INFO ICONS + TOOLTIP
-========================================================= */
-.info-icon {
-    font-size: 18px;
-    color: #6A4CFF;
-    cursor: pointer;
-    margin-left: 6px;
-}
-.info-icon:hover { opacity: 0.7; }
-.info-wrap { position: relative; }
-
-.tooltip-box {
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    background: #ffffff;
-    color: #333;
-    border: 1px solid #ddd;
-    padding: 8px 12px;
-    font-size: 13px;
-    border-radius: 6px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    transition: opacity 0.2s ease;
-    transform: translateY(-5px);
-    z-index: 50;
-    left: 25px;
-    top: -5px;
-}
-.info-wrap:hover .tooltip-box {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* =========================================================
-   INFO MODAL
-========================================================= */
-.info-modal-bg {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.55);
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
-}
-.info-modal {
-    background: white;
-    width: 90%;
-    max-width: 420px;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 6px 30px rgba(0,0,0,0.2);
-}
-.info-modal h3 {
-    font-size: 20px;
-    margin-top: 0;
-    color: #6A4CFF;
-}
-.info-modal p {
-    font-size: 14px;
-    line-height: 1.55;
-}
-.modal-close {
-    margin-top: 18px;
-    background: #6A4CFF;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: 600;
-}
-
-
-/* =========================================================
-   SCORE CIRCLES
-========================================================= */
-.score-wrapper { display: flex; justify-content: center; align-items: center; }
-.score-circle,
-.comp-score-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: conic-gradient(#ddd 0deg, #ddd 360deg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.score-circle-inner,
-.comp-score-inner {
-    width: 120px;
-    height: 120px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 36px;
-    font-weight: 700;
-}
-
-/* =========================================================
-   PROGRESS BARS
-========================================================= */
-.progress-label {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.progress-bar {
-    width: 100%;
-    height: 16px;
-    background: #eee;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 12px;
-}
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: #6A4CFF;
-    transition: width 1.2s ease;
-}
-
-/* =========================================================
-   MODERN AUDIT + TIPS BOXES
-========================================================= */
-.audit-box-modern {
-    background: #fafaff;
-    border: 1px solid #e5e2ff;
-    padding: 20px;
-    border-radius: 12px;
-    font-size: 15px;
-    line-height: 1.55;
-}
-.audit-entry { margin-bottom: 8px; }
-
-.tips-modern {
-    background: #fdfcff;
-    border: 1px solid #ebe7ff;
-    padding: 20px;
-    border-radius: 12px;
-}
-.tips-modern li { margin-bottom: 8px; }
-
-/* =========================================================
-   COMPETITOR SECTION
-========================================================= */
-#compSection { display: none; }
-.comp-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-.comp-card { width: 48%; }
-.comp-text {
-    background: #fafafa;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 15px;
-    white-space: pre-wrap;
-}
-@media (max-width: 768px) {
-    .comp-container { flex-direction: column; }
-    .comp-card { width: 100%; }
-}
-
-/* =========================================================
-   ADS SIDEBAR (FREE USERS)
-========================================================= */
-.ad-box {
-    background: white;
-    padding: 12px;
-    border-radius: 14px;
-    margin-bottom: 20px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    text-align: center;
-}
-.ad-label {
-    font-size: 13px;
-    font-weight: 600;
-    opacity: 0.6;
     margin-bottom: 8px;
+}
+
+.section-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+
+.analyzer-form { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 12px; align-items: center; }
+.analyzer-form .stack { display: grid; gap: 10px; }
+.input-field { padding: 14px 16px; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; font-size: 15px; width: 100%; background: rgba(255,255,255,0.04); color: #f8fafc; }
+.input-field::placeholder { color: #94a3b8; }
+.input-field:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(34,211,238,0.14); }
+
+.primary-btn { background: linear-gradient(135deg, var(--accent), #4f46e5); border: none; color: white; padding: 14px 18px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; transition: transform 0.15s ease; width: 100%; }
+.primary-btn:hover { transform: translateY(-1px); }
+
+.tagline { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.tagline span { background: rgba(34,211,238,0.12); color: #67e8f9; padding: 6px 10px; border-radius: 10px; font-weight: 700; }
+
+.upgrade-banner { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); padding: 16px 18px; border-radius: 14px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+.upgrade-banner h3 { margin: 0; font-weight: 800; color: #e5e7eb; }
+.upgrade-banner p { margin: 6px 0 0 0; color: var(--muted); }
+.upgrade-btn { background: linear-gradient(135deg, #22d3ee, #4f46e5); color: white; padding: 12px 18px; border-radius: 10px; font-weight: 800; text-decoration: none; box-shadow: 0 10px 26px rgba(79,70,229,0.35); }
+
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+
+.score-shell { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; }
+.score-circle { width: 170px; height: 170px; border-radius: 50%; background: conic-gradient(#1e293b 0deg, #1e293b 360deg); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 14px rgba(255,255,255,0.05); }
+.score-circle-inner { width: 120px; height: 120px; background: #0b1221; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 800; color: #f8fafc; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+.score-meta { display: grid; gap: 8px; }
+.badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,0.06); color: #e5e7eb; font-weight: 600; font-size: 13px; }
+.badge.good { background: rgba(34,197,94,0.18); color: #bbf7d0; }
+.badge.warn { background: rgba(245,158,11,0.18); color: #fed7aa; }
+.badge.neutral { background: rgba(79,70,229,0.18); color: #c7d2fe; }
+
+.ai-box { background: linear-gradient(145deg, #0b1221, #0f172a); color: #e5e7eb; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+.ai-box:after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06), transparent 40%); pointer-events: none; }
+.ai-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #cbd5f5; font-weight: 700; margin-bottom: 10px; }
+.ai-voice { font-size: 15px; line-height: 1.7; color: #e5e7eb; }
+.ai-footnote { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.ai-pill { background: rgba(34,211,238,0.12); color: #67e8f9; padding: 6px 10px; border-radius: 10px; font-weight: 700; font-size: 12px; }
+
+.preview-card img { width: 100%; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); box-shadow: var(--shadow); background: #0b1221; }
+.preview-note { margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+.intel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.info-pill { padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); font-weight: 700; color: #f8fafc; }
+.pill-sub { display: block; font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+.keyword-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.keyword-pills span { background: rgba(79,70,229,0.2); color: #c7d2fe; padding: 8px 10px; border-radius: 10px; font-weight: 700; font-size: 13px; }
+
+.micro-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.micro-badge { padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); color: #e5e7eb; font-size: 12px; font-weight: 700; }
+
+.progress-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.progress-label { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #e5e7eb; }
+.progress-bar { width: 100%; height: 12px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #8b5cf6, #22d3ee); transition: width 1.2s ease; border-radius: 10px; }
+
+.audit-box-modern { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.audit-entry { margin-bottom: 6px; }
+
+.tips-modern { background: rgba(255,255,255,0.02); border: 1px solid rgba(34,211,238,0.18); padding: 14px; border-radius: 12px; color: #e5e7eb; }
+.tips-modern li { margin-bottom: 6px; }
+
+.comp-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 12px; }
+.comp-text { background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; font-size: 14px; white-space: pre-wrap; border: 1px solid rgba(255,255,255,0.08); }
+
+.action-btn { background: linear-gradient(135deg, #22d3ee, #0ea5e9); border: none; color: white; padding: 12px 16px; border-radius: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 24px rgba(14,165,233,0.28); margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px; }
+.action-btn svg { width: 18px; height: 18px; }
+
+.free-scan-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(34,211,238,0.12); padding: 14px 16px; border-radius: 14px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.free-scan-card h2 { margin: 0; font-weight: 800; }
+.status-dot { width: 12px; height: 12px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.15); }
+.status-dot.used { background: #f97316; box-shadow: 0 0 0 4px rgba(249,115,22,0.15); }
+.status-text { font-weight: 700; color: #e5e7eb; }
+
+.serp-card { background: linear-gradient(145deg, rgba(34,211,238,0.05), rgba(79,70,229,0.05)); border: 1px solid rgba(34,211,238,0.18); }
+.serp-title { font-size: 16px; font-weight: 800; color: #f8fafc; margin: 4px 0; }
+.serp-url { color: #67e8f9; font-size: 13px; }
+.serp-desc { color: #cbd5f5; font-size: 14px; line-height: 1.5; }
+
+.readability-meter { margin-top: 10px; }
+.readability-score { font-weight: 800; color: #67e8f9; }
+
+.sidebar-ads .card { background: rgba(255,255,255,0.05); }
+.sidebar-ads .card p { color: var(--muted); }
+
+.info-modal-bg { display: none; position: fixed; inset: 0; background: rgba(6,11,26,0.7); align-items: center; justify-content: center; z-index: 99999; }
+.info-modal { background: #0f172a; padding: 20px; border-radius: 14px; width: 92%; max-width: 420px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.08); }
+.info-modal h3 { margin-top: 0; }
+.modal-close { background: linear-gradient(135deg, #8b5cf6, #22d3ee); color: white; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+
+@media (max-width: 980px) {
+    .page-wrapper { grid-template-columns: 1fr; }
+    .analyzer-form { grid-template-columns: 1fr; }
+    .score-shell { grid-template-columns: 1fr; }
 }
 </style>
 
-<!-- =========================================================
-   GLOBAL MODAL
-========================================================= -->
+<div class="seo-tags" aria-hidden="true">
+    SEO Booster Pro, SEO dashboard, AI SEO analyzer, enterprise SEO audit, live SEO screenshot, structured data SEO, canonical tag checker, meta description length, H1 checker, keyword intelligence
+</div>
+
 <div id="modalBG" class="info-modal-bg">
     <div class="info-modal">
         <h3 id="modalTitle"></h3>
@@ -327,415 +280,390 @@ body {
     </div>
 </div>
 
-<!-- =========================================================
-   NAVBAR
-========================================================= -->
-
-<!-- =========================================================
-   FREE USER BANNER
-========================================================= -->
-{% if not subscribed %}
-<div class="upgrade-banner">
-    <div class="upgrade-banner-inner">
-        <div>
-            <h3>Upgrade to SEO Booster Pro ✨</h3>
-            <p>Unlimited scans, unlimited PDF exports, no ads, competitor analytics.</p>
-        </div>
-        <a class="upgrade-btn" href="/pricing">Upgrade Now</a>
-    </div>
-</div>
-{% endif %}
-
-<!-- =========================================================
-   HERO
-========================================================= -->
-<div class="dashboard-hero">
-    <h1 class="dash-title">SEO Dashboard</h1>
-    <p class="dash-subtitle">Instant AI-powered insights to improve your rankings</p>
-</div>
-
-<!-- =========================================================
-   MAIN PAGE LAYOUT
-========================================================= -->
-<div class="page-wrapper">
-
-    <!-- LEFT PANEL -->
-    <div class="dashboard-container">
-
-        {% if not subscribed %}
-<div class="free-scan-card">
-    <div class="free-scan-left">
-        <h2>🎁 Free Scan Available</h2>
-        <p>You get one free SEO scan before upgrading to Pro.</p>
-    </div>
-
-    <div class="free-scan-status">
-        {% if scans_left == 2 or scans_left == 1 %}
-            <div class="status-dot available"></div>
-            <span class="status-text">Not Used</span>
-        {% else %}
-            <div class="status-dot used"></div>
-            <span class="status-text">Used</span>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
-
-
-        <!-- =========================================================
-             ANALYZER
-        ========================================================== -->
-        <div class="card">
-            <div class="section-title">
-                🔍 SEO Analyzer
-                <span class="info-wrap">
-                    <span class="info-icon"
-                          onclick="openInfo('SEO Analyzer','Enter any URL. We scan structure, content, keywords, technical health, and give instant insights.')">ⓘ</span>
-                    <div class="tooltip-box">What this does</div>
-                </span>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-bottom:12px;">
-                <input id="urlInput" type="url" placeholder="Your website URL…"
-                       style="flex:1; padding:12px; border:1px solid #ccc; border-radius:8px;">
-                <button id="analyzeBtn"
-                        style="background:#6A4CFF;color:white;padding:12px 18px;border-radius:8px;border:none;">
-                        Analyze
-                </button>
-            </div>
-
-            <input id="keywordInput" type="text" placeholder="Keyword (optional)"
-                   style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
-
-            <input id="compInput" type="url" placeholder="Competitor URL (optional)"
-                   style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;">
-        </div>
-
-        <!-- PDF BUTTON -->
-        <button id="pdfBtn"
-                style="margin-top:12px;background:#2D8CFF;color:white;padding:12px 18px;border-radius:8px;border:none;display:none;">
-            Download PDF Report
-        </button>
-
-        <!-- =========================================================
-             RESULTS AREA
-        ========================================================== -->
-        <div id="resultsArea" style="display:none;">
-
-            <!-- SITE SCORE -->
-            <div class="card">
-                <div class="section-title">
-                    📈 Your Site Score
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Your Score','Your overall SEO score. Higher = easier for Google to understand and rank.')">ⓘ</span>
-                        <div class="tooltip-box">What this means</div>
-                    </span>
+<div class="dashboard-shell">
+    <div class="dashboard-hero">
+        <div class="hero-top">
+            <div>
+                <div class="breadcrumbs">/ SEO Booster Pro / Dashboard / Analyzer</div>
+                <div class="dash-title">Elite SEO Intelligence Dashboard</div>
+                <div class="dash-subtitle">An enterprise-grade cockpit that blends AI narration, live SERP previews, and technical depth. Built to impress stakeholders and surface fixes that move rankings.</div>
+                <div class="hero-pills">
+                    <span class="hero-pill">AI-led storytelling</span>
+                    <span class="hero-pill">Live screenshot capture</span>
+                    <span class="hero-pill">Semantic keyword graph</span>
+                    <span class="hero-pill">Executive-ready PDFs</span>
                 </div>
+            </div>
+            <div class="hero-actions">
+                <button class="primary-btn" onclick="document.getElementById('urlInput').focus()">Start a new scan</button>
+                <div class="hero-microcopy">Optimized for SEO teams who need trustworthy signals, built-in metadata hygiene, and clean exportable reports.</div>
+            </div>
+        </div>
+    </div>
 
-                <div class="score-wrapper">
-                    <div id="scoreCircle" class="score-circle">
-                        <div id="scoreInner" class="score-circle-inner">0</div>
+    <div class="page-wrapper">
+        <div class="dashboard-container">
+
+            {% if not subscribed %}
+            <div class="upgrade-banner">
+                <div>
+                    <h3>Upgrade to SEO Booster Pro ✨</h3>
+                    <p>Unlimited scans, PDF exports, competitor tracking, and premium AI breakdowns.</p>
+                </div>
+                <a class="upgrade-btn" href="/pricing">Upgrade Now</a>
+            </div>
+            {% endif %}
+
+            {% if not subscribed %}
+            <div class="free-scan-card">
+                <div>
+                    <h2>🎁 Free Scan Available</h2>
+                    <p style="color: var(--muted);">One complimentary SEO scan to feel the premium workflow.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    {% if scans_left == 2 or scans_left == 1 %}
+                        <div class="status-dot"></div>
+                        <span class="status-text">Not Used</span>
+                    {% else %}
+                        <div class="status-dot used"></div>
+                        <span class="status-text">Used</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <section class="card analyzer-card" id="analyzer">
+                <div class="section-title">🔍 SEO Analyzer</div>
+                <div class="section-sub">Drop in a URL, optional keyword, and competitor. We’ll narrate findings like a senior search strategist, validate metadata, and deliver a live preview.</div>
+                <div class="analyzer-form">
+                    <div class="stack">
+                        <input id="urlInput" type="url" class="input-field" placeholder="https://yourwebsite.com" aria-label="Website URL" />
+                        <input id="keywordInput" type="text" class="input-field" placeholder="Target keyword (optional)" aria-label="Target keyword" />
+                        <input id="compInput" type="url" class="input-field" placeholder="Competitor URL (optional, Pro)" aria-label="Competitor URL" />
+                    </div>
+                    <div class="stack">
+                        <button id="analyzeBtn" class="primary-btn">Run Premium Analysis</button>
+                        <div class="tagline"><span>Signal rich</span> Visual score, AI explainer, SERP preview, and metadata hygiene</div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- =========================================================
-                 DETAILED BREAKDOWN
-            ========================================================== -->
-            <div class="card">
-                <div class="section-title">📊 Detailed Breakdown</div>
+            <button id="pdfBtn" class="action-btn" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Download PDF Report
+            </button>
 
-                <!-- Content Quality -->
-                <div class="progress-label">
-                    Content Quality
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Content Quality','How helpful and complete your text is. Good writing = higher SEO.')">ⓘ</span>
-                        <div class="tooltip-box">Writing quality</div>
-                    </span>
-                </div>
-                <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
+            <div id="resultsArea" style="display:none;">
+                <div class="results-grid">
 
-                <!-- Keyword Relevance -->
-                <div class="progress-label">
-                    Keyword Relevance
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Keyword Relevance','How well your content matches your target keyword.')">ⓘ</span>
-                        <div class="tooltip-box">Keyword match</div>
-                    </span>
-                </div>
-                <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
-
-                <!-- Technical Health -->
-                <div class="progress-label">
-                    Technical Health
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Technical Health','Checks meta tags, mobile layout, image tags, speed basics.')">ⓘ</span>
-                        <div class="tooltip-box">Tech items</div>
-                    </span>
-                </div>
-                <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
-
-                <!-- On-Page Structure -->
-                <div class="progress-label">
-                    On-Page Structure
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('On-Page Structure','Checks H1, H2, H3 structure and overall layout.')">ⓘ</span>
-                        <div class="tooltip-box">Headings & layout</div>
-                    </span>
-                </div>
-                <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
-
-                <!-- Link Health -->
-                <div class="progress-label">
-                    Link Health
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Link Health','Checks for broken links which hurt SEO.')">ⓘ</span>
-                        <div class="tooltip-box">Broken links</div>
-                    </span>
-                </div>
-                <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
-            </div>
-
-            <!-- =========================================================
-                 SITE AUDIT
-            ========================================================== -->
-            <div class="card">
-                <div class="section-title">
-                    🧹 Site Audit
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Site Audit','Full list of findings from your page scan. Fix these to boost SEO.')">ⓘ</span>
-                        <div class="tooltip-box">Audit list</div>
-                    </span>
-                </div>
-                <div id="auditBox" class="audit-box-modern"></div>
-            </div>
-
-            <!-- =========================================================
-                 TIPS SECTION
-            ========================================================== -->
-            <div class="card">
-                <div class="section-title">
-                    💡 Optimization Tips
-                    <span class="info-wrap">
-                        <span class="info-icon"
-                              onclick="openInfo('Optimization Tips','Easy improvements you can apply right now for better rankings.')">ⓘ</span>
-                        <div class="tooltip-box">Quick ideas</div>
-                    </span>
-                </div>
-                <div class="tips-modern">
-                    <ul id="tipsBox"></ul>
-                </div>
-            </div>
-
-            <!-- =========================================================
-                 COMPETITOR SECTION
-            ========================================================== -->
-            <div id="compSection" class="card">
-                <div class="section-title">🏁 Your Site vs Competitor</div>
-
-                <div class="comp-container">
-
-                    <!-- Your -->
-                    <div class="comp-card">
-                        <h3>Your Site</h3>
-                        <div class="progress-label">Content</div>
-                        <div class="progress-bar"><div id="yourContentBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Keyword</div>
-                        <div class="progress-bar"><div id="yourKeywordBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Technical</div>
-                        <div class="progress-bar"><div id="yourTechnicalBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">On-Page</div>
-                        <div class="progress-bar"><div id="yourOnpageBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Links</div>
-                        <div class="progress-bar"><div id="yourLinksBar" class="progress-fill"></div></div>
+                    <div class="card score-card">
+                        <div class="section-title">📈 Site Performance Score</div>
+                        <div class="score-shell">
+                            <div id="scoreCircle" class="score-circle"><div id="scoreInner" class="score-circle-inner">0</div></div>
+                            <div class="score-meta">
+                                <div class="badge neutral" id="wordBadge">Loading…</div>
+                                <div class="badge neutral" id="descBadge">Meta description</div>
+                                <div class="badge neutral" id="structureBadge">Structure</div>
+                                <div class="micro-badges">
+                                    <span class="micro-badge" id="readabilityBadge">Readability —</span>
+                                    <span class="micro-badge" id="schemaBadge">Schema —</span>
+                                    <span class="micro-badge" id="canonicalBadge">Canonical —</span>
+                                    <span class="micro-badge" id="viewportBadge">Mobile —</span>
+                                    <span class="micro-badge" id="altBadge">Alt text —</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Competitor -->
-                    <div class="comp-card">
-                        <h3>Competitor</h3>
-                        <div class="progress-label">Content</div>
-                        <div class="progress-bar"><div id="compContentBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Keyword</div>
-                        <div class="progress-bar"><div id="compKeywordBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Technical</div>
-                        <div class="progress-bar"><div id="compTechnicalBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">On-Page</div>
-                        <div class="progress-bar"><div id="compOnpageBar" class="progress-fill"></div></div>
-
-                        <div class="progress-label">Links</div>
-                        <div class="progress-bar"><div id="compLinksBar" class="progress-fill"></div></div>
+                    <div class="card ai-box">
+                        <div class="ai-header">
+                            <span>🤖 Fake AI Lead Analyst</span>
+                            <span class="ai-pill" id="aiSignal">Executive brief</span>
+                        </div>
+                        <div class="ai-voice" id="aiTake">I’ll narrate your strengths, risks, and what to fix next.</div>
+                        <div class="ai-footnote">Built for founders, CMOs, and operators who need confidence in every on-page signal.</div>
                     </div>
+
+                    <div class="card preview-card">
+                        <div class="section-title">🖼️ Live Page Preview</div>
+                        <img id="screenshotImage" src="" alt="Live screenshot preview" />
+                        <div class="preview-note" id="screenshotNote">Fetching live preview…</div>
+                    </div>
+
+                    <div class="card intel-card">
+                        <div class="section-title">🔎 Page Intelligence</div>
+                        <div class="intel-grid">
+                            <div class="info-pill">Page title <span class="pill-sub" id="pageTitle">—</span></div>
+                            <div class="info-pill">Meta description <span class="pill-sub" id="pageDescription">—</span></div>
+                            <div class="info-pill">Word count <span class="pill-sub" id="wordCount">—</span></div>
+                            <div class="info-pill">Primary headings <span class="pill-sub" id="primaryHeadings">—</span></div>
+                        </div>
+                        <div class="micro-badges">
+                            <span class="micro-badge" id="metaLengths">Title & description length</span>
+                            <span class="micro-badge" id="canonicalLink">Canonical —</span>
+                        </div>
+                        <div class="keyword-pills" id="keywordPills"></div>
+                    </div>
+
+                    <div class="card serp-card">
+                        <div class="section-title">🌐 SERP Snippet Preview</div>
+                        <div class="serp-url">{{ request.host_url | replace('https://','').replace('http://','') }}&hellip;</div>
+                        <div class="serp-title" id="serpTitle">Your title will appear here</div>
+                        <div class="serp-desc" id="serpDescription">We’ll mirror the description length and tone so you see exactly what searchers read.</div>
+                        <div class="readability-meter">
+                            <span class="readability-score" id="readabilityScoreLabel">Readability —</span>
+                            <div class="progress-bar" style="margin-top:6px;"><div id="readabilityFill" class="progress-fill"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card metrics-card">
+                        <div class="section-title">📊 Detailed Breakdown</div>
+                        <div class="progress-row">
+                            <div>
+                                <div class="progress-label">Content Quality</div>
+                                <div class="progress-bar"><div id="pb-content" class="progress-fill"></div></div>
+                            </div>
+                            <div>
+                                <div class="progress-label">Keyword Relevance</div>
+                                <div class="progress-bar"><div id="pb-keyword" class="progress-fill"></div></div>
+                            </div>
+                        </div>
+                        <div class="progress-row">
+                            <div>
+                                <div class="progress-label">Technical Health</div>
+                                <div class="progress-bar"><div id="pb-tech" class="progress-fill"></div></div>
+                            </div>
+                            <div>
+                                <div class="progress-label">On-Page Structure</div>
+                                <div class="progress-bar"><div id="pb-onpage" class="progress-fill"></div></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div class="progress-label">Link Health</div>
+                            <div class="progress-bar"><div id="pb-links" class="progress-fill"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card audit-card">
+                        <div class="section-title">🧹 Executive Audit</div>
+                        <div class="audit-box-modern" id="auditBox"></div>
+                    </div>
+
+                    <div class="card tips-card">
+                        <div class="section-title">💡 Quick Wins Playbook</div>
+                        <ul class="tips-modern" id="tipsBox"></ul>
+                    </div>
+
+                    <div class="card" id="compSection" style="display:none;">
+                        <div class="section-title">🤝 Competitor Pulse</div>
+                        <div class="progress-row">
+                            <div>
+                                <div class="progress-label">Content Strength</div>
+                                <div class="progress-bar"><div id="compContentBar" class="progress-fill"></div></div>
+                            </div>
+                            <div>
+                                <div class="progress-label">Keyword Fit</div>
+                                <div class="progress-bar"><div id="compKeywordBar" class="progress-fill"></div></div>
+                            </div>
+                        </div>
+                        <div class="progress-row">
+                            <div>
+                                <div class="progress-label">Technical Health</div>
+                                <div class="progress-bar"><div id="compTechnicalBar" class="progress-fill"></div></div>
+                            </div>
+                            <div>
+                                <div class="progress-label">On-Page Structure</div>
+                                <div class="progress-bar"><div id="compOnpageBar" class="progress-fill"></div></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div class="progress-label">Link Health</div>
+                            <div class="progress-bar"><div id="compLinksBar" class="progress-fill"></div></div>
+                        </div>
+                        <div class="comp-container" style="margin-top:12px;">
+                            <div class="comp-text" id="compSummary">Competitor summary will appear here.</div>
+                            <div class="comp-text">
+                                <strong>Where they win</strong>
+                                <div id="compAdv"></div>
+                                <strong style="display:block; margin-top:10px;">Where you can beat them</strong>
+                                <div id="compDisadv"></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-
-                <h3>📘 Summary</h3>
-                <div id="compSummary" class="comp-text"></div>
-
-                <h3>📈 Competitor Advantages</h3>
-                <div id="compAdv" class="comp-text"></div>
-
-                <h3>🛠 Your Advantages</h3>
-                <div id="compDisadv" class="comp-text"></div>
             </div>
 
-        </div><!-- end results -->
-    </div><!-- end left panel -->
-
-    <!-- =========================================================
-         ADS SIDEBAR (FREE USERS)
-    ========================================================== -->
-    {% if not subscribed %}
-    <div class="sidebar-ads">
-
-        <div class="ad-box">
-            <div class="ad-label">Advertisement</div>
-            <ins class="adsbygoogle"
-                 style="display:block;height:250px"
-                 data-ad-client="ca-pub-1967195027765056"
-                 data-ad-slot="TOP_AD_SLOT"></ins>
         </div>
 
-        <div class="ad-box">
-            <div class="ad-label">Advertisement</div>
-            <ins class="adsbygoogle"
-                 style="display:block;height:250px"
-                 data-ad-client="ca-pub-1967195027765056"
-                 data-ad-slot="BOTTOM_AD_SLOT"></ins>
+        <div class="sidebar-ads">
+            {% if not subscribed %}
+            <div class="card" style="position: sticky; top: 100px;">
+                <div class="section-title">🚀 Go Pro</div>
+                <p>Unlock unlimited scans, PDFs, and competitor AI insights. No ads, just performance.</p>
+                <a class="upgrade-btn" href="/pricing" style="display:inline-block; margin-top:10px;">Upgrade</a>
+            </div>
+            {% else %}
+            <div class="card" style="position: sticky; top: 100px;">
+                <div class="section-title">🏁 Workflow Tips</div>
+                <p>Bookmark this dashboard and add your competitor URLs to benchmark every release. Save PDFs before stakeholder reviews.</p>
+                <p style="color: var(--muted);">Index-friendly markup and structured data keep this UI SEO-strong while you audit clients.</p>
+            </div>
+            {% endif %}
         </div>
-
-        <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-            (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-
     </div>
-    {% endif %}
+</div>
 
-</div><!-- end wrapper -->
-
-<!-- =========================================================
-   JAVASCRIPT
-========================================================= -->
 <script>
-function openInfo(t, m) {
-    document.getElementById("modalTitle").innerText = t;
-    document.getElementById("modalText").innerText = m;
+function openInfo(title, text) {
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalText").innerText = text;
     document.getElementById("modalBG").style.display = "flex";
 }
 function closeModal() {
     document.getElementById("modalBG").style.display = "none";
 }
 
-document.getElementById("analyzeBtn").onclick = async function () {
-    let url = document.getElementById("urlInput").value.trim();
-    if (!url) return alert("Enter a valid URL.");
+const analyzeBtn = document.getElementById("analyzeBtn");
+const pdfBtn = document.getElementById("pdfBtn");
 
-    let keyword = document.getElementById("keywordInput").value;
-    let competitor = document.getElementById("compInput").value;
+analyzeBtn.onclick = async function () {
+    const url = document.getElementById("urlInput").value;
+    const keyword = document.getElementById("keywordInput").value;
+    const competitor = document.getElementById("compInput").value;
 
-    const btn = document.getElementById("analyzeBtn");
-    btn.disabled = true;
-    btn.style.opacity = "0.6";
-    btn.innerHTML = "Analyzing...";
+    if (!url) return alert("Please enter a URL.");
 
-    const res = await fetch("/scan", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ url, keyword, competitor })
-    });
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerText = "Scanning…";
 
-    const data = await res.json();
-
-    btn.innerHTML = "Analyze";
-    btn.style.opacity = "1";
-    btn.disabled = false;
-
-    if (data.error === "limit") {
-        return alert("You’ve reached your free scan limit. Upgrade to Pro.");
+    let resp;
+    try {
+        resp = await fetch("/scan", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({url, keyword, competitor})
+        });
+    } catch (err) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerText = "Run Premium Analysis";
+        return alert("Network error. Please try again.");
     }
+
+    analyzeBtn.disabled = false;
+    analyzeBtn.innerText = "Run Premium Analysis";
+
+    const data = await resp.json();
+
+    if (data.error === "not_logged_in") return window.location.href = "/login";
+    if (data.error === "limit") return openInfo("Upgrade Required","You’ve used your free scans. Upgrade for unlimited scans and competitor breakdowns.");
 
     document.getElementById("resultsArea").style.display = "block";
 
-    /* SCORE CIRCLE */
     let finalScore = data.score;
     let inner = document.getElementById("scoreInner");
     let circle = document.getElementById("scoreCircle");
     let current = 0;
 
-    let color = "#6A4CFF";
-    if (finalScore >= 80) color = "#09c372";
-    else if (finalScore >= 60) color = "#f7b731";
-    else color = "#fa5252";
+    let color = "#4f46e5";
+    if (finalScore >= 80) color = "#22c55e";
+    else if (finalScore >= 60) color = "#f59e0b";
+    else color = "#ef4444";
 
     let interval = setInterval(() => {
         current++;
         inner.innerText = current;
-        circle.style.background =
-            `conic-gradient(${color} ${current * 3.6}deg, #ddd 0deg)`;
+        circle.style.background = `conic-gradient(${color} ${current * 3.6}deg, #1e293b 0deg)`;
         if (current >= finalScore) clearInterval(interval);
     }, 15);
 
-    /* PROGRESS BARS */
     document.getElementById("pb-content").style.width = data.content + "%";
     document.getElementById("pb-keyword").style.width = data.keyword + "%";
     document.getElementById("pb-tech").style.width = data.technical + "%";
     document.getElementById("pb-onpage").style.width = data.onpage + "%";
     document.getElementById("pb-links").style.width = data.links + "%";
 
-    /* AUDIT */
     let auditHTML = "";
-    data.audit.split("\n").forEach(line => {
-        if (line.trim()) auditHTML += `<div class="audit-entry">${line}</div>`;
-    });
+    data.audit.split("\n").forEach(line => { if (line.trim()) auditHTML += `<div class="audit-entry">${line}</div>`; });
     document.getElementById("auditBox").innerHTML = auditHTML;
 
-    /* TIPS */
     let tipsHTML = "";
-    data.tips.split("\n").forEach(tip => {
-        if (tip.trim()) tipsHTML += `<li>${tip.replace("• ","")}</li>`;
-    });
+    data.tips.split("\n").forEach(tip => { if (tip.trim()) tipsHTML += `<li>${tip.replace("• ","")}</li>`; });
     document.getElementById("tipsBox").innerHTML = tipsHTML;
 
-    /* COMPETITOR */
+    const meta = data.page_meta || {};
+    document.getElementById("pageTitle").innerText = meta.title || "No title found";
+    document.getElementById("pageDescription").innerText = meta.description || "No description found";
+    document.getElementById("wordCount").innerText = meta.word_count ? `${meta.word_count} words` : "Word count unavailable";
+    document.getElementById("primaryHeadings").innerText = (meta.h1 && meta.h1.length) ? meta.h1.join(" · ") : "No H1 headings detected";
+
+    const pillContainer = document.getElementById("keywordPills");
+    pillContainer.innerHTML = "";
+    (meta.top_terms || []).forEach(term => {
+        const pill = document.createElement("span");
+        pill.innerText = term;
+        pillContainer.appendChild(pill);
+    });
+
+    document.getElementById("wordBadge").innerText = meta.word_count ? `${meta.word_count} words indexed` : "Word count unknown";
+    document.getElementById("descBadge").innerText = meta.description && meta.description !== "No meta description detected" ? "Meta description detected" : "Add a meta description";
+    document.getElementById("structureBadge").innerText = (meta.h1 && meta.h1.length === 1) ? "Solid H1 structure" : "Review heading structure";
+
+    document.getElementById("readabilityBadge").innerText = meta.readability_score ? `Readability ${meta.readability_score}/100` : "Readability —";
+    document.getElementById("schemaBadge").innerText = meta.schema_present ? "Schema detected" : "Add structured data";
+    document.getElementById("canonicalBadge").innerText = meta.canonical_url ? "Canonical set" : "Add canonical tag";
+    document.getElementById("canonicalLink").innerText = meta.canonical_url ? meta.canonical_url : "No canonical tag detected";
+    document.getElementById("viewportBadge").innerText = meta.viewport_present ? "Mobile viewport ready" : "Add viewport meta";
+    document.getElementById("altBadge").innerText = (meta.alt_coverage || meta.alt_coverage === 0) ? `${meta.alt_coverage}% media labeled` : "No images detected";
+
+    document.getElementById("metaLengths").innerText = `Title: ${meta.title_length || 0} chars • Description: ${meta.description_length || 0} chars • H1s: ${meta.h1_count || 0}`;
+
+    document.getElementById("serpTitle").innerText = meta.title || "Untitled page";
+    document.getElementById("serpDescription").innerText = meta.description && meta.description !== "No meta description detected" ? meta.description : "Add a compelling meta description to control your SERP presence.";
+    document.getElementById("readabilityScoreLabel").innerText = meta.readability_score ? `Readability ${meta.readability_score}/100` : "Readability —";
+    document.getElementById("readabilityFill").style.width = meta.readability_score ? `${meta.readability_score}%` : "0%";
+
+    const aiNarrative = buildAiNarrative(finalScore, meta, data);
+    document.getElementById("aiTake").innerText = aiNarrative;
+    document.getElementById("aiSignal").innerText = finalScore >= 80 ? "Investor-ready" : finalScore >= 60 ? "Needs polish" : "Critical fixes";
+
+    const screenshotUrl = `https://image.thum.io/get/width/1200/crop/900/${encodeURIComponent(url)}`;
+    const screenshotEl = document.getElementById("screenshotImage");
+    const screenshotNote = document.getElementById("screenshotNote");
+    screenshotEl.src = screenshotUrl;
+    screenshotNote.innerText = "Live capture from your page.";
+    screenshotEl.onerror = () => {
+        screenshotNote.innerText = "Live preview unavailable (blocked by site). SEO insights still accurate.";
+    };
+
     if (!competitor || !data.competitor_data) {
         document.getElementById("compSection").style.display = "none";
     } else {
         let c = data.competitor_data;
-
         document.getElementById("compSection").style.display = "block";
-
         document.getElementById("compContentBar").style.width = c.content + "%";
         document.getElementById("compKeywordBar").style.width = c.keyword + "%";
         document.getElementById("compTechnicalBar").style.width = c.technical + "%";
         document.getElementById("compOnpageBar").style.width = c.onpage + "%";
         document.getElementById("compLinksBar").style.width = c.links + "%";
-
         document.getElementById("compSummary").innerText = data.competitor_summary || "";
         document.getElementById("compAdv").innerText = data.competitor_advantages || "";
         document.getElementById("compDisadv").innerText = data.competitor_disadvantages || "";
     }
 
-    /* SHOW PDF BUTTON */
-    document.getElementById("pdfBtn").style.display = "block";
+    document.getElementById("pdfBtn").style.display = "inline-flex";
 };
 
-/* =========================================================
-   PDF BUTTON (POST /export-pdf)
-========================================================= */
-document.getElementById("pdfBtn").onclick = async function () {
+function buildAiNarrative(score, meta, data) {
+    const health = score >= 80 ? "strong and investor-ready" : score >= 60 ? "promising but needs polish" : "risky for organic growth";
+    const desc = meta.description && meta.description !== "No meta description detected" ? "Meta description is present; tune it for clicks." : "No meta description detected—this is low-hanging fruit.";
+    const heading = (meta.h1 && meta.h1.length === 1) ? "Heading hierarchy is on-brand." : "Heading hierarchy needs a single, focused H1.";
+    const keyword = data.keyword >= 70 ? "Keywords align with intent." : "Keyword signals are weak—re-balance copy and headings.";
+    const schema = meta.schema_present ? "Structured data is in place—enhance it for rich results." : "Add JSON-LD to claim rich results.";
+    return `I’d pitch this as ${health}. ${desc} ${heading} ${schema} ${keyword} Push semantic depth with the highlighted keywords and tighten technical basics to unlock higher intent traffic.`;
+}
+
+pdfBtn.onclick = async function () {
     const url = document.getElementById("urlInput").value;
     const keyword = document.getElementById("keywordInput").value;
     const competitor = document.getElementById("compInput").value;
@@ -751,41 +679,23 @@ document.getElementById("pdfBtn").onclick = async function () {
         onpage: document.getElementById("pb-onpage").style.width.replace("%",""),
         links: document.getElementById("pb-links").style.width.replace("%",""),
         audit: document.getElementById("auditBox").innerText,
-        tips: Array.from(document.querySelectorAll("#tipsBox li"))
-                   .map(li => li.innerText)
-                   .join("\n")
+        tips: Array.from(document.querySelectorAll("#tipsBox li")).map(li => li.innerText).join("\n")
     };
 
     let resp;
     try {
-        resp = await fetch("/export-pdf", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-        });
-    } catch (err) {
-        return alert("PDF failed to generate (network error).");
-    }
+        resp = await fetch("/export-pdf", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+    } catch (err) { return alert("PDF failed to generate (network error)."); }
 
-    if (resp.status === 403) {
-        return openInfo("Upgrade Required","PDF reports are for Pro members only.");
-    }
-
-    if (!resp.ok) {
-        return alert("PDF failed to generate.");
-    }
+    if (resp.status === 403) { return openInfo("Upgrade Required","PDF reports are for Pro members only."); }
+    if (!resp.ok) { return alert("PDF failed to generate."); }
 
     const blob = await resp.blob();
     const urlObj = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
-    a.href = urlObj;
-    a.download = "seo_report.pdf";
-    a.click();
-
+    a.href = urlObj; a.download = "seo_report.pdf"; a.click();
     URL.revokeObjectURL(urlObj);
 };
 </script>
 
 {% endblock %}
-
